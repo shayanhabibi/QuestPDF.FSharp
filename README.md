@@ -1,5 +1,55 @@
 # QuestPDF.FSharp
 
+An idiomatic F# layer over [QuestPDF](https://www.questpdf.com/) 2026.9.0 (net10.0). Layouts are plain
+functions composed with `>>`, containers take lists, lengths are bare numbers or `5 * mm`, and the output is
+byte-identical to the equivalent fluent QuestPDF code.
+
+## Quick start
+
+```fsharp
+open QuestPDF.FSharp
+
+License.community ()
+
+document [
+    page [
+        Page.size PageSizes.A4
+        Page.margin (2 * cm)
+        Page.content (padding 10 >> background Colors.Grey.Lighten3 >> styledText (Style.size 20) "Hello, world!")
+    ]
+]
+|> Pdf.save "hello.pdf"
+```
+
+- A `Content` fills a slot and a `Modifier` wraps one: `padding 10 >> background c >> text "x"` reads outer to
+  inner, like the fluent chain.
+- `column`, `row`, `table`, `layers`, `decoration`, `page` and `document` take lists, so `for`, `if` and `match`
+  work inside them.
+- Lengths accept `int`, `float`, `float32` (points) or a `Length` such as `5 * mm` or `2.5 * cm`.
+- `open QuestPDF.FSharp` is the only open needed. Raw interop code opens `QuestPDF.Fluent` and
+  `QuestPDF.Infrastructure` before it.
+- The license is never set implicitly: call `License.community ()` (or `professional`/`enterprise`) first.
+
+## Features
+
+| Area | API |
+|------|-----|
+| Text | `text`, `styledText`, `richText` with `Text.span`/`styled`/`link`/`sectionLink`/`pageNumber`/`totalPages`/`formatPage`, alignment, clamping, paragraph spacing |
+| Style | `Style.size`/`color`/`family`/`bold`/`italic`/`underline`/... composed with `>>`; `withStyle` on any span |
+| Box modifiers | padding, alignment, width/height constraints, extend/shrink, aspect ratio, border, corner radius, background |
+| Layout | `column`, `columnSpaced`, `row` (`Row.fill`/`relative`/`constant`/`auto`), `table` (`Table.*`, `Cell.*`), `layers`, `decoration` |
+| Elements | `lineH`/`lineV`, `Image.file`/`bytes`/`shared`, `Svg.text`, `pageBreak`, `placeholder` |
+| Paging | `showOnce`, `skipOnce`, `repeat`, `ensureSpace`, `preventPageBreak`, `showEntire`, `showWhen`, sections and links |
+| Transforms | `rotate`, `scale`, `flipH`/`flipV`, `offsetX`/`offsetY`, `zIndex` |
+| Pages | `Page.size`/`sizeOf`/`minSize`/`maxSize`/`continuous`, margins, colour, header/content/footer, background/foreground |
+| Document | `Meta.*` metadata (`Meta.dated` pins both dates for reproducible bytes), `Output.*` settings: `pdfA`, `pdfUA`, `compress`, `imageQuality`, `imageDpi` |
+| Generation | `Pdf.bytes`/`save`/`write`/`show`, `Pdf.images` (PNG/JPEG/WebP per page), `Pdf.svgs`, `Pdf.companion` |
+| Setup | `License.*`, `Font.registerFile`/`registerDirectory`/`registerBytes`/`useSystemFonts`/`strict`/`registered` |
+| Interop | `raw`, `fluent` and `modify` lift fluent code; `Content.run` mounts wrapper content in raw code; `Text.raw`; any lambda is a valid part |
+
+Every public QuestPDF fluent member is mapped to a wrapper function or to the raw escape hatch in
+`tests/QuestPDF.FSharp.Tests/Coverage.fs`; a reflection test fails when a QuestPDF upgrade adds an unmapped member.
+
 ## Build CLI
 
 Every repository task runs through `build.fsx`, a [Partas.Build](https://github.com/shayanhabibi/partas.build)

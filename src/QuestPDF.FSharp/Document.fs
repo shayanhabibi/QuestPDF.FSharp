@@ -223,3 +223,51 @@ module Meta =
         set (fun metadata ->
             metadata.CreationDate <- date
             metadata.ModifiedDate <- date)
+
+/// <summary>Document settings, listed in <c>document [ ... ]</c>. A later item overrides an earlier one.</summary>
+/// <remarks>Each item sets a property of <see cref="T:QuestPDF.Infrastructure.DocumentSettings"/>.</remarks>
+[<RequireQualifiedAccess>]
+module Output =
+    let private set (apply: DocumentSettings -> unit) =
+        DocumentPart (SettingsSetter apply)
+
+    /// <summary>Generates a PDF/A file of a conformance level, for example <c>PDFA_Conformance.PDFA_3B</c>.</summary>
+    /// <remarks>
+    /// Sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.PDFA_Conformance"/>. The file carries a random
+    /// document ID, so two generations differ in those bytes.
+    /// </remarks>
+    let pdfA (conformance: PDFA_Conformance) : DocumentPart =
+        set (fun settings -> settings.PDFA_Conformance <- conformance)
+
+    /// <summary>Generates a PDF/UA-1 (accessible) file.</summary>
+    /// <remarks>
+    /// Sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.PDFUA_Conformance"/> to
+    /// <see cref="F:QuestPDF.Infrastructure.PDFUA_Conformance.PDFUA_1"/>. The file carries a random document ID, so
+    /// two generations differ in those bytes.
+    /// </remarks>
+    let pdfUA: DocumentPart =
+        set (fun settings -> settings.PDFUA_Conformance <- PDFUA_Conformance.PDFUA_1)
+
+    /// <summary>Turns compression of the PDF file on or off. Compression is on by default.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.CompressDocument"/>.</remarks>
+    let compress (enabled: bool) : DocumentPart =
+        set (fun settings -> settings.CompressDocument <- enabled)
+
+    /// <summary>Sets the default compression quality of embedded images. The default is <c>High</c>.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.ImageCompressionQuality"/>.</remarks>
+    let imageQuality (quality: ImageCompressionQuality) : DocumentPart =
+        set (fun settings -> settings.ImageCompressionQuality <- quality)
+
+    /// <summary>Sets the default resolution, in dots per inch, of embedded images. The default is 288.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.ImageRasterDpi"/>.</remarks>
+    let imageDpi (dpi: int) : DocumentPart =
+        set (fun settings -> settings.ImageRasterDpi <- dpi)
+
+    /// <summary>Sets the document content direction to right-to-left.</summary>
+    /// <remarks>
+    /// Sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.ContentDirection"/>. In QuestPDF 2026.9.0 the
+    /// layout of a page follows the page direction, set by <c>Page.rightToLeft</c>; generated pages are unchanged
+    /// by this setting.
+    /// </remarks>
+    let rightToLeft: DocumentPart =
+        set (fun settings -> settings.ContentDirection <- ContentDirection.RightToLeft)

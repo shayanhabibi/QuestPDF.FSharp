@@ -60,6 +60,21 @@ let settings =
               let error = Expect.throwsC (fun () -> sample () |> Pdf.bytes |> ignore) id
               Expect.equal (error.GetType ()) typeof<InvalidOperationException> "type"
               Expect.equal error.Message "Call License.community () (or professional/enterprise) before generating." "message")
+          testCase "every generator checks the license first"
+          <| restoringSettings (fun () ->
+              configure ()
+              QuestPDF.Settings.License <- Nullable ()
+
+              let generators: (string * (IDocument -> unit)) list =
+                  [ "images", (Pdf.images ImageFormat.Png 72 >> ignore)
+                    "svgs", (Pdf.svgs >> ignore)
+                    "companion", Pdf.companion
+                    "show", Pdf.show ]
+
+              for name, generate in generators do
+                  let error = Expect.throwsC (fun () -> generate (sample ())) id
+                  Expect.equal (error.GetType ()) typeof<InvalidOperationException> $"{name}: type"
+                  Expect.stringStarts error.Message "Call License.community ()" $"{name}: message")
           testCase "License functions set the license"
           <| restoringSettings (fun () ->
               License.professional ()

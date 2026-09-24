@@ -27,6 +27,18 @@ type FontWeight = QuestPDF.Infrastructure.FontWeight
 /// <remarks>An alias of <see cref="T:QuestPDF.Infrastructure.AspectRatioOption"/>.</remarks>
 type AspectRatioOption = QuestPDF.Infrastructure.AspectRatioOption
 
+/// <summary>A PDF/A conformance level, for example <c>PDFA_Conformance.PDFA_3B</c>.</summary>
+/// <remarks>An alias of <see cref="T:QuestPDF.Infrastructure.PDFA_Conformance"/>.</remarks>
+type PDFA_Conformance = QuestPDF.Infrastructure.PDFA_Conformance
+
+/// <summary>An image compression quality, from Best to VeryLow.</summary>
+/// <remarks>An alias of <see cref="T:QuestPDF.Infrastructure.ImageCompressionQuality"/>.</remarks>
+type ImageCompressionQuality = QuestPDF.Infrastructure.ImageCompressionQuality
+
+/// <summary>An image file format: Jpeg, Png or Webp.</summary>
+/// <remarks>An alias of <see cref="T:QuestPDF.Infrastructure.ImageFormat"/>.</remarks>
+type ImageFormat = QuestPDF.Infrastructure.ImageFormat
+
 /// <summary>Colour constructors.</summary>
 [<RequireQualifiedAccess>]
 module Color =

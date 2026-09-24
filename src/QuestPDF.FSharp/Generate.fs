@@ -2,6 +2,7 @@ namespace QuestPDF.FSharp
 
 open System
 open System.IO
+open QuestPDF.Companion
 open QuestPDF.Fluent
 open QuestPDF.Infrastructure
 
@@ -36,3 +37,22 @@ module Pdf =
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.GenerateExtensions.GeneratePdfAndShow(QuestPDF.Infrastructure.IDocument)"/>.</remarks>
     let show (document: IDocument) : unit =
         (licensed document).GeneratePdfAndShow ()
+
+    /// <summary>An image of each page, in page order, in a format and at a resolution in dots per inch.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.GenerateExtensions.GenerateImages(QuestPDF.Infrastructure.IDocument,QuestPDF.Infrastructure.ImageGenerationSettings)"/>.</remarks>
+    let images (format: ImageFormat) (dpi: int) (document: IDocument) : byte[] list =
+        (licensed document).GenerateImages (ImageGenerationSettings (ImageFormat = format, RasterDpi = dpi))
+        |> List.ofSeq
+
+    /// <summary>An SVG document of each page, in page order.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.GenerateExtensions.GenerateSvg(QuestPDF.Infrastructure.IDocument)"/>.</remarks>
+    let svgs (document: IDocument) : string list =
+        (licensed document).GenerateSvg () |> List.ofSeq
+
+    /// <summary>
+    /// Sends a document to the QuestPDF Companion app on its default port, 12500, for a live preview. The Companion
+    /// app must be running.
+    /// </summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Companion.CompanionExtensions.ShowInCompanion(QuestPDF.Infrastructure.IDocument,System.Int32)"/>.</remarks>
+    let companion (document: IDocument) : unit =
+        (licensed document).ShowInCompanion ()
