@@ -1,3 +1,10 @@
+(**
+---
+category: Guide
+categoryindex: 1
+index: 2
+---
+*)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
 #r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
@@ -24,8 +31,10 @@ let render (document: QuestPDF.Infrastructure.IDocument) =
 
 ## Bare numbers and units
 
-Every length argument accepts an `int`, a `float` or a `float32`, read as points (1/72 inch), or a `Length` made
-by multiplying a number by a unit: `pt`, `mm`, `cm`, `inch`, `mil` or `feet`.
+Every length argument accepts an `int`, `int64`, `float`, `float32` or `decimal`, read as points (1/72 inch), or a
+`Length` made by multiplying a number of those types by a unit: `pt`, `mm`, `cm`, `inch`, `mil` or `feet`. A size,
+weight, angle, scale factor or ratio, such as the argument of `Style.size` or `rotate`, accepts the same five number
+types.
 *)
 
 open QuestPDF.FSharp
@@ -52,7 +61,16 @@ let twoCentimetres = Length.points (2 * cm)
 let gap = len 4
 let indent = len (1 * cm)
 
+let indented (by: Length) (label: string) = paddingLeft by >> text label
+
+let byPoints = indented (len 12) "12 pt"
+let byCentimetres = indented (2 * cm) "2 cm"
+
 (**
+A function that passes its parameter straight on is `inline` instead, and then takes bare numbers too:
+`let inline indentedBy by label = paddingLeft by >> text label`. [Concepts](concepts.html#Values-not-builders) shows
+both forms.
+
 ### Why not units of measure
 
 Units of measure (`5.0<mm>`) exist only at compile time. QuestPDF takes a runtime `Unit`, and the conversion to
@@ -88,7 +106,7 @@ render colorDemo
 ## Page sizes
 
 `PageSizes` has the ISO, US and other standard sizes. `PageSize.landscape` and `PageSize.portrait` turn one,
-`PageSize.custom` makes one from two lengths, and `Page.sizeOf width height` sets a size directly:
+`PageSize.custom` makes one from two lengths or bare numbers, and `Page.sizeOf width height` sets a size directly:
 *)
 
 let landscapeA5 = page [ Page.size (PageSize.landscape PageSizes.A5); Page.content (text "A5, landscape") ]

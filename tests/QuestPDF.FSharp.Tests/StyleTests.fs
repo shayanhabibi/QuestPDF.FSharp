@@ -108,6 +108,13 @@ let tests =
                 check "lineHeight then size" StyleProbe.spaced (fun t -> t.LineHeight(Nullable 1.5f).FontSize (11f)) ]
           distinct "bold is not italic" (styled Style.bold) (fun c -> c.Text("styled").Italic () |> ignore)
           check "families" (Style.families [ "Lato" ]) (fun t -> t.FontFamily ([| "Lato" |]))
+          sameTextStyle "families keeps the fallback order" (Style.families [ "Lato"; "Fallback" ]) (fun s -> s.FontFamily ([| "Lato"; "Fallback" |]))
+          test "families order matters" {
+              Expect.notEqual
+                  (Style.toTextStyle (Style.families [ "Lato"; "Fallback" ]))
+                  (Style.toTextStyle (Style.families [ "Fallback"; "Lato" ]))
+                  "the fallback order is part of the style"
+          }
           test "families applies every family: an unregistered fallback raises" {
               configure ()
 
@@ -120,6 +127,8 @@ let tests =
           }
           check "background" (Style.background Colors.Yellow.Lighten2) (fun t -> t.BackgroundColor Colors.Yellow.Lighten2)
           testList "weights" [ for name, style, expected in weights -> check name style expected ]
+          sameTextStyle "extraBlack text style" Style.extraBlack (fun s -> s.ExtraBlack ())
+          test "extraBlack is not black" { Expect.notEqual (Style.toTextStyle Style.extraBlack) (Style.toTextStyle Style.black) "the weights differ" }
           check "weight" (Style.weight FontWeight.Bold) (fun t -> t.Bold ())
           distinct "weight changes the output" (styled (Style.weight FontWeight.Bold)) (fun c -> c.Text ("styled") |> ignore)
           check "strikethrough" Style.strikethrough (fun t -> t.Strikethrough ())

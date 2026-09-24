@@ -1,3 +1,10 @@
+(**
+---
+category: Guide
+categoryindex: 1
+index: 3
+---
+*)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
 #r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
@@ -136,4 +143,42 @@ let clampDemo = document [ page [ Page.sizeOf 300 150; Page.margin 10; Page.cont
 
 (*** hide ***)
 render clampDemo
+(*** include-it-raw ***)
+
+(**
+## Fonts
+
+QuestPDF draws text in the fonts registered with it. `Font.registerFile`, `Font.registerDirectory` and
+`Font.registerBytes` register font files, and `Font.useSystemFonts true` adds the fonts installed on the machine.
+A compiled application finds QuestPDF's default family, Lato, next to its binaries; a script registers a font
+itself. This page registers the Lato files of the repository:
+*)
+
+open System.IO
+
+Font.registerDirectory (Path.Combine (__SOURCE_DIRECTORY__, "..", "fonts"))
+
+let families =
+    Font.registered ()
+    |> List.map (fun font -> font.FamilyName)
+    |> List.distinct
+
+(*** include-value: families ***)
+
+(**
+`Style.family` picks a registered family by name, and `Style.families` lists fallbacks: each later family supplies
+the glyphs missing from the earlier ones. `Font.strict true` makes generation raise on a missing family or glyph
+instead of substituting one.
+*)
+
+let fontDemoContent =
+    column [
+        styledText (Style.family "Lato") "Lato, the default family"
+        styledText (Style.families [ "Lato" ] >> Style.semiBold) "Lato SemiBold, through Style.families"
+    ]
+
+let fontDemo = document [ page [ Page.sizeOf 260 60; Page.margin 10; Page.content fontDemoContent ] ]
+
+(*** hide ***)
+render fontDemo
 (*** include-it-raw ***)

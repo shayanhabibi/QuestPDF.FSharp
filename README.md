@@ -21,13 +21,21 @@ document [
 |> Pdf.save "hello.pdf"
 ```
 
+In F# Interactive or a `dotnet fsi` script, register a font before generating: QuestPDF's default font, Lato, is
+copied next to a compiled application only, and without it generation raises `DocumentDrawingException`.
+
+```fsharp
+Font.registerDirectory "path/to/fonts"   // a folder of .ttf or .otf files; Font.registerFile takes one file
+```
+
 - A `Content` fills a slot and a `Modifier` wraps one: `padding 10 >> background c >> text "x"` reads outer to
   inner, like the fluent chain.
-- `column`, `row`, `table`, `layers`, `decoration`, `page` and `document` take lists, so `for`, `if` and `match`
-  work inside them.
-- Lengths accept `int`, `float`, `float32` (points) or a `Length` such as `5 * mm` or `2.5 * cm`.
-- `open QuestPDF.FSharp` is the only open needed. Raw interop code opens `QuestPDF.Fluent` and
-  `QuestPDF.Infrastructure` before it.
+- `column`, `row`, `table`, `layers`, `decoration`, `page` and `document` take lists, so `for ... do`, `if` and
+  `match` work inside them. Loop with `for ... do`: a `for ... ->` drops the other items of the list.
+- Lengths accept `int`, `int64`, `float`, `float32` or `decimal` (points) or a `Length` such as `5 * mm` or
+  `2.5 * cm`.
+- `open QuestPDF.FSharp` is the only open needed. Raw interop code also opens `QuestPDF.Fluent` and
+  `QuestPDF.Infrastructure`, in any order.
 - The license is never set implicitly: call `License.community ()` (or `professional`/`enterprise`) first.
 
 ## Features
@@ -38,14 +46,14 @@ document [
 | Style | `Style.size`/`color`/`family`/`bold`/`italic`/`underline`/... composed with `>>`; `withStyle` on any span |
 | Box modifiers | padding, alignment, width/height constraints, extend/shrink, aspect ratio, border, corner radius, background |
 | Layout | `column`, `columnSpaced`, `row` (`Row.fill`/`relative`/`constant`/`auto`), `table` (`Table.*`, `Cell.*`), `layers`, `decoration` |
-| Elements | `lineH`/`lineV`, `Image.file`/`bytes`/`shared`, `Svg.text`, `pageBreak`, `placeholder` |
+| Elements | `lineH`/`lineV`, `Image.file`/`bytes`/`shared` and their `With` forms, `Svg.text`, `pageBreak`, `placeholder`, `empty` |
 | Paging | `showOnce`, `skipOnce`, `repeat`, `ensureSpace`, `preventPageBreak`, `showEntire`, `showWhen`, sections and links |
 | Transforms | `rotate`, `scale`, `flipH`/`flipV`, `offsetX`/`offsetY`, `zIndex` |
 | Pages | `Page.size`/`sizeOf`/`minSize`/`maxSize`/`continuous`, margins, colour, header/content/footer, background/foreground, `rightToLeft`/`leftToRight` |
 | Document | `Meta.*` metadata (`Meta.dated` pins both dates for reproducible bytes), `Output.*` settings: `pdfA`, `pdfUA`, `compress`, `imageQuality`, `imageDpi`, `rightToLeft` |
 | Generation | `Pdf.bytes`/`save`/`write`/`show`, `Pdf.images` (PNG/JPEG/WebP per page), `Pdf.svgs`, `Pdf.companion` |
 | Setup | `License.*`, `Font.registerFile`/`registerDirectory`/`registerBytes`/`useSystemFonts`/`strict`/`registered` |
-| Interop | `raw`, `fluent` and `modify` lift fluent code; `Content.run` mounts wrapper content in raw code; `Text.raw`; any lambda is a valid part |
+| Interop | `raw`, `fluent` and `modify` lift fluent code; `Content.run` mounts wrapper content in raw code; `Text.raw`; a descriptor lambda is a valid part of `page`, `row`, `table`, `Table.columns`, `layers` and `decoration` |
 
 Every public method of the `QuestPDF.Fluent` and `QuestPDF.Companion` types (the descriptors, `Document`,
 `DocumentOperation` and the extension classes) and of the QuestPDF extension classes in other namespaces, such as
@@ -79,6 +87,7 @@ Global flags: `--quick` skips restores and cleaning,
 
 ```
 build.fsx                      the build CLI
+build/                         build helpers loaded by build.fsx, such as the API reference link rewrite
 src/QuestPDF.FSharp/           the library
 tests/QuestPDF.FSharp.Tests/   the Expecto suite
 docs/                          fsdocs pages: literate .fsx scripts evaluated by the docs build

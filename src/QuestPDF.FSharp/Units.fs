@@ -10,7 +10,6 @@ type Length =
     {
         /// <summary>The magnitude, in <c>Unit</c>.</summary>
         Value: float32
-        /// <summary>The unit of <c>Value</c>.</summary>
         Unit: Unit
     }
 
@@ -20,16 +19,37 @@ type LengthUnit =
     | LengthUnit of Unit
 
     /// <summary>The length of an integer count of the unit.</summary>
-    static member (*)(value: int, LengthUnit unit) : Length =
-        { Value = float32 value; Unit = unit }
+    static member (*)(value: int, unit: LengthUnit) : Length =
+        let (LengthUnit questPdfUnit) = unit
+
+        { Value = float32 value
+          Unit = questPdfUnit }
 
     /// <summary>The length of a count of the unit.</summary>
-    static member (*)(value: float, LengthUnit unit) : Length =
-        { Value = float32 value; Unit = unit }
+    static member (*)(value: float, unit: LengthUnit) : Length =
+        let (LengthUnit questPdfUnit) = unit
+
+        { Value = float32 value
+          Unit = questPdfUnit }
 
     /// <summary>The length of a count of the unit.</summary>
-    static member (*)(value: float32, LengthUnit unit) : Length =
-        { Value = value; Unit = unit }
+    static member (*)(value: float32, unit: LengthUnit) : Length =
+        let (LengthUnit questPdfUnit) = unit
+        { Value = value; Unit = questPdfUnit }
+
+    /// <summary>The length of an integer count of the unit.</summary>
+    static member (*)(value: int64, unit: LengthUnit) : Length =
+        let (LengthUnit questPdfUnit) = unit
+
+        { Value = float32 value
+          Unit = questPdfUnit }
+
+    /// <summary>The length of a count of the unit.</summary>
+    static member (*)(value: decimal, unit: LengthUnit) : Length =
+        let (LengthUnit questPdfUnit) = unit
+
+        { Value = float32 value
+          Unit = questPdfUnit }
 
 /// <summary>The QuestPDF units of length.</summary>
 [<AutoOpen>]
@@ -52,50 +72,57 @@ module Units =
     /// <summary>Feet.</summary>
     let feet = LengthUnit Unit.Feet
 
-/// <summary>The overload set behind <c>len</c>: bare numbers are points, and a <c>Length</c> is unchanged.</summary>
+/// <summary>
+/// The overload set behind <c>len</c>: an int, int64, float, float32 or decimal is a number of points, and a
+/// <c>Length</c> is unchanged.
+/// </summary>
 [<EditorBrowsable(EditorBrowsableState.Never)>]
 type LengthWitness =
     | LengthWitness
 
     /// <summary>An integer number of points.</summary>
-    static member ToLength(_: LengthWitness, value: int) : Length =
+    static member ToLength(witness: LengthWitness, value: int) : Length =
         { Value = float32 value
           Unit = Unit.Point }
 
     /// <summary>A number of points.</summary>
-    static member ToLength(_: LengthWitness, value: float) : Length =
+    static member ToLength(witness: LengthWitness, value: float) : Length =
         { Value = float32 value
           Unit = Unit.Point }
 
     /// <summary>A number of points.</summary>
-    static member ToLength(_: LengthWitness, value: float32) : Length =
+    static member ToLength(witness: LengthWitness, value: float32) : Length =
         { Value = value; Unit = Unit.Point }
 
-    /// <summary>The length itself.</summary>
-    static member ToLength(_: LengthWitness, value: Length) : Length = value
+    /// <summary>An integer number of points.</summary>
+    static member ToLength(witness: LengthWitness, value: int64) : Length =
+        { Value = float32 value
+          Unit = Unit.Point }
+
+    /// <summary>A number of points.</summary>
+    static member ToLength(witness: LengthWitness, value: decimal) : Length =
+        { Value = float32 value
+          Unit = Unit.Point }
+
+    static member ToLength(witness: LengthWitness, value: Length) : Length = value
 
 /// <summary>The overload set behind numeric style arguments: int, int64, float, float32 and decimal.</summary>
 [<EditorBrowsable(EditorBrowsableState.Never)>]
 type NumberWitness =
     | NumberWitness
 
-    /// <summary>An integer.</summary>
-    static member ToFloat(_: NumberWitness, value: int) : float =
+    static member ToFloat(witness: NumberWitness, value: int) : float =
         float value
 
-    /// <summary>A 64-bit integer.</summary>
-    static member ToFloat(_: NumberWitness, value: int64) : float =
+    static member ToFloat(witness: NumberWitness, value: int64) : float =
         float value
 
-    /// <summary>A float.</summary>
-    static member ToFloat(_: NumberWitness, value: float) : float = value
+    static member ToFloat(witness: NumberWitness, value: float) : float = value
 
-    /// <summary>A float32.</summary>
-    static member ToFloat(_: NumberWitness, value: float32) : float =
+    static member ToFloat(witness: NumberWitness, value: float32) : float =
         float value
 
-    /// <summary>A decimal.</summary>
-    static member ToFloat(_: NumberWitness, value: decimal) : float =
+    static member ToFloat(witness: NumberWitness, value: decimal) : float =
         float value
 
 /// <summary>Conversion of length and numeric arguments.</summary>
@@ -111,7 +138,7 @@ module LengthOps =
     let inline toFloatWith (witness: ^W) (value: ^a) : float =
         ((^W or ^a): (static member ToFloat: ^W * ^a -> float) (witness, value))
 
-    /// <summary>The length of an int, float or float32 (in points) or of a <c>Length</c>.</summary>
+    /// <summary>The length of an int, int64, float, float32 or decimal (in points) or of a <c>Length</c>.</summary>
     let inline len value =
         toLengthWith LengthWitness value
 

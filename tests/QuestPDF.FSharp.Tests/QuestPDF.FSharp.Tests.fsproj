@@ -31,6 +31,7 @@
         <Compile Include="OutputTests.fs" />
         <Compile Include="Coverage.fs" />
         <Compile Include="CoverageTests.fs" />
+        <Compile Include="../../build/QuestPdfLinks.fs" Link="Support/QuestPdfLinks.fs" />
         <Compile Include="DocsTests.fs" />
         <Compile Include="ExamplesTests.fs" />
         <Compile Include="Main.fs" />

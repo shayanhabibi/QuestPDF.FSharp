@@ -3,6 +3,15 @@ namespace QuestPDF.FSharp
 open QuestPDF.Fluent
 open QuestPDF.Infrastructure
 
+/// <summary>Binding helpers for the functions of the library.</summary>
+[<AutoOpen>]
+module internal Binding =
+    /// <summary>
+    /// The function itself. A module function whose body is <c>closure (fun ...)</c> compiles with its declared
+    /// parameters only, so its reference page shows its declared return type.
+    /// </summary>
+    let closure (f: 'a -> 'b) : 'a -> 'b = f
+
 /// <summary>A place in the layout that holds exactly one child element.</summary>
 /// <remarks>Wraps a QuestPDF <see cref="T:QuestPDF.Infrastructure.IContainer"/>.</remarks>
 [<Struct>]
@@ -45,15 +54,15 @@ module CoreOps =
 
     /// <summary>Content drawn by fluent QuestPDF code.</summary>
     let raw (draw: IContainer -> unit) : Content =
-        fun (Slot container) -> draw container
+        closure (fun (Slot container) -> draw container)
 
     /// <summary>Content drawn by a fluent QuestPDF chain; the descriptor the chain returns is discarded.</summary>
     let fluent (draw: IContainer -> 'a) : Content =
-        fun (Slot container) -> draw container |> ignore
+        closure (fun (Slot container) -> draw container |> ignore)
 
     /// <summary>A modifier of a fluent QuestPDF container chain, such as <c>fun c -&gt; c.Padding(5f)</c>.</summary>
     let modify (wrap: IContainer -> IContainer) : Modifier =
-        fun (Slot container) -> Slot (wrap container)
+        closure (fun (Slot container) -> Slot (wrap container))
 
 /// <summary>Bridges from wrapper content to fluent QuestPDF code.</summary>
 [<RequireQualifiedAccess>]
@@ -65,4 +74,4 @@ module Content =
     /// <summary>Content drawn by a QuestPDF component.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ComponentExtensions.Component``1(QuestPDF.Infrastructure.IContainer,``0)"/>.</remarks>
     let ofComponent (source: IComponent) : Content =
-        fun (Slot container) -> container.Component source
+        closure (fun (Slot container) -> container.Component source)

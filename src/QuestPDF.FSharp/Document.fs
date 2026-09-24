@@ -71,9 +71,9 @@ module Page =
     /// <summary>Sets the page size.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.Size(QuestPDF.Helpers.PageSize)"/>.</remarks>
     let size (size: PageSize) : PagePart =
-        fun page -> page.Size size
+        closure (fun page -> page.Size size)
 
-    /// <summary>Sets the page width and height; each accepts int, float, float32 (points) or Length.</summary>
+    /// <summary>Sets the page width and height; each accepts int, int64, float, float32 or decimal (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.Size(System.Single,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline sizeOf width height : PagePart =
         Measured.pageSize (len width) (len height)
@@ -81,49 +81,49 @@ module Page =
     /// <summary>Sets the smallest page size; each page shrinks to its content down to this size.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.MinSize(QuestPDF.Helpers.PageSize)"/>.</remarks>
     let minSize (size: PageSize) : PagePart =
-        fun page -> page.MinSize size
+        closure (fun page -> page.MinSize size)
 
     /// <summary>Sets the largest page size; each page grows with its content up to this size.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.MaxSize(QuestPDF.Helpers.PageSize)"/>.</remarks>
     let maxSize (size: PageSize) : PagePart =
-        fun page -> page.MaxSize size
+        closure (fun page -> page.MaxSize size)
 
-    /// <summary>Makes a single page of a width, as tall as its content; accepts int, float, float32 (points) or Length.</summary>
+    /// <summary>Makes a single page of a width, as tall as its content; accepts int, int64, float, float32 or decimal (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.ContinuousSize(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline continuous width : PagePart =
         Measured.pageContinuous (len width)
 
-    /// <summary>Sets the margin on all sides; accepts int, float, float32 (points) or Length.</summary>
+    /// <summary>Sets the margin on all sides; accepts int, int64, float, float32 or decimal (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.Margin(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline margin value : PagePart =
         Measured.pageMargin (len value)
 
-    /// <summary>Sets the top and bottom margins; accepts int, float, float32 (points) or Length.</summary>
+    /// <summary>Sets the top and bottom margins; accepts int, int64, float, float32 or decimal (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.MarginVertical(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline marginV value : PagePart =
         Measured.pageMarginV (len value)
 
-    /// <summary>Sets the left and right margins; accepts int, float, float32 (points) or Length.</summary>
+    /// <summary>Sets the left and right margins; accepts int, int64, float, float32 or decimal (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.MarginHorizontal(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline marginH value : PagePart =
         Measured.pageMarginH (len value)
 
-    /// <summary>Sets the top margin; accepts int, float, float32 (points) or Length.</summary>
+    /// <summary>Sets the top margin; accepts int, int64, float, float32 or decimal (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.MarginTop(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline marginTop value : PagePart =
         Measured.pageMarginTop (len value)
 
-    /// <summary>Sets the bottom margin; accepts int, float, float32 (points) or Length.</summary>
+    /// <summary>Sets the bottom margin; accepts int, int64, float, float32 or decimal (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.MarginBottom(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline marginBottom value : PagePart =
         Measured.pageMarginBottom (len value)
 
-    /// <summary>Sets the left margin; accepts int, float, float32 (points) or Length.</summary>
+    /// <summary>Sets the left margin; accepts int, int64, float, float32 or decimal (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.MarginLeft(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline marginLeft value : PagePart =
         Measured.pageMarginLeft (len value)
 
-    /// <summary>Sets the right margin; accepts int, float, float32 (points) or Length.</summary>
+    /// <summary>Sets the right margin; accepts int, int64, float, float32 or decimal (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.MarginRight(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline marginRight value : PagePart =
         Measured.pageMarginRight (len value)
@@ -131,45 +131,45 @@ module Page =
     /// <summary>Sets the page colour.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.PageColor(QuestPDF.Infrastructure.Color)"/>.</remarks>
     let color (color: Color) : PagePart =
-        fun page -> page.PageColor color
+        closure (fun page -> page.PageColor color)
 
     /// <summary>Sets the default text style of the page.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.DefaultTextStyle(System.Func{QuestPDF.Infrastructure.TextStyle,QuestPDF.Infrastructure.TextStyle})"/>.</remarks>
     let textStyle (style: Style) : PagePart =
-        fun page -> page.DefaultTextStyle (Func<TextStyle, TextStyle> (Style.apply style))
+        closure (fun page -> page.DefaultTextStyle (Func<TextStyle, TextStyle> (Style.apply style)))
 
     /// <summary>Lays out content from right to left.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.ContentFromRightToLeft"/>.</remarks>
-    let rightToLeft: PagePart = fun page -> page.ContentFromRightToLeft ()
+    let rightToLeft: PagePart = closure (fun page -> page.ContentFromRightToLeft ())
 
     /// <summary>Lays out content from left to right, overriding <c>Output.rightToLeft</c> for this page.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.ContentFromLeftToRight"/>.</remarks>
-    let leftToRight: PagePart = fun page -> page.ContentFromLeftToRight ()
+    let leftToRight: PagePart = closure (fun page -> page.ContentFromLeftToRight ())
 
     /// <summary>Fills the header, repeated at the top of every page.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.Header"/>.</remarks>
     let header (content: Content) : PagePart =
-        fun page -> content (Slot (page.Header ()))
+        closure (fun page -> content (Slot (page.Header ())))
 
     /// <summary>Fills the main content, which flows across pages. A page has one content slot.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.Content"/>.</remarks>
     let content (content: Content) : PagePart =
-        fun page -> content (Slot (page.Content ()))
+        closure (fun page -> content (Slot (page.Content ())))
 
     /// <summary>Fills the footer, repeated at the bottom of every page.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.Footer"/>.</remarks>
     let footer (content: Content) : PagePart =
-        fun page -> content (Slot (page.Footer ()))
+        closure (fun page -> content (Slot (page.Footer ())))
 
     /// <summary>Fills a layer behind the whole page, margins included.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.Background"/>.</remarks>
     let background (content: Content) : PagePart =
-        fun page -> content (Slot (page.Background ()))
+        closure (fun page -> content (Slot (page.Background ())))
 
     /// <summary>Fills a layer over the whole page, margins included.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.Foreground"/>.</remarks>
     let foreground (content: Content) : PagePart =
-        fun page -> content (Slot (page.Foreground ()))
+        closure (fun page -> content (Slot (page.Foreground ())))
 
 /// <summary>Document metadata, listed in <c>document [ ... ]</c>.</summary>
 /// <remarks>Each item sets a property of <see cref="T:QuestPDF.Infrastructure.DocumentMetadata"/>.</remarks>
@@ -242,8 +242,8 @@ module Output =
 
     /// <summary>Generates a PDF/A file of a conformance level, for example <c>PDFA_Conformance.PDFA_3B</c>.</summary>
     /// <remarks>
-    /// Sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.PDFA_Conformance"/>. The file carries a random
-    /// document ID, so two generations differ in those bytes.
+    /// Sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.PDFA_Conformance"/>. Two generations differ in the
+    /// bytes of a random document ID.
     /// </remarks>
     let pdfA (conformance: PDFA_Conformance) : DocumentPart =
         set (fun settings -> settings.PDFA_Conformance <- conformance)
@@ -251,8 +251,8 @@ module Output =
     /// <summary>Generates a PDF/UA-1 (accessible) file.</summary>
     /// <remarks>
     /// Sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.PDFUA_Conformance"/> to
-    /// <see cref="F:QuestPDF.Infrastructure.PDFUA_Conformance.PDFUA_1"/>. The file carries a random document ID, so
-    /// two generations differ in those bytes.
+    /// <see cref="F:QuestPDF.Infrastructure.PDFUA_Conformance.PDFUA_1"/>. Two generations differ in the bytes of a
+    /// random document ID.
     /// </remarks>
     let pdfUA: DocumentPart =
         set (fun settings -> settings.PDFUA_Conformance <- PDFUA_Conformance.PDFUA_1)
@@ -278,8 +278,7 @@ module Output =
     /// </summary>
     /// <remarks>
     /// Sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.ContentDirection"/> and calls
-    /// <see cref="M:QuestPDF.Fluent.PageDescriptor.ContentFromRightToLeft"/> on each page before its parts. In
-    /// QuestPDF 2026.9.0 the setting alone leaves the pages unchanged.
+    /// <see cref="M:QuestPDF.Fluent.PageDescriptor.ContentFromRightToLeft"/> on each page before its parts.
     /// </remarks>
     let rightToLeft: DocumentPart =
         set (fun settings -> settings.ContentDirection <- ContentDirection.RightToLeft)

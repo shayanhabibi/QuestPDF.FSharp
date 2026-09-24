@@ -1,3 +1,10 @@
+(**
+---
+category: Guide
+categoryindex: 1
+index: 4
+---
+*)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
 #r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
@@ -104,7 +111,7 @@ repeat on each page, so a table heading or a running caption stays with its cont
 let decorated =
     decoration [
         Decoration.before (background Colors.Grey.Lighten2 >> padding 4 >> styledText Style.semiBold "Before")
-        Decoration.content (padding 4 >> column [ for i in 1..3 -> text $"Body line {i}" ])
+        Decoration.content (padding 4 >> column [ for i in 1..3 do text $"Body line {i}" ])
         Decoration.after (borderTop 0.5 >> padding 4 >> styledText (Style.size 8) "After")
     ]
 

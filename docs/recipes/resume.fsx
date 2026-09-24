@@ -1,3 +1,10 @@
+(**
+---
+category: Recipes
+categoryindex: 2
+index: 2
+---
+*)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
 #r "../../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"

@@ -127,11 +127,16 @@ let tests =
               (tableWith (Table.cells [ Table.cellWith [ Cell.columnSpan 2 ] (boxed "wide") ]))
               (rawTableWith (fun t -> rawBoxed "wide" (t.Cell ())))
           test "Cell options are data" {
-              Expect.equal (Cell.columnSpan 2) (ColumnSpan 2) "columnSpan"
-              Expect.equal (Cell.rowSpan 3) (RowSpan 3) "rowSpan"
-              Expect.equal (Cell.at 1 2) (At (1, 2)) "at"
-              Expect.equal (Table.cellWith [ Cell.rowSpan 2 ] empty).Options [ RowSpan 2 ] "cellWith keeps the options"
+              Expect.equal (Cell.columnSpan 2) (CellOption.ColumnSpan 2) "columnSpan"
+              Expect.equal (Cell.rowSpan 3) (CellOption.RowSpan 3) "rowSpan"
+              Expect.equal (Cell.at 1 2) (CellOption.At (1, 2)) "at"
+              Expect.equal (Table.cellWith [ Cell.rowSpan 2 ] empty).Options [ CellOption.RowSpan 2 ] "cellWith keeps the options"
               Expect.isEmpty (Table.cell empty).Options "cell has no options"
+          }
+          test "Cell options are written through the Cell module" {
+              Expect.isTrue
+                  (typeof<CellOption>.IsDefined (typeof<RequireQualifiedAccessAttribute>, false))
+                  "the CellOption cases need the CellOption qualifier"
           }
           equivalent
               "extendLastCellsToBottom"

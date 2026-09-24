@@ -14,7 +14,7 @@ module Style =
 
     /// <summary>A style of a fluent QuestPDF text style chain, such as <c>fun s -&gt; s.Underline()</c>.</summary>
     let fluent (apply: TextStyle -> TextStyle) : Style =
-        fun (Styled style) -> Styled (apply style)
+        closure (fun (Styled style) -> Styled (apply style))
 
     /// <summary>The QuestPDF text style of a style applied to a QuestPDF text style.</summary>
     let apply (style: Style) (textStyle: TextStyle) : TextStyle =
@@ -197,7 +197,7 @@ module Style =
     /// <c>Span(...).Style(textStyle)</c> is.
     /// </summary>
     let ofTextStyle (textStyle: TextStyle) : Style =
-        fun _ -> Styled textStyle
+        closure (fun _ -> Styled textStyle)
 
     /// <summary>The QuestPDF text style of a style applied to the default style.</summary>
     /// <remarks>Starts from <see cref="P:QuestPDF.Infrastructure.TextStyle.Default"/>.</remarks>

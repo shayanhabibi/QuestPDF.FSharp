@@ -1,3 +1,10 @@
+(**
+---
+category: Recipes
+categoryindex: 2
+index: 1
+---
+*)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
 #r "../../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
@@ -39,7 +46,7 @@ type LineItem =
 
 /// Sixty lines: enough for two A4 pages.
 let lines =
-    [ for i in 1..60 ->
+    [ for i in 1..60 do
           { Name = $"Widget {i}"
             Qty = i % 4 + 1
             Price = decimal i * 1.25m } ]

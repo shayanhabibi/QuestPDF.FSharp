@@ -140,7 +140,8 @@ let mappings: (string * Mapping) list =
       "ImageDescriptor.WithRasterDpi", Wrapped [ "Image.dpi" ]
       "ImageExtensions.Image",
       Wrapped
-          [ "Image.shared"
+          [ "Image.sharedWith"
+            "Image.shared"
             "Image.bytesWith"
             "Image.bytes"
             "Image.fileWith"

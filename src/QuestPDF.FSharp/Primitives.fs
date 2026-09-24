@@ -75,14 +75,13 @@ module PageSize =
     let portrait (size: PageSize) : PageSize =
         size.Portrait ()
 
-    /// <summary>A page size of a width and a height.</summary>
+    /// <summary>
+    /// A page size of a width and a height; each accepts int, int64, float, float32 or decimal (points) or Length.
+    /// </summary>
     /// <remarks>
     /// When both lengths share a unit, QuestPDF converts them; otherwise both are converted with
     /// <see cref="M:QuestPDF.FSharp.LengthModule.points(QuestPDF.FSharp.Length)"/>. Maps to the
     /// <see cref="T:QuestPDF.Helpers.PageSize"/> constructor.
     /// </remarks>
-    let custom (width: Length) (height: Length) : PageSize =
-        if width.Unit = height.Unit then
-            QuestPDF.Helpers.PageSize (width.Value, height.Value, width.Unit)
-        else
-            QuestPDF.Helpers.PageSize (Length.points width, Length.points height, Unit.Point)
+    let inline custom width height : PageSize =
+        Measured.pageSizeOf (len width) (len height)

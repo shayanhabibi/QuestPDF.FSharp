@@ -1,3 +1,10 @@
+(**
+---
+category: Guide
+categoryindex: 1
+index: 6
+---
+*)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
 #r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
@@ -42,7 +49,7 @@ A page takes one of each slot: two `Page.content` parts fail at generation with 
 
 open QuestPDF.FSharp
 
-let paragraphs = [ for i in 1..14 -> text $"Paragraph {i}: some content that flows from page to page." ]
+let paragraphs = [ for i in 1..14 do text $"Paragraph {i}: some content that flows from page to page." ]
 
 let report =
     document [
@@ -61,6 +68,25 @@ render report
 (*** include-it-raw ***)
 
 (**
+`Page.background` and `Page.foreground` take content that covers the whole page, margins included. `Page.color` is
+a flat page colour; a background made of modifiers only ends in `empty`, the content that draws nothing:
+*)
+
+let framed =
+    document [
+        page [
+            Page.sizeOf 200 70
+            Page.margin 14
+            Page.background (padding 5 >> border 1 >> borderColor Colors.Amber.Darken2 >> background Colors.Amber.Lighten5 >> empty)
+            Page.content (text "A page with a framed background.")
+        ]
+    ]
+
+(*** hide ***)
+render framed
+(*** include-it-raw ***)
+
+(**
 ## Content across pages
 
 These modifiers control how content behaves at page boundaries:
@@ -70,7 +96,7 @@ These modifiers control how content behaves at page boundaries:
 | `showOnce` | draws the content on the first page it appears on only |
 | `skipOnce` | skips the content on the first page it appears on |
 | `repeat` | repeats the content on every page its container spans |
-| `ensureSpace h` | starts the content on a new page unless `h` points are left |
+| `ensureSpace h` | moves the content to the next page when less than `h` is left and the content does not fit whole; `h` is a length |
 | `preventPageBreak`, `showEntire` | keeps the content together on one page |
 | `showWhen predicate` | draws the content when the predicate holds for the page |
 | `showIf condition` | draws the content when the condition holds |

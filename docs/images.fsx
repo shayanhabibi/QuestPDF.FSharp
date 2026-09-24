@@ -1,3 +1,10 @@
+(**
+---
+category: Guide
+categoryindex: 1
+index: 7
+---
+*)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
 #r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
@@ -59,8 +66,27 @@ render imageDemo
 (*** include-it-raw ***)
 
 (**
-`Image.shared` draws a `QuestPDF.Infrastructure.Image` loaded once, for an image repeated on many pages. The name
-`Image` is the wrapper module; the QuestPDF class keeps its full name.
+`Image.shared` draws a `QuestPDF.Infrastructure.Image` loaded once, for an image repeated on many pages, and
+`Image.sharedWith` takes an option first, like `Image.fileWith`. The name `Image` is the wrapper module; the QuestPDF
+class keeps its full name. The caller disposes of a shared image after the last generation.
+*)
+
+let sharedLogo = QuestPDF.Infrastructure.Image.FromBinaryData logo
+
+let repeated =
+    row [
+        Row.spacing 10
+        Row.constant 60 (Image.shared sharedLogo)
+        Row.constant 60 (height 20 >> Image.sharedWith Image.fitUnproportionally sharedLogo)
+    ]
+
+let sharedDemo = document [ page [ Page.sizeOf 170 50; Page.margin 10; Page.content repeated ] ]
+
+(*** hide ***)
+render sharedDemo
+(*** include-it-raw ***)
+
+(**
 
 ## SVG
 
@@ -86,7 +112,7 @@ render svgDemo
 ## Lines
 
 `lineH thickness color` and `lineV thickness color` draw a horizontal or vertical line; `lineHWith` and
-`lineVWith` take QuestPDF's line options, for example a dash pattern.
+`lineVWith` take QuestPDF's line options, for example a dash pattern, in the place of the colour.
 *)
 
 let lines =

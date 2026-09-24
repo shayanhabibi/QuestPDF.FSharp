@@ -1,3 +1,10 @@
+(**
+---
+category: Guide
+categoryindex: 1
+index: 9
+---
+*)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
 #r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
@@ -24,8 +31,8 @@ let render (document: QuestPDF.Infrastructure.IDocument) =
 
 ## Fluent code inside wrapper content
 
-Raw interop code opens `QuestPDF.Fluent` and `QuestPDF.Infrastructure` first and `QuestPDF.FSharp` last, so the
-wrapper names win.
+Raw interop code opens `QuestPDF.Fluent` and `QuestPDF.Infrastructure` beside `QuestPDF.FSharp`, in any order: the
+wrapper modules and the QuestPDF types that share a name, such as `Image`, resolve either way.
 *)
 
 open QuestPDF.Fluent
@@ -48,8 +55,12 @@ render mixedDemo
 (*** include-it-raw ***)
 
 (**
-Every part list accepts a lambda over its QuestPDF descriptor: `PageDescriptor -> unit` in a page,
-`RowDescriptor -> unit` in a row, `TableDescriptor -> unit` in a table, and so on.
+The lists of `page`, `row`, `table`, `Table.columns`, `layers` and `decoration` accept a lambda over their QuestPDF
+descriptor: `PageDescriptor -> unit` in a page, `RowDescriptor -> unit` in a row, `TableDescriptor -> unit` in a
+table, `TableColumnsDefinitionDescriptor -> unit` in `Table.columns`, `LayersDescriptor -> unit` in layers and
+`DecorationDescriptor -> unit` in a decoration. The other lists take their own parts only: a `richText` list takes
+fluent code through `Text.raw`, a `column` takes it through `raw` or `fluent`, `Table.header`, `Table.footer` and
+`Table.cells` take `Table.cell` values, and a `document` takes `page`, `Meta.*` and `Output.*` items.
 
 `Measured.*` holds the non-inline implementation behind every length or number shim, for callers that already have
 a `Length`: `Measured.padding (5 * mm)` is `padding (5 * mm)`.

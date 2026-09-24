@@ -43,6 +43,12 @@ let lengths =
           test "len of int is points" { Expect.equal (len 10) { Value = 10f; Unit = Unit.Point } "len 10" }
           test "len of float is points" { Expect.equal (len 2.5) { Value = 2.5f; Unit = Unit.Point } "len 2.5" }
           test "len of float32 is points" { Expect.equal (len 2.5f) { Value = 2.5f; Unit = Unit.Point } "len 2.5f" }
+          test "len of int64 is points" { Expect.equal (len 10L) { Value = 10f; Unit = Unit.Point } "len 10L" }
+          test "len of decimal is points" { Expect.equal (len 2.5m) { Value = 2.5f; Unit = Unit.Point } "len 2.5m" }
+          test "int64 and decimal times a unit" {
+              Expect.equal (3L * mm) { Value = 3f; Unit = Unit.Millimetre } "3L * mm"
+              Expect.equal (1.5m * cm) { Value = 1.5f; Unit = Unit.Centimetre } "1.5m * cm"
+          }
           test "len of Length is unchanged" { Expect.equal (len (5 * mm)) (5 * mm) "len (5 * mm)" }
           test "points of 2 cm and 20 mm match QuestPDF" {
               Expect.equal (Length.points (2 * cm)) 56.692913f "2 cm"
@@ -80,6 +86,13 @@ let pageSizes =
           }
           test "custom with one unit keeps the unit" {
               Expect.equal (dims (PageSize.custom (10 * cm) (15 * cm))) (dims (PageSize (10f, 15f, Unit.Centimetre))) "cm"
+          }
+          test "custom takes bare numbers as points" {
+              Expect.equal (dims (PageSize.custom 300 400.5)) (dims (PageSize (300f, 400.5f, Unit.Point))) "points"
+          }
+          test "custom with a bare number and a length converts to points" {
+              let expected = PageSize (300f, Length.points (10 * cm))
+              Expect.equal (dims (PageSize.custom 300 (10 * cm))) (dims expected) "mixed"
           }
           test "custom with mixed units converts to points" {
               let expected = PageSize (Length.points (100 * mm), Length.points (4 * inch))

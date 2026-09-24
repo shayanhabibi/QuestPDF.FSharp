@@ -1,3 +1,10 @@
+(**
+---
+category: Guide
+categoryindex: 1
+index: 1
+---
+*)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
 #r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
@@ -44,6 +51,14 @@ let badge = padding 10 >> background Colors.Blue.Lighten4 >> text "A badge"
 `badge` needs no type annotation: `Slot` is a concrete struct, so the value is not generic and F# accepts it at
 the top level of a module.
 
+A chain of modifiers with nothing to draw ends in `empty`, the content that leaves its slot empty: a sized, coloured
+box is `width 40 >> height 20 >> background c >> empty`. Without `empty` the chain is still a `Modifier`, and a
+list or a slot that takes content rejects it.
+*)
+
+let swatch = width 40 >> height 20 >> background Colors.Teal.Lighten2 >> empty
+
+(**
 ## Modifier order is layout order
 
 Each modifier wraps everything after it. Padding before the background leaves a white margin around the blue box;
@@ -70,7 +85,9 @@ render orderDemo
 ## Parts lists
 
 Containers take lists: `column`, `row`, `table`, `layers`, `decoration`, `richText`, `page` and `document`.
-List expressions work inside them, so data drives the layout without builder syntax:
+List expressions work inside them, so data drives the layout without builder syntax. Loop with `for ... do`, never
+`for ... ->`, in a list with other items: `->` makes F# discard every item of the list other than the loop, with
+only a warning (FS0193).
 *)
 
 let items = [ "Apples", 3; "Pears", 0; "Plums", 12 ]
@@ -107,12 +124,29 @@ let heading (title: string) =
 
 let section title body = column [ heading title; paddingTop 4 >> text body ]
 
+(**
+A component that passes a parameter on to a length or a number, such as `padding` or `Style.size`, is `inline`, so it
+accepts every type they accept: `framed 4`, `framed 2.5` and `framed (2 * mm)` all work. Without `inline` the
+definition fails with FS0071 (see [Gotchas](gotchas.html)). A component can take a `Length` instead, and callers then
+pass `len 4` or `4 * mm`.
+*)
+
+let inline framed pad (label: string) = padding pad >> border 1 >> text label
+
+let framedWith (pad: Length) (label: string) = padding pad >> border 1 >> text label
+
 let componentDemo =
     document [
         page [
-            Page.sizeOf 300 130
+            Page.sizeOf 300 160
             Page.margin 10
-            Page.content (columnSpaced 8 [ section "First" "Some text."; section "Second" "More text." ])
+            Page.content (
+                columnSpaced 8 [
+                    section "First" "Some text."
+                    section "Second" "More text."
+                    row [ Row.spacing 4; Row.auto (framed 2 "framed 2"); Row.auto (framedWith (2 * mm) "framedWith (2 * mm)"); Row.auto swatch ]
+                ]
+            )
         ]
     ]
 

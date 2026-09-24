@@ -27,7 +27,7 @@ module TextElements =
     /// <summary>A text block in the inherited style.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextExtensions.Text(QuestPDF.Infrastructure.IContainer,System.String)"/>.</remarks>
     let text (value: string) : Content =
-        fun (Slot container) -> container.Text value |> ignore
+        closure (fun (Slot container) -> container.Text value |> ignore)
 
     /// <summary>A text block in a style.</summary>
     /// <remarks>
@@ -35,17 +35,17 @@ module TextElements =
     /// followed by <c>Style</c> on the returned descriptor.
     /// </remarks>
     let styledText (style: Style) (value: string) : Content =
-        fun (Slot container) ->
+        closure (fun (Slot container) ->
             container.Text(value).Style (Style.toTextStyle style)
-            |> ignore
+            |> ignore)
 
     /// <summary>A text block of spans, page numbers and block settings, in list order.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextExtensions.Text(QuestPDF.Infrastructure.IContainer,System.Action{QuestPDF.Fluent.TextDescriptor})"/>.</remarks>
     let richText (parts: TextPart list) : Content =
-        fun (Slot container) ->
+        closure (fun (Slot container) ->
             container.Text (fun descriptor ->
                 for part in parts do
-                    part.Draw { Styles = []; Format = None } descriptor)
+                    part.Draw { Styles = []; Format = None } descriptor))
 
 /// <summary>The parts of a <c>richText</c> block.</summary>
 [<RequireQualifiedAccess>]
@@ -212,12 +212,12 @@ module Text =
     let raw (apply: TextDescriptor -> unit) : TextPart =
         block apply
 
-    /// <summary>Sets the space between paragraphs of the block; accepts int, float, float32 (points) or Length.</summary>
+    /// <summary>Sets the space between paragraphs of the block; accepts int, int64, float, float32 or decimal (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.ParagraphSpacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline paragraphSpacing value : TextPart =
         raw (Measured.textParagraphSpacing (len value))
 
-    /// <summary>Indents the first line of each paragraph of the block; accepts int, float, float32 (points) or Length.</summary>
+    /// <summary>Indents the first line of each paragraph of the block; accepts int, int64, float, float32 or decimal (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.ParagraphFirstLineIndentation(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline firstLineIndent value : TextPart =
         raw (Measured.textFirstLineIndent (len value))

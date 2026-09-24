@@ -128,6 +128,26 @@ let tests =
               Expect.equal (firstPage (ensureSpace 200)) "top" "the lines start on page 2"
               Expect.stringStarts (firstPage id) "topline 1" "without ensureSpace the lines start on page 1"
           }
+          test "ensureSpace compares its height with the space left" {
+              configure ()
+
+              // About 75 pt remain below the 480 pt block; the default height of EnsureSpace is 150 pt.
+              let startsOnFirstPage (modifier: Modifier) =
+                  pageTexts (Pdf.bytes (wrapContent (column [ height 480 >> text "top"; modifier >> longColumn ])))
+                  |> List.head
+                  |> fun page -> page.StartsWith "topline 1"
+
+              Expect.isTrue (startsOnFirstPage (ensureSpace 60)) "60 pt fit: the lines start on page 1"
+              Expect.isFalse (startsOnFirstPage (ensureSpace 90)) "90 pt do not fit: the lines start on page 2"
+              Expect.isTrue (startsOnFirstPage (ensureSpace (2 * cm))) "2 cm fit"
+              Expect.isFalse (startsOnFirstPage (ensureSpace (1.25 * inch))) "1.25 inch do not fit"
+          }
+          equivalent "ensureSpace Length" (column [ text "a"; ensureSpace (2 * cm) >> text "b" ]) (fun c ->
+              c.Column (fun col ->
+                  col.Item().Text ("a") |> ignore
+
+                  col.Item().EnsureSpace(Length.points (2 * cm)).Text ("b")
+                  |> ignore))
           test "ensureSpace keeps content that fits on the current page" {
               configure ()
 

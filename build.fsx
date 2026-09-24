@@ -2,6 +2,7 @@
 #r "nuget: Partas.TypeProvider.BuildHelper, 0.2.5"
 #r "nuget: Fake.IO.FileSystem"
 #r "nuget: Str"
+#load "build/QuestPdfLinks.fs"
 
 open Partas.Build
 open Partas.TypeProvider.BuildHelper
@@ -208,6 +209,21 @@ module Stage =
                 )
         }
     }
+    /// Replaces the links fsdocs makes from QuestPDF crefs, which point at missing Microsoft Learn pages, with their
+    /// text.
+    let unlinkQuestPdf = input {
+        let! watch = Options.watch
+        return stage "unlink QuestPDF members" {
+            when' (not watch)
+            run (async {
+                for page in !! "output/reference/*.html" do
+                    let html = System.IO.File.ReadAllText page
+                    let unlinked = QuestPDF.FSharp.Build.QuestPdfLinks.unlink html
+                    if unlinked <> html then
+                        System.IO.File.WriteAllText (page, unlinked)
+            })
+        }
+    }
     /// Fails when a page evaluated with an error: fsdocs --strict stops on compile errors only, and a snippet that
     /// throws leaves "No value returned by any evaluator" in the page.
     let checkDocs = input {
@@ -252,6 +268,7 @@ exit <| rootCommandOfScript {
         Stage.restore
         Stage.build
         Stage.generateDocs
+        Stage.unlinkQuestPdf
         Stage.checkDocs
     }
     command "test" {

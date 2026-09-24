@@ -40,6 +40,21 @@ open QuestPDF.FSharp
 License.community ()
 
 (**
+### In F# Interactive and scripts
+
+QuestPDF's default font, Lato, is copied next to a compiled application only. A script run by `dotnet fsi`, or code
+sent to F# Interactive, references the package with `#r "nuget: QuestPDF.FSharp"` and registers a font before it
+generates, or generation raises `DocumentDrawingException`:
+
+```fsharp
+open QuestPDF.FSharp
+
+License.community ()
+Font.registerDirectory "path/to/fonts"   // a folder of .ttf or .otf files; Font.registerFile takes one file
+```
+
+Text in a family other than Lato names it with `Style.family`; [Text](text.html#Fonts) shows it.
+
 ## Hello world
 *)
 
@@ -66,10 +81,10 @@ render hello
 1. **`Content = Slot -> unit`** fills a slot. **`Modifier = Slot -> Slot`** wraps it. `padding 10 >> background c
    >> text "x"` is a `Content`, read outer to inner as in the fluent chain.
 2. **`Slot` is a one-field struct over `IContainer`**, so a top-level `let heading = text "hi"` needs no annotation.
-3. **Containers take lists of parts.** `for`, `if` and `match` work inside the list, and any lambda over the
-   descriptor is also a valid part.
-4. **Numbers are bare.** A length accepts `int`, `float`, `float32` (points) or a `Length` such as `5 * mm`. The
-   unit passes through to QuestPDF unconverted.
+3. **Containers take lists of parts.** `for ... do`, `if` and `match` work inside the list. In `page`, `row`,
+   `table`, `Table.columns`, `layers` and `decoration`, a lambda over the QuestPDF descriptor is also a valid part.
+4. **Numbers are bare.** A length accepts `int`, `int64`, `float`, `float32` or `decimal` (points) or a `Length`
+   such as `5 * mm`. The unit passes through to QuestPDF unconverted.
 5. **`inline` functions are one-line shims** over the non-inline `Measured.*` functions.
 6. **One open.** `open QuestPDF.FSharp` brings in the elements, modifiers and `Colors`/`PageSizes`/`Color`/`PageSize`.
 7. **No hidden global state.** The license, fonts and settings are explicit calls.
@@ -79,7 +94,7 @@ render hello
 
 - [Concepts](concepts.html): slots, content, modifiers and parts lists
 - [Lengths and colours](lengths-and-colors.html): bare numbers, units, `Colors` and `PageSizes`
-- [Text](text.html): plain, styled and rich text, links and page numbers
+- [Text](text.html): plain, styled and rich text, links, page numbers and fonts
 - [Layout](layout.html): columns, rows, layers and decorations
 - [Tables](tables.html): columns, headers and footers, spans
 - [Paging](paging.html): page setup, headers and footers, content across pages

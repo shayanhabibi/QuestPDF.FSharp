@@ -26,6 +26,28 @@ let private restoringSettings (body: unit -> unit) () =
         QuestPDF.Settings.ThrowOnMissingFontFamilies <- families
         QuestPDF.Settings.ThrowOnMissingTextGlyphs <- glyphs
 
+/// Lato Regular from the repository fonts, renamed to a family QuestPDF does not ship. Each test registers its own
+/// family, so the process-wide font registrations of one test leave the others unaffected.
+let private renamedLato (family: string) : byte[] =
+    let path =
+        Path.Combine (__SOURCE_DIRECTORY__, "..", "..", "fonts", "Lato-Regular.ttf")
+
+    let replace (find: byte[]) (by: byte[]) (data: byte[]) =
+        let data = Array.copy data
+
+        for i in 0 .. data.Length - find.Length do
+            if data.AsSpan(i, find.Length).SequenceEqual (ReadOnlySpan find) then
+                Array.blit by 0 data i by.Length
+
+        data
+
+    File.ReadAllBytes path
+    |> replace (Text.Encoding.BigEndianUnicode.GetBytes "Lato") (Text.Encoding.BigEndianUnicode.GetBytes family)
+    |> replace (Text.Encoding.ASCII.GetBytes "Lato") (Text.Encoding.ASCII.GetBytes family)
+
+let private registeredFamilies () =
+    Font.registered () |> List.map _.FamilyName
+
 let generation =
     testList
         "Pdf"
@@ -97,6 +119,37 @@ let settings =
               Expect.isTrue QuestPDF.Settings.UseSystemFonts "on"
               Font.useSystemFonts false
               Expect.isFalse QuestPDF.Settings.UseSystemFonts "off")
+          test "Font.registerBytes registers the family of the data" {
+              Font.registerBytes (renamedLato "Lat1")
+              Expect.contains (registeredFamilies ()) "Lat1" "the renamed family"
+          }
+          test "Font.registerFile registers the family of the file" {
+              let path = Path.Combine (Path.GetTempPath (), $"{Guid.NewGuid ()}.ttf")
+
+              try
+                  File.WriteAllBytes (path, renamedLato "Lat2")
+                  Font.registerFile path
+                  Expect.contains (registeredFamilies ()) "Lat2" "the renamed family"
+              finally
+                  File.Delete path
+          }
+          test "Font.registerDirectory registers the fonts of the directory" {
+              let directory =
+                  Directory.CreateDirectory (Path.Combine (Path.GetTempPath (), string (Guid.NewGuid ())))
+
+              try
+                  File.WriteAllBytes (Path.Combine (directory.FullName, "font.ttf"), renamedLato "Lat3")
+                  Font.registerDirectory directory.FullName
+                  Expect.contains (registeredFamilies ()) "Lat3" "the renamed family"
+              finally
+                  directory.Delete true
+          }
+          test "a registered family renders under Font.strict" {
+              configure ()
+              Font.registerBytes (renamedLato "Lat4")
+              let pdf = Pdf.bytes (wrapContent (styledText (Style.family "Lat4") "renamed"))
+              Expect.equal (pageTexts pdf) [ "renamed" ] "the text is drawn in the registered family"
+          }
           testCase "Font.registered lists Lato"
           <| fun () -> Expect.contains (Font.registered () |> List.map _.FamilyName) "Lato" "the default font" ]
 
