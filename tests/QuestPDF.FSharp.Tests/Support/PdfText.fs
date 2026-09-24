@@ -24,3 +24,13 @@ let hyperlinks (pdf: byte[]) : (int * string * string) list =
 let wordsInOrder (pdf: byte[]) (page: int) : string list =
     use document = PdfDocument.Open pdf
     [ for word in document.GetPage(page).GetWords () -> word.Text ]
+
+/// Every internal link as (1-based source page, 1-based destination page).
+let internalLinks (pdf: byte[]) : (int * int) list =
+    use document = PdfDocument.Open pdf
+
+    [ for page in document.GetPages () do
+          for annotation in page.GetAnnotations () do
+              match annotation.Action with
+              | :? Actions.GoToAction as goTo -> page.Number, goTo.Destination.PageNumber
+              | _ -> () ]

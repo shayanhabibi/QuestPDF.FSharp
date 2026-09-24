@@ -22,6 +22,21 @@ module Measured =
     let lineHeight (factor: float) : Styled -> Styled =
         fun (Styled style) -> Styled (style.LineHeight (Nullable (float32 factor)))
 
+    /// <summary>Implements <c>Style.decorationThickness</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextStyleExtensions.DecorationThickness(QuestPDF.Infrastructure.TextStyle,System.Single)"/>.</remarks>
+    let decorationThickness (factor: float) : Styled -> Styled =
+        fun (Styled style) -> Styled (style.DecorationThickness (float32 factor))
+
+    /// <summary>Implements <c>Style.letterSpacing</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextStyleExtensions.LetterSpacing(QuestPDF.Infrastructure.TextStyle,System.Single)"/>.</remarks>
+    let letterSpacing (factor: float) : Styled -> Styled =
+        fun (Styled style) -> Styled (style.LetterSpacing (float32 factor))
+
+    /// <summary>Implements <c>Style.wordSpacing</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextStyleExtensions.WordSpacing(QuestPDF.Infrastructure.TextStyle,System.Single)"/>.</remarks>
+    let wordSpacing (factor: float) : Styled -> Styled =
+        fun (Styled style) -> Styled (style.WordSpacing (float32 factor))
+
     /// <summary>Implements <c>padding</c>.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PaddingExtensions.Padding(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let padding (length: Length) : Modifier =
@@ -56,6 +71,139 @@ module Measured =
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PaddingExtensions.PaddingRight(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let paddingRight (length: Length) : Modifier =
         fun (Slot container) -> Slot (container.PaddingRight (length.Value, length.Unit))
+
+    /// <summary>Implements <c>width</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ConstrainedExtensions.Width(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let width (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.Width (length.Value, length.Unit))
+
+    /// <summary>Implements <c>minWidth</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ConstrainedExtensions.MinWidth(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let minWidth (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.MinWidth (length.Value, length.Unit))
+
+    /// <summary>Implements <c>maxWidth</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ConstrainedExtensions.MaxWidth(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let maxWidth (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.MaxWidth (length.Value, length.Unit))
+
+    /// <summary>Implements <c>height</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ConstrainedExtensions.Height(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let height (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.Height (length.Value, length.Unit))
+
+    /// <summary>Implements <c>minHeight</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ConstrainedExtensions.MinHeight(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let minHeight (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.MinHeight (length.Value, length.Unit))
+
+    /// <summary>Implements <c>maxHeight</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ConstrainedExtensions.MaxHeight(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let maxHeight (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.MaxHeight (length.Value, length.Unit))
+
+    /// <summary>Implements <c>border</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.Border(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let border (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.Border (length.Value, length.Unit))
+
+    /// <summary>Implements <c>borderV</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.BorderVertical(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let borderV (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.BorderVertical (length.Value, length.Unit))
+
+    /// <summary>Implements <c>borderH</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.BorderHorizontal(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let borderH (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.BorderHorizontal (length.Value, length.Unit))
+
+    /// <summary>Implements <c>borderTop</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.BorderTop(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let borderTop (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.BorderTop (length.Value, length.Unit))
+
+    /// <summary>Implements <c>borderBottom</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.BorderBottom(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let borderBottom (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.BorderBottom (length.Value, length.Unit))
+
+    /// <summary>Implements <c>borderLeft</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.BorderLeft(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let borderLeft (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.BorderLeft (length.Value, length.Unit))
+
+    /// <summary>Implements <c>borderRight</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.BorderRight(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let borderRight (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.BorderRight (length.Value, length.Unit))
+
+    /// <summary>Implements <c>cornerRadius</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.CornerRadius(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let cornerRadius (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.CornerRadius (length.Value, length.Unit))
+
+    /// <summary>Implements <c>cornerRadiusTopLeft</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.CornerRadiusTopLeft(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let cornerRadiusTopLeft (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.CornerRadiusTopLeft (length.Value, length.Unit))
+
+    /// <summary>Implements <c>cornerRadiusTopRight</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.CornerRadiusTopRight(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let cornerRadiusTopRight (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.CornerRadiusTopRight (length.Value, length.Unit))
+
+    /// <summary>Implements <c>cornerRadiusBottomLeft</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.CornerRadiusBottomLeft(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let cornerRadiusBottomLeft (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.CornerRadiusBottomLeft (length.Value, length.Unit))
+
+    /// <summary>Implements <c>cornerRadiusBottomRight</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.CornerRadiusBottomRight(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let cornerRadiusBottomRight (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.CornerRadiusBottomRight (length.Value, length.Unit))
+
+    /// <summary>Implements <c>aspectRatio</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.AspectRatio(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.AspectRatioOption)"/>.</remarks>
+    let aspectRatio (ratio: float) : Modifier =
+        fun (Slot container) -> Slot (container.AspectRatio (float32 ratio))
+
+    /// <summary>Implements <c>columnSpaced</c>.</summary>
+    /// <remarks>
+    /// Maps to <see cref="M:QuestPDF.Fluent.ColumnDescriptor.Spacing(System.Single,QuestPDF.Infrastructure.Unit)"/>
+    /// followed by <see cref="M:QuestPDF.Fluent.ColumnDescriptor.Item"/> per item.
+    /// </remarks>
+    let columnSpaced (spacing: Length) (items: Content list) : Content =
+        fun (Slot container) ->
+            container.Column (fun column ->
+                column.Spacing (spacing.Value, spacing.Unit)
+
+                for item in items do
+                    item (Slot (column.Item ())))
+
+    /// <summary>Implements <c>Row.relative</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.RowDescriptor.RelativeItem(System.Single)"/>.</remarks>
+    let rowRelative (weight: float) (content: Content) : RowPart =
+        fun row -> content (Slot (row.RelativeItem (float32 weight)))
+
+    /// <summary>Implements <c>Row.constant</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.RowDescriptor.ConstantItem(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let rowConstant (width: Length) (content: Content) : RowPart =
+        fun row -> content (Slot (row.ConstantItem (width.Value, width.Unit)))
+
+    /// <summary>Implements <c>Row.spacing</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.RowDescriptor.Spacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let rowSpacing (spacing: Length) : RowPart =
+        fun row -> row.Spacing (spacing.Value, spacing.Unit)
+
+    /// <summary>Implements <c>Text.paragraphSpacing</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.ParagraphSpacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let textParagraphSpacing (spacing: Length) : TextDescriptor -> unit =
+        fun descriptor -> descriptor.ParagraphSpacing (spacing.Value, spacing.Unit)
+
+    /// <summary>Implements <c>Text.firstLineIndent</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.ParagraphFirstLineIndentation(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let textFirstLineIndent (indent: Length) : TextDescriptor -> unit =
+        fun descriptor -> descriptor.ParagraphFirstLineIndentation (indent.Value, indent.Unit)
 
     /// <summary>Implements <c>Page.sizeOf</c>. Lengths in different units are both converted to points.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.Size(System.Single,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>

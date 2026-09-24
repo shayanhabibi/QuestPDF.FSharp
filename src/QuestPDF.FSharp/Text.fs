@@ -4,10 +4,18 @@ open System
 open QuestPDF.Fluent
 open QuestPDF.Infrastructure
 
+/// <summary>The settings a span inherits from the <c>Text.withStyle</c> and <c>Text.formatPage</c> calls around it.</summary>
+type internal SpanSettings =
+    { Style: Style option
+      Format: PageNumberFormatter option }
+
 /// <summary>An element of a <c>richText</c> block: a span, a page number, or a block setting.</summary>
-/// <remarks>A span carries the styles applied by <c>Text.withStyle</c>; block settings ignore them.</remarks>
+/// <remarks>
+/// A span carries the styles applied by <c>Text.withStyle</c>, and a page number also carries the formatter applied by
+/// <c>Text.formatPage</c>; block settings ignore both.
+/// </remarks>
 [<Sealed>]
-type TextPart internal (draw: Style option -> TextDescriptor -> unit) =
+type TextPart internal (draw: SpanSettings -> TextDescriptor -> unit) =
     member internal _.Draw = draw
 
 /// <summary>Text content.</summary>
@@ -34,15 +42,28 @@ module TextElements =
         fun (Slot container) ->
             container.Text (fun descriptor ->
                 for part in parts do
-                    part.Draw None descriptor)
+                    part.Draw { Style = None; Format = None } descriptor)
 
 /// <summary>The parts of a <c>richText</c> block.</summary>
 [<RequireQualifiedAccess>]
 module Text =
-    let private applyStyle (style: Style option) (span: TextSpanDescriptor) =
-        match style with
+    let private applyStyle (settings: SpanSettings) (span: TextSpanDescriptor) =
+        match settings.Style with
         | Some style -> span.Style (Style.toTextStyle style) |> ignore
         | None -> ()
+
+    let private spanOf (create: TextDescriptor -> TextSpanDescriptor) =
+        TextPart (fun settings descriptor -> applyStyle settings (create descriptor))
+
+    let private pageNumberOf (create: TextDescriptor -> TextPageNumberDescriptor) =
+        TextPart (fun settings descriptor ->
+            let pageNumber = create descriptor
+
+            match settings.Format with
+            | Some format -> pageNumber.Format format |> ignore
+            | None -> ()
+
+            applyStyle settings pageNumber)
 
     let private block (apply: TextDescriptor -> unit) =
         TextPart (fun _ descriptor -> apply descriptor)
@@ -50,18 +71,18 @@ module Text =
     /// <summary>A span of text.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.Span(System.String)"/>.</remarks>
     let span (value: string) : TextPart =
-        TextPart (fun style descriptor -> applyStyle style (descriptor.Span value))
+        spanOf (fun descriptor -> descriptor.Span value)
 
     /// <summary>Applies a style to a span or a page number. With nested calls, the outer style applies first and the inner style overrides it.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextSpanDescriptorExtensions.Style``1(``0,QuestPDF.Infrastructure.TextStyle)"/> on the span descriptor.</remarks>
     let withStyle (style: Style) (part: TextPart) : TextPart =
-        TextPart (fun outer descriptor ->
+        TextPart (fun settings descriptor ->
             let combined =
-                match outer with
+                match settings.Style with
                 | Some outer -> outer >> style
                 | None -> style
 
-            part.Draw (Some combined) descriptor)
+            part.Draw { settings with Style = Some combined } descriptor)
 
     /// <summary>A span of text in a style; equal to <c>span value |&gt; withStyle style</c>.</summary>
     /// <remarks>
@@ -74,15 +95,14 @@ module Text =
     /// <summary>The number of the current page.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.CurrentPageNumber"/>.</remarks>
     let pageNumber: TextPart =
-        TextPart (fun style descriptor -> applyStyle style (descriptor.CurrentPageNumber ()))
+        pageNumberOf (fun descriptor -> descriptor.CurrentPageNumber ())
 
     /// <summary>The number of pages in the document.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.TotalPages"/>.</remarks>
-    let totalPages: TextPart =
-        TextPart (fun style descriptor -> applyStyle style (descriptor.TotalPages ()))
+    let totalPages: TextPart = pageNumberOf (fun descriptor -> descriptor.TotalPages ())
 
     /// <summary>A line break within the paragraph.</summary>
-    /// <remarks>A span of <c>"\n"</c>. <see cref="M:QuestPDF.Fluent.TextDescriptor.EmptyLine"/> adds a blank line instead.</remarks>
+    /// <remarks>A span of <c>"\n"</c>. the span <see cref="M:QuestPDF.Fluent.TextDescriptor.EmptyLine"/> also adds.</remarks>
     let lineBreak: TextPart = span "\n"
 
     /// <summary>Sets the default style of every span in the block.</summary>
@@ -113,3 +133,81 @@ module Text =
     /// <summary>Justifies the block.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.Justify"/>.</remarks>
     let justify: TextPart = block (fun descriptor -> descriptor.Justify ())
+
+    /// <summary>A span that links to a URL.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.Hyperlink(System.String,System.String)"/>.</remarks>
+    let link (label: string) (url: string) : TextPart =
+        spanOf (fun descriptor -> descriptor.Hyperlink (label, url))
+
+    /// <summary>A span that links to a section marked with the <c>section</c> modifier.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.SectionLink(System.String,System.String)"/>.</remarks>
+    let sectionLink (label: string) (section: string) : TextPart =
+        spanOf (fun descriptor -> descriptor.SectionLink (label, section))
+
+    /// <summary>A span followed by a line break.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.Line(System.String)"/>.</remarks>
+    let line (value: string) : TextPart =
+        spanOf (fun descriptor -> descriptor.Line value)
+
+    /// <summary>A line break, equal to <c>lineBreak</c>; after a <c>line</c> or a line break it leaves a blank line.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.EmptyLine"/>.</remarks>
+    let emptyLine: TextPart = spanOf (fun descriptor -> descriptor.EmptyLine ())
+
+    /// <summary>The number of the current page, counted from the first page of a section.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.PageNumberWithinSection(System.String)"/>.</remarks>
+    let sectionPageNumber (section: string) : TextPart =
+        pageNumberOf (fun descriptor -> descriptor.PageNumberWithinSection section)
+
+    /// <summary>The number of pages a section spans.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.TotalPagesWithinSection(System.String)"/>.</remarks>
+    let sectionTotalPages (section: string) : TextPart =
+        pageNumberOf (fun descriptor -> descriptor.TotalPagesWithinSection section)
+
+    /// <summary>The number of the first page of a section.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.BeginPageNumberOfSection(System.String)"/>.</remarks>
+    let sectionBeginPage (section: string) : TextPart =
+        pageNumberOf (fun descriptor -> descriptor.BeginPageNumberOfSection section)
+
+    /// <summary>The number of the last page of a section.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.EndPageNumberOfSection(System.String)"/>.</remarks>
+    let sectionEndPage (section: string) : TextPart =
+        pageNumberOf (fun descriptor -> descriptor.EndPageNumberOfSection section)
+
+    /// <summary>
+    /// Formats the page numbers in a part; the formatter receives <c>None</c> for an unknown number. Spans and block
+    /// settings are unchanged. With nested calls, the inner formatter applies.
+    /// </summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextPageNumberDescriptor.Format(QuestPDF.Fluent.PageNumberFormatter)"/>.</remarks>
+    let formatPage (format: int option -> string) (part: TextPart) : TextPart =
+        let formatter =
+            PageNumberFormatter (fun number -> format (Option.ofNullable number))
+
+        TextPart (fun settings descriptor ->
+            part.Draw
+                { settings with
+                    Format = Some formatter }
+                descriptor)
+
+    /// <summary>Limits the block to a number of lines, ending the last line with "…".</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.ClampLines(System.Int32,System.String)"/>.</remarks>
+    let clampLines (maxLines: int) : TextPart =
+        block (fun descriptor -> descriptor.ClampLines maxLines)
+
+    /// <summary>Limits the block to a number of lines, ending the last line with an ellipsis text.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.ClampLines(System.Int32,System.String)"/>.</remarks>
+    let clampLinesWith (maxLines: int) (ellipsis: string) : TextPart =
+        block (fun descriptor -> descriptor.ClampLines (maxLines, ellipsis))
+
+    /// <summary>A part drawn by fluent QuestPDF code on the text descriptor, such as <c>fun t -&gt; t.Span("x").Italic() |&gt; ignore</c>.</summary>
+    let raw (apply: TextDescriptor -> unit) : TextPart =
+        block apply
+
+    /// <summary>Sets the space between paragraphs of the block; accepts int, float, float32 (points) or Length.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.ParagraphSpacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let inline paragraphSpacing value : TextPart =
+        raw (Measured.textParagraphSpacing (len value))
+
+    /// <summary>Indents the first line of each paragraph of the block; accepts int, float, float32 (points) or Length.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.ParagraphFirstLineIndentation(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let inline firstLineIndent value : TextPart =
+        raw (Measured.textFirstLineIndent (len value))

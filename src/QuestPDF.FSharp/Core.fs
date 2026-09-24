@@ -22,6 +22,9 @@ type Styled = Styled of TextStyle
 /// <summary>A page setting or a page slot filling, listed in <c>page [ ... ]</c>.</summary>
 type PagePart = PageDescriptor -> unit
 
+/// <summary>An item or a setting of a row, listed in <c>row [ ... ]</c>.</summary>
+type RowPart = RowDescriptor -> unit
+
 /// <summary>Content constructors and bridges from fluent QuestPDF code.</summary>
 [<AutoOpen>]
 module CoreOps =

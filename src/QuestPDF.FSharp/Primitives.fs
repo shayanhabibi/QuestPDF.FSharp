@@ -23,6 +23,10 @@ type PageSizes = QuestPDF.Helpers.PageSizes
 /// <remarks>An alias of <see cref="T:QuestPDF.Infrastructure.FontWeight"/>.</remarks>
 type FontWeight = QuestPDF.Infrastructure.FontWeight
 
+/// <summary>How an aspect ratio fits the available space: FitWidth, FitHeight or FitArea.</summary>
+/// <remarks>An alias of <see cref="T:QuestPDF.Infrastructure.AspectRatioOption"/>.</remarks>
+type AspectRatioOption = QuestPDF.Infrastructure.AspectRatioOption
+
 /// <summary>Colour constructors.</summary>
 [<RequireQualifiedAccess>]
 module Color =
