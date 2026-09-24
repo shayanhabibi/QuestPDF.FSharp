@@ -19,6 +19,7 @@
         <Compile Include="Style.fs" />
         <Compile Include="Modifiers.fs" />
         <Compile Include="Text.fs" />
+        <Compile Include="Elements.fs" />
         <Compile Include="Layout.fs" />
         <Compile Include="Document.fs" />
         <Compile Include="Generate.fs" />

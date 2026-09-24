@@ -23,9 +23,18 @@
         <Compile Include="ModifierTests.fs" />
         <Compile Include="LayoutColumnRowTests.fs" />
         <Compile Include="TextRichTests.fs" />
+        <Compile Include="TableTests.fs" />
+        <Compile Include="LayersDecorationTests.fs" />
+        <Compile Include="ElementsTests.fs" />
+        <Compile Include="PagingTests.fs" />
+        <Compile Include="TransformTests.fs" />
         <Compile Include="DocsTests.fs" />
         <Compile Include="ExamplesTests.fs" />
         <Compile Include="Main.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Fixtures/swatch.png" LogicalName="swatch.png" />
     </ItemGroup>
 
     <ItemGroup>

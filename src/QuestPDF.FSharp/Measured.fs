@@ -248,3 +248,85 @@ module Measured =
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.MarginRight(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let pageMarginRight (length: Length) : PagePart =
         fun page -> page.MarginRight (length.Value, length.Unit)
+
+    /// <summary>Implements <c>Page.continuous</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.ContinuousSize(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let pageContinuous (width: Length) : PagePart =
+        fun page -> page.ContinuousSize (width.Value, width.Unit)
+
+    /// <summary>Implements <c>Table.relative</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TableColumnsDefinitionDescriptor.RelativeColumn(System.Single)"/>.</remarks>
+    let tableRelative (weight: float) : ColumnDef =
+        fun columns -> columns.RelativeColumn (float32 weight)
+
+    /// <summary>Implements <c>Table.constant</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TableColumnsDefinitionDescriptor.ConstantColumn(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let tableConstant (width: Length) : ColumnDef =
+        fun columns -> columns.ConstantColumn (width.Value, width.Unit)
+
+    /// <summary>Implements <c>lineHWith</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.LineExtensions.LineHorizontal(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let lineHWith (thickness: Length) (option: LineDescriptor -> LineDescriptor) : Content =
+        fun (Slot container) ->
+            container.LineHorizontal (thickness.Value, thickness.Unit)
+            |> option
+            |> ignore
+
+    /// <summary>Implements <c>lineVWith</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.LineExtensions.LineVertical(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let lineVWith (thickness: Length) (option: LineDescriptor -> LineDescriptor) : Content =
+        fun (Slot container) ->
+            container.LineVertical (thickness.Value, thickness.Unit)
+            |> option
+            |> ignore
+
+    /// <summary>Implements <c>lineH</c>.</summary>
+    /// <remarks>
+    /// Maps to <see cref="M:QuestPDF.Fluent.LineExtensions.LineHorizontal(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>
+    /// and <see cref="M:QuestPDF.Fluent.LineDescriptor.LineColor(QuestPDF.Infrastructure.Color)"/>.
+    /// </remarks>
+    let lineH (thickness: Length) (color: Color) : Content =
+        lineHWith thickness (fun line -> line.LineColor color)
+
+    /// <summary>Implements <c>lineV</c>.</summary>
+    /// <remarks>
+    /// Maps to <see cref="M:QuestPDF.Fluent.LineExtensions.LineVertical(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>
+    /// and <see cref="M:QuestPDF.Fluent.LineDescriptor.LineColor(QuestPDF.Infrastructure.Color)"/>.
+    /// </remarks>
+    let lineV (thickness: Length) (color: Color) : Content =
+        lineVWith thickness (fun line -> line.LineColor color)
+
+    /// <summary>Implements <c>ensureSpace</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.EnsureSpace(QuestPDF.Infrastructure.IContainer,System.Single)"/>.</remarks>
+    let ensureSpace (minHeight: float) : Modifier =
+        fun (Slot container) -> Slot (container.EnsureSpace (float32 minHeight))
+
+    /// <summary>Implements <c>rotate</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.RotateExtensions.Rotate(QuestPDF.Infrastructure.IContainer,System.Single)"/>.</remarks>
+    let rotate (degrees: float) : Modifier =
+        fun (Slot container) -> Slot (container.Rotate (float32 degrees))
+
+    /// <summary>Implements <c>scale</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ScaleExtensions.Scale(QuestPDF.Infrastructure.IContainer,System.Single)"/>.</remarks>
+    let scale (factor: float) : Modifier =
+        fun (Slot container) -> Slot (container.Scale (float32 factor))
+
+    /// <summary>Implements <c>scaleH</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ScaleExtensions.ScaleHorizontal(QuestPDF.Infrastructure.IContainer,System.Single)"/>.</remarks>
+    let scaleH (factor: float) : Modifier =
+        fun (Slot container) -> Slot (container.ScaleHorizontal (float32 factor))
+
+    /// <summary>Implements <c>scaleV</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ScaleExtensions.ScaleVertical(QuestPDF.Infrastructure.IContainer,System.Single)"/>.</remarks>
+    let scaleV (factor: float) : Modifier =
+        fun (Slot container) -> Slot (container.ScaleVertical (float32 factor))
+
+    /// <summary>Implements <c>offsetX</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.OffsetExtensions.OffsetX(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let offsetX (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.OffsetX (length.Value, length.Unit))
+
+    /// <summary>Implements <c>offsetY</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.OffsetExtensions.OffsetY(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let offsetY (length: Length) : Modifier =
+        fun (Slot container) -> Slot (container.OffsetY (length.Value, length.Unit))

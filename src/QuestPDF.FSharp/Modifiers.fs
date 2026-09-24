@@ -1,6 +1,7 @@
 namespace QuestPDF.FSharp
 
 open System
+open QuestPDF.Elements
 open QuestPDF.Fluent
 open QuestPDF.Infrastructure
 
@@ -247,3 +248,117 @@ module Modifiers =
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.SectionLink(QuestPDF.Infrastructure.IContainer,System.String)"/>.</remarks>
     let sectionLink (name: string) : Modifier =
         fun (Slot container) -> Slot (container.SectionLink name)
+
+    /// <summary>Moves the content to the next page when it would otherwise break across the current one; taller content still pages.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.PreventPageBreak(QuestPDF.Infrastructure.IContainer)"/>.</remarks>
+    let preventPageBreak: Modifier =
+        fun (Slot container) -> Slot (container.PreventPageBreak ())
+
+    /// <summary>Draws the content on the first page its parent occupies only, such as the first page of a repeated header.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.ShowOnce(QuestPDF.Infrastructure.IContainer)"/>.</remarks>
+    let showOnce: Modifier = fun (Slot container) -> Slot (container.ShowOnce ())
+
+    /// <summary>Hides the content on the first page its parent occupies and draws it on the following pages.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.SkipOnce(QuestPDF.Infrastructure.IContainer)"/>.</remarks>
+    let skipOnce: Modifier = fun (Slot container) -> Slot (container.SkipOnce ())
+
+    /// <summary>Draws the content again on every page its parent occupies, after the content is complete.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.Repeat(QuestPDF.Infrastructure.IContainer)"/>.</remarks>
+    let repeat: Modifier = fun (Slot container) -> Slot (container.Repeat ())
+
+    /// <summary>Draws the part of the content that fits on the current page and drops the rest.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.StopPaging(QuestPDF.Infrastructure.IContainer)"/>.</remarks>
+    let stopPaging: Modifier = fun (Slot container) -> Slot (container.StopPaging ())
+
+    /// <summary>
+    /// Moves the content to the next page when less than a height remains on the current page; the height is in points and
+    /// accepts int, int64, float, float32 or decimal.
+    /// </summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.EnsureSpace(QuestPDF.Infrastructure.IContainer,System.Single)"/>.</remarks>
+    let inline ensureSpace minHeight : Modifier =
+        Measured.ensureSpace (toFloatWith NumberWitness minHeight)
+
+    /// <summary>Draws the content when the condition is true.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.ShowIf(QuestPDF.Infrastructure.IContainer,System.Boolean)"/>.</remarks>
+    let showIf (condition: bool) : Modifier =
+        fun (Slot container) -> Slot (container.ShowIf condition)
+
+    /// <summary>
+    /// Draws the content on the pages where the predicate is true. The predicate receives the page number, and the total
+    /// page count once it is known.
+    /// </summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.ShowIf(QuestPDF.Infrastructure.IContainer,System.Predicate{QuestPDF.Elements.ShowIfContext})"/>.</remarks>
+    let showWhen (predicate: ShowIfContext -> bool) : Modifier =
+        fun (Slot container) -> Slot (container.ShowIf (Predicate predicate))
+
+    /// <summary>Rotates the drawing of the content clockwise by an angle in degrees, around its top-left corner; accepts int, int64, float, float32 or decimal.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.RotateExtensions.Rotate(QuestPDF.Infrastructure.IContainer,System.Single)"/>.</remarks>
+    let inline rotate degrees : Modifier =
+        Measured.rotate (toFloatWith NumberWitness degrees)
+
+    /// <summary>Turns the content a quarter turn clockwise, swapping the available width and height.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.RotateExtensions.RotateLayoutClockwise(QuestPDF.Infrastructure.IContainer)"/>.</remarks>
+    let rotateLayoutCw: Modifier =
+        fun (Slot container) -> Slot (container.RotateLayoutClockwise ())
+
+    /// <summary>Turns the content a quarter turn counterclockwise, swapping the available width and height.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.RotateExtensions.RotateLayoutCounterclockwise(QuestPDF.Infrastructure.IContainer)"/>.</remarks>
+    let rotateLayoutCcw: Modifier =
+        fun (Slot container) -> Slot (container.RotateLayoutCounterclockwise ())
+
+    /// <summary>Scales the content in both directions by a factor; accepts int, int64, float, float32 or decimal.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ScaleExtensions.Scale(QuestPDF.Infrastructure.IContainer,System.Single)"/>.</remarks>
+    let inline scale factor : Modifier =
+        Measured.scale (toFloatWith NumberWitness factor)
+
+    /// <summary>Scales the content horizontally by a factor; accepts int, int64, float, float32 or decimal.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ScaleExtensions.ScaleHorizontal(QuestPDF.Infrastructure.IContainer,System.Single)"/>.</remarks>
+    let inline scaleH factor : Modifier =
+        Measured.scaleH (toFloatWith NumberWitness factor)
+
+    /// <summary>Scales the content vertically by a factor; accepts int, int64, float, float32 or decimal.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ScaleExtensions.ScaleVertical(QuestPDF.Infrastructure.IContainer,System.Single)"/>.</remarks>
+    let inline scaleV factor : Modifier =
+        Measured.scaleV (toFloatWith NumberWitness factor)
+
+    /// <summary>Mirrors the content left to right.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ScaleExtensions.FlipHorizontal(QuestPDF.Infrastructure.IContainer)"/>.</remarks>
+    let flipH: Modifier = fun (Slot container) -> Slot (container.FlipHorizontal ())
+
+    /// <summary>Mirrors the content top to bottom.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ScaleExtensions.FlipVertical(QuestPDF.Infrastructure.IContainer)"/>.</remarks>
+    let flipV: Modifier = fun (Slot container) -> Slot (container.FlipVertical ())
+
+    /// <summary>Mirrors the content in both directions, a half turn.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ScaleExtensions.FlipOver(QuestPDF.Infrastructure.IContainer)"/>.</remarks>
+    let flipOver: Modifier = fun (Slot container) -> Slot (container.FlipOver ())
+
+    /// <summary>Shifts the drawing of the content to the right, leaving the layout unchanged; accepts int, float, float32 (points) or Length.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.OffsetExtensions.OffsetX(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let inline offsetX value : Modifier =
+        Measured.offsetX (len value)
+
+    /// <summary>Shifts the drawing of the content down, leaving the layout unchanged; accepts int, float, float32 (points) or Length.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.OffsetExtensions.OffsetY(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let inline offsetY value : Modifier =
+        Measured.offsetY (len value)
+
+    /// <summary>Sets the drawing order among overlapping content: a higher index is drawn later, on top.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.ZIndex(QuestPDF.Infrastructure.IContainer,System.Int32)"/>.</remarks>
+    let zIndex (index: int) : Modifier =
+        fun (Slot container) -> Slot (container.ZIndex index)
+
+    /// <summary>Lays out the content from left to right.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ContentDirectionExtensions.ContentFromLeftToRight(QuestPDF.Infrastructure.IContainer)"/>.</remarks>
+    let contentLtr: Modifier =
+        fun (Slot container) -> Slot (container.ContentFromLeftToRight ())
+
+    /// <summary>Lays out the content from right to left.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ContentDirectionExtensions.ContentFromRightToLeft(QuestPDF.Infrastructure.IContainer)"/>.</remarks>
+    let contentRtl: Modifier =
+        fun (Slot container) -> Slot (container.ContentFromRightToLeft ())
+
+    /// <summary>Outlines the content area with a labelled debug frame.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.DebugExtensions.DebugArea(QuestPDF.Infrastructure.IContainer,System.String,System.Nullable{QuestPDF.Infrastructure.Color})"/>.</remarks>
+    let debugArea (label: string) : Modifier =
+        fun (Slot container) -> Slot (container.DebugArea label)

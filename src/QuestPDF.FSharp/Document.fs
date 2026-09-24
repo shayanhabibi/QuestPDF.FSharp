@@ -73,6 +73,21 @@ module Page =
     let inline sizeOf width height : PagePart =
         Measured.pageSize (len width) (len height)
 
+    /// <summary>Sets the smallest page size; each page shrinks to its content down to this size.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.MinSize(QuestPDF.Helpers.PageSize)"/>.</remarks>
+    let minSize (size: PageSize) : PagePart =
+        fun page -> page.MinSize size
+
+    /// <summary>Sets the largest page size; each page grows with its content up to this size.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.MaxSize(QuestPDF.Helpers.PageSize)"/>.</remarks>
+    let maxSize (size: PageSize) : PagePart =
+        fun page -> page.MaxSize size
+
+    /// <summary>Makes a single page of a width, as tall as its content; accepts int, float, float32 (points) or Length.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.ContinuousSize(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let inline continuous width : PagePart =
+        Measured.pageContinuous (len width)
+
     /// <summary>Sets the margin on all sides; accepts int, float, float32 (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.Margin(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline margin value : PagePart =

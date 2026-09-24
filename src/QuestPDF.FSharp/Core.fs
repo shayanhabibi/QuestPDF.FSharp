@@ -25,6 +25,18 @@ type PagePart = PageDescriptor -> unit
 /// <summary>An item or a setting of a row, listed in <c>row [ ... ]</c>.</summary>
 type RowPart = RowDescriptor -> unit
 
+/// <summary>A column definition, cell group or setting of a table, listed in <c>table [ ... ]</c>.</summary>
+type TablePart = TableDescriptor -> unit
+
+/// <summary>A table column, listed in <c>Table.columns [ ... ]</c>.</summary>
+type ColumnDef = TableColumnsDefinitionDescriptor -> unit
+
+/// <summary>A layer of a <c>layers [ ... ]</c> stack.</summary>
+type LayerPart = LayersDescriptor -> unit
+
+/// <summary>A slot of a <c>decoration [ ... ]</c>: the content, or what repeats before or after it on every page.</summary>
+type DecorationPart = DecorationDescriptor -> unit
+
 /// <summary>Content constructors and bridges from fluent QuestPDF code.</summary>
 [<AutoOpen>]
 module CoreOps =
@@ -49,3 +61,8 @@ module Content =
     /// <summary>Draws wrapper content into a QuestPDF container.</summary>
     let run (content: Content) (container: IContainer) : unit =
         content (Slot container)
+
+    /// <summary>Content drawn by a QuestPDF component.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ComponentExtensions.Component``1(QuestPDF.Infrastructure.IContainer,``0)"/>.</remarks>
+    let ofComponent (source: IComponent) : Content =
+        fun (Slot container) -> container.Component source
