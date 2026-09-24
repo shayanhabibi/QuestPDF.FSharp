@@ -57,6 +57,36 @@ let private rawLinkedSection (link: TextDescriptor -> unit) (c: IContainer) =
         col.Item().Section("target").Text ("here")
         |> ignore)
 
+/// A section over pages 2 to 4, with the four section numbers in the footer of each page.
+let private sectionOverThreePages =
+    let pageBreak = raw (fun c -> c.PageBreak ())
+
+    document
+        [ Meta.dated fixedDate
+          page
+              [ Page.size PageSizes.A6
+                Page.margin 20
+                Page.content (
+                    column
+                        [ text "before"
+                          pageBreak
+                          section "s"
+                          >> column [ text "first"; pageBreak; text "second"; pageBreak; text "third" ]
+                          pageBreak
+                          text "after" ]
+                )
+                Page.footer (
+                    richText
+                        [ Text.span " w"
+                          Text.sectionPageNumber "s"
+                          Text.span " t"
+                          Text.sectionTotalPages "s"
+                          Text.span " b"
+                          Text.sectionBeginPage "s"
+                          Text.span " e"
+                          Text.sectionEndPage "s" ]
+                ) ] ]
+
 /// Two paragraphs of several lines each.
 let private paragraphs =
     String.replicate 12 "first paragraph "
@@ -159,6 +189,15 @@ let tests =
                         )
 
                     Expect.stringContains (pageTexts pdf).[0] "begins on 2" "the section starts on page 2"
+                }
+                test "each section number reads its own value on the pages of the section" {
+                    configure ()
+                    let texts = pageTexts (Pdf.bytes sectionOverThreePages)
+
+                    Expect.equal
+                        (texts |> List.skip 1 |> List.take 3)
+                        [ "first w1 t3 b2 e4"; "second w2 t3 b2 e4"; "third w3 t3 b2 e4" ]
+                        "within counts from 1, the total is 3, the section begins on page 2 and ends on page 4"
                 } ]
           testList
               "formatPage"
@@ -242,4 +281,11 @@ let tests =
                             t.Span (paragraphs) |> ignore))
 
                     distinct $"{name} changes the output" (richText [ part; Text.span paragraphs ]) (rich (fun t -> t.Span (paragraphs) |> ignore))
-                equivalent "raw" (richText [ Text.raw (fun t -> t.Span("r").Italic () |> ignore) ]) (rich (fun t -> t.Span("r").Italic () |> ignore)) ] ]
+                equivalent "raw" (richText [ Text.raw (fun t -> t.Span("r").Italic () |> ignore) ]) (rich (fun t -> t.Span("r").Italic () |> ignore))
+                equivalent
+                    "withStyle and formatPage leave raw unchanged"
+                    (richText
+                        [ Text.raw (fun t -> t.CurrentPageNumber () |> ignore)
+                          |> Text.withStyle Style.bold
+                          |> Text.formatPage (fun _ -> "formatted") ])
+                    (rich (fun t -> t.CurrentPageNumber () |> ignore)) ] ]

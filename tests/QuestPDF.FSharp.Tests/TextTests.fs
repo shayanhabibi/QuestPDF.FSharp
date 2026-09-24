@@ -70,6 +70,22 @@ let tests =
                   t.Span("a").FontColor (Colors.Red.Medium)
                   |> ignore))
           equivalent
+              "nested withStyle: an inner ofTextStyle merges over the outer style"
+              (richText
+                  [ Text.styled (Style.ofTextStyle (TextStyle.Default.FontSize 20f)) "a"
+                    |> Text.withStyle Style.bold ])
+              (rich (fun t ->
+                  t.Span("a").Bold().Style (TextStyle.Default.FontSize 20f)
+                  |> ignore))
+          distinct
+              "nested withStyle: an inner ofTextStyle keeps the outer style"
+              (richText
+                  [ Text.styled (Style.ofTextStyle (TextStyle.Default.FontSize 20f)) "a"
+                    |> Text.withStyle Style.bold ])
+              (rich (fun t ->
+                  t.Span("a").Style (TextStyle.Default.FontSize 20f)
+                  |> ignore))
+          equivalent
               "lineBreak is a newline span"
               (richText [ Text.span "a"; Text.lineBreak; Text.span "b" ])
               (rich (fun t ->

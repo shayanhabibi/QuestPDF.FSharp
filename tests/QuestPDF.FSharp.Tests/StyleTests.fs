@@ -18,6 +18,37 @@ let private styled (style: Style) =
 let private check name (style: Style) (expected: TextBlockDescriptor -> TextBlockDescriptor) =
     equivalent name (styled style) (fun c -> c.Text ("styled") |> expected |> ignore)
 
+/// Text from a fixture, styled through Style.toTextStyle.
+let private styledOn (fixture: IContainer -> TextBlockDescriptor) (style: Style) =
+    raw (fun c ->
+        (fixture c).Style (Style.toTextStyle style)
+        |> ignore)
+
+/// An equivalence test on a fixture where the style changes the PDF.
+let private checkOn name fixture (style: Style) (expected: TextBlockDescriptor -> TextBlockDescriptor) =
+    equivalent name (styledOn fixture style) (fun c -> fixture c |> expected |> ignore)
+
+/// A negative control: the style changes the PDF of the fixture.
+let private changesOn name fixture (style: Style) =
+    distinct name (styledOn fixture style) (fun c -> fixture c |> ignore)
+
+/// Two words, for word spacing.
+let private twoWords (c: IContainer) =
+    c.Text "two words"
+
+/// Ligatures and kerning pairs.
+let private shaped (c: IContainer) =
+    c.Text "office fifty AVATAR Toyota"
+
+/// A line too narrow for both words: breaking anywhere moves letters of the second word onto the first line.
+let private narrow (c: IContainer) =
+    c.Width(60f).Text "ab abcdefghij"
+
+/// A test that a style gives the same QuestPDF text style as a fluent chain on the default style. The direction is
+/// recorded in the text style and leaves the PDF of Latin text in the test fonts unchanged.
+let private sameTextStyle name (style: Style) (expected: TextStyle -> TextStyle) =
+    test name { Expect.equal (Style.toTextStyle style) (expected TextStyle.Default) "the QuestPDF text styles are equal" }
+
 let private weights: (string * Style * (TextBlockDescriptor -> TextBlockDescriptor)) list =
     [ "thin", Style.thin, (fun t -> t.Thin ())
       "extraLight", Style.extraLight, (fun t -> t.ExtraLight ())
@@ -100,7 +131,23 @@ let tests =
               (fun t -> t.Underline().DecorationColor (Colors.Red.Medium))
           check "decorationThickness int" (Style.underline >> Style.decorationThickness 3) (fun t -> t.Underline().DecorationThickness (3f))
           check "decorationThickness float" (Style.underline >> Style.decorationThickness 1.5) (fun t -> t.Underline().DecorationThickness (1.5f))
-          check "decorationSolid" (Style.underline >> Style.decorationSolid) (fun t -> t.Underline().DecorationSolid ())
+          checkOn
+              "decorationSolid"
+              twoWords
+              (Style.underline
+               >> Style.decorationWavy
+               >> Style.decorationSolid)
+              (fun t -> t.Underline().DecorationWavy().DecorationSolid ())
+          distinct
+              "decorationSolid replaces the wavy underline"
+              (styledOn
+                  twoWords
+                  (Style.underline
+                   >> Style.decorationWavy
+                   >> Style.decorationSolid))
+              (fun c ->
+                  (twoWords c).Underline().DecorationWavy ()
+                  |> ignore)
           check "decorationDouble" (Style.underline >> Style.decorationDouble) (fun t -> t.Underline().DecorationDouble ())
           check "decorationWavy" (Style.underline >> Style.decorationWavy) (fun t -> t.Underline().DecorationWavy ())
           check "decorationDotted" (Style.underline >> Style.decorationDotted) (fun t -> t.Underline().DecorationDotted ())
@@ -109,19 +156,27 @@ let tests =
               c.Text("styled").Underline () |> ignore)
           check "letterSpacing int" (Style.letterSpacing 1) (fun t -> t.LetterSpacing (1f))
           check "letterSpacing float" (Style.letterSpacing 0.25) (fun t -> t.LetterSpacing (0.25f))
-          check "wordSpacing int" (Style.wordSpacing 2) (fun t -> t.WordSpacing (2f))
-          check "wordSpacing float" (Style.wordSpacing 0.5) (fun t -> t.WordSpacing (0.5f))
+          checkOn "wordSpacing int" twoWords (Style.wordSpacing 2) (fun t -> t.WordSpacing (2f))
+          checkOn "wordSpacing float" twoWords (Style.wordSpacing 0.5) (fun t -> t.WordSpacing (0.5f))
+          changesOn "wordSpacing changes the output" twoWords (Style.wordSpacing 2)
           distinct "letterSpacing changes the output" (styled (Style.letterSpacing 1)) (fun c -> c.Text ("styled") |> ignore)
           check "subscript" Style.subscript (fun t -> t.Subscript ())
           check "superscript" Style.superscript (fun t -> t.Superscript ())
           check "normalPosition" (Style.superscript >> Style.normalPosition) (fun t -> t.Superscript().NormalPosition ())
           distinct "subscript is not superscript" (styled Style.subscript) (fun c -> c.Text("styled").Superscript () |> ignore)
-          check "enableFeature" (Style.enableFeature FontFeatures.StandardLigatures) (fun t -> t.EnableFontFeature FontFeatures.StandardLigatures)
-          check "disableFeature" (Style.disableFeature FontFeatures.Kerning) (fun t -> t.DisableFontFeature FontFeatures.Kerning)
+          checkOn "enableFeature" shaped (Style.enableFeature FontFeatures.StandardLigatures) (fun t ->
+              t.EnableFontFeature FontFeatures.StandardLigatures)
+          checkOn "disableFeature" shaped (Style.disableFeature FontFeatures.Kerning) (fun t -> t.DisableFontFeature FontFeatures.Kerning)
+          changesOn "enableFeature changes the output" shaped (Style.enableFeature FontFeatures.StandardLigatures)
+          changesOn "disableFeature changes the output" shaped (Style.disableFeature FontFeatures.Kerning)
           check "directionAuto" Style.directionAuto (fun t -> t.DirectionAuto ())
           check "leftToRight" Style.leftToRight (fun t -> t.DirectionFromLeftToRight ())
           check "rightToLeft" Style.rightToLeft (fun t -> t.DirectionFromRightToLeft ())
-          check "breakAnywhere" Style.breakAnywhere (fun t -> t.BreakAnywhere ())
+          sameTextStyle "directionAuto sets the direction" Style.directionAuto (fun s -> s.DirectionAuto ())
+          sameTextStyle "leftToRight sets the direction" Style.leftToRight (fun s -> s.DirectionFromLeftToRight ())
+          sameTextStyle "rightToLeft sets the direction" Style.rightToLeft (fun s -> s.DirectionFromRightToLeft ())
+          checkOn "breakAnywhere" narrow Style.breakAnywhere (fun t -> t.BreakAnywhere ())
+          changesOn "breakAnywhere changes the output" narrow Style.breakAnywhere
           check "ofTextStyle" (Style.ofTextStyle (TextStyle.Default.FontSize 20f)) (fun t -> t.FontSize 20f)
           check
               "ofTextStyle replaces the style"

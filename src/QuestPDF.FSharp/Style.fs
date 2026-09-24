@@ -191,7 +191,11 @@ module Style =
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextStyleExtensions.BreakAnywhere(QuestPDF.Infrastructure.TextStyle,System.Boolean)"/>.</remarks>
     let breakAnywhere: Style = fluent (fun style -> style.BreakAnywhere ())
 
-    /// <summary>Replaces the style with a QuestPDF text style; styles composed before it are discarded.</summary>
+    /// <summary>
+    /// Replaces the style with a QuestPDF text style; styles composed before it with <c>&gt;&gt;</c> are discarded. As the
+    /// style of a <c>Text.withStyle</c> call, it is merged over the styles of the enclosing calls, as
+    /// <c>Span(...).Style(textStyle)</c> is.
+    /// </summary>
     let ofTextStyle (textStyle: TextStyle) : Style =
         fun _ -> Styled textStyle
 

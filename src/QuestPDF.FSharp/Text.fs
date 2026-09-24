@@ -4,9 +4,12 @@ open System
 open QuestPDF.Fluent
 open QuestPDF.Infrastructure
 
-/// <summary>The settings a span inherits from the <c>Text.withStyle</c> and <c>Text.formatPage</c> calls around it.</summary>
+/// <summary>
+/// The settings a span inherits from the <c>Text.withStyle</c> and <c>Text.formatPage</c> calls around it, with the
+/// styles outermost first.
+/// </summary>
 type internal SpanSettings =
-    { Style: Style option
+    { Styles: Style list
       Format: PageNumberFormatter option }
 
 /// <summary>An element of a <c>richText</c> block: a span, a page number, or a block setting.</summary>
@@ -42,15 +45,14 @@ module TextElements =
         fun (Slot container) ->
             container.Text (fun descriptor ->
                 for part in parts do
-                    part.Draw { Style = None; Format = None } descriptor)
+                    part.Draw { Styles = []; Format = None } descriptor)
 
 /// <summary>The parts of a <c>richText</c> block.</summary>
 [<RequireQualifiedAccess>]
 module Text =
     let private applyStyle (settings: SpanSettings) (span: TextSpanDescriptor) =
-        match settings.Style with
-        | Some style -> span.Style (Style.toTextStyle style) |> ignore
-        | None -> ()
+        for style in settings.Styles do
+            span.Style (Style.toTextStyle style) |> ignore
 
     let private spanOf (create: TextDescriptor -> TextSpanDescriptor) =
         TextPart (fun settings descriptor -> applyStyle settings (create descriptor))
@@ -73,16 +75,20 @@ module Text =
     let span (value: string) : TextPart =
         spanOf (fun descriptor -> descriptor.Span value)
 
-    /// <summary>Applies a style to a span or a page number. With nested calls, the outer style applies first and the inner style overrides it.</summary>
-    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextSpanDescriptorExtensions.Style``1(``0,QuestPDF.Infrastructure.TextStyle)"/> on the span descriptor.</remarks>
+    /// <summary>
+    /// Applies a style to a span or a page number. With nested calls, the outer style applies first and the inner style
+    /// is merged over it, as chained span calls are.
+    /// </summary>
+    /// <remarks>
+    /// Maps to one <see cref="M:QuestPDF.Fluent.TextSpanDescriptorExtensions.Style``1(``0,QuestPDF.Infrastructure.TextStyle)"/>
+    /// call per nested style on the span descriptor, outermost first.
+    /// </remarks>
     let withStyle (style: Style) (part: TextPart) : TextPart =
         TextPart (fun settings descriptor ->
-            let combined =
-                match settings.Style with
-                | Some outer -> outer >> style
-                | None -> style
-
-            part.Draw { settings with Style = Some combined } descriptor)
+            part.Draw
+                { settings with
+                    Styles = settings.Styles @ [ style ] }
+                descriptor)
 
     /// <summary>A span of text in a style; equal to <c>span value |&gt; withStyle style</c>.</summary>
     /// <remarks>
@@ -102,7 +108,7 @@ module Text =
     let totalPages: TextPart = pageNumberOf (fun descriptor -> descriptor.TotalPages ())
 
     /// <summary>A line break within the paragraph.</summary>
-    /// <remarks>A span of <c>"\n"</c>. the span <see cref="M:QuestPDF.Fluent.TextDescriptor.EmptyLine"/> also adds.</remarks>
+    /// <remarks>A span of <c>"\n"</c>, the same span that <see cref="M:QuestPDF.Fluent.TextDescriptor.EmptyLine"/> adds.</remarks>
     let lineBreak: TextPart = span "\n"
 
     /// <summary>Sets the default style of every span in the block.</summary>
@@ -198,7 +204,11 @@ module Text =
     let clampLinesWith (maxLines: int) (ellipsis: string) : TextPart =
         block (fun descriptor -> descriptor.ClampLines (maxLines, ellipsis))
 
-    /// <summary>A part drawn by fluent QuestPDF code on the text descriptor, such as <c>fun t -&gt; t.Span("x").Italic() |&gt; ignore</c>.</summary>
+    /// <summary>
+    /// A part drawn by fluent QuestPDF code on the text descriptor, such as <c>fun t -&gt; t.Span("x").Italic() |&gt; ignore</c>.
+    /// The part is drawn as written: <c>Text.withStyle</c> and <c>Text.formatPage</c> leave it unchanged, so style its
+    /// spans in the fluent code.
+    /// </summary>
     let raw (apply: TextDescriptor -> unit) : TextPart =
         block apply
 
