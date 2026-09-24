@@ -1,0 +1,72 @@
+namespace QuestPDF.FSharp
+
+open QuestPDF.Helpers
+open QuestPDF.Infrastructure
+
+/// <summary>A QuestPDF colour.</summary>
+/// <remarks>An alias of <see cref="T:QuestPDF.Infrastructure.Color"/>.</remarks>
+type Color = QuestPDF.Infrastructure.Color
+
+/// <summary>The Material colour palette, for example <c>Colors.Blue.Medium</c>.</summary>
+/// <remarks>An alias of <see cref="T:QuestPDF.Helpers.Colors"/>.</remarks>
+type Colors = QuestPDF.Helpers.Colors
+
+/// <summary>A page size in points.</summary>
+/// <remarks>An alias of <see cref="T:QuestPDF.Helpers.PageSize"/>.</remarks>
+type PageSize = QuestPDF.Helpers.PageSize
+
+/// <summary>The standard page sizes, for example <c>PageSizes.A4</c>.</summary>
+/// <remarks>An alias of <see cref="T:QuestPDF.Helpers.PageSizes"/>.</remarks>
+type PageSizes = QuestPDF.Helpers.PageSizes
+
+/// <summary>A font weight, from Thin (100) to ExtraBlack (1000).</summary>
+/// <remarks>An alias of <see cref="T:QuestPDF.Infrastructure.FontWeight"/>.</remarks>
+type FontWeight = QuestPDF.Infrastructure.FontWeight
+
+/// <summary>Colour constructors.</summary>
+[<RequireQualifiedAccess>]
+module Color =
+    /// <summary>The colour of a <c>#RGB</c>, <c>#ARGB</c>, <c>#RRGGBB</c> or <c>#AARRGGBB</c> string.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Infrastructure.Color.FromHex(System.String)"/>.</remarks>
+    let hex (value: string) : Color =
+        QuestPDF.Infrastructure.Color.FromHex value
+
+    /// <summary>An opaque colour of red, green and blue components.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Infrastructure.Color.FromRGB(System.Byte,System.Byte,System.Byte)"/>.</remarks>
+    let rgb (red: byte) (green: byte) (blue: byte) : Color =
+        QuestPDF.Infrastructure.Color.FromRGB (red, green, blue)
+
+    /// <summary>A colour of alpha, red, green and blue components.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Infrastructure.Color.FromARGB(System.Byte,System.Byte,System.Byte,System.Byte)"/>.</remarks>
+    let argb (alpha: byte) (red: byte) (green: byte) (blue: byte) : Color =
+        QuestPDF.Infrastructure.Color.FromARGB (alpha, red, green, blue)
+
+    /// <summary>The colour with its alpha replaced; 0.0 is transparent and 1.0 is opaque.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Infrastructure.Color.WithAlpha(System.Single)"/>.</remarks>
+    let withAlpha (alpha: float) (color: Color) : Color =
+        color.WithAlpha (float32 alpha)
+
+/// <summary>Page size operations.</summary>
+[<RequireQualifiedAccess>]
+module PageSize =
+    /// <summary>The size with its longer side horizontal.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Helpers.PageSizeExtensions.Landscape(QuestPDF.Helpers.PageSize)"/>.</remarks>
+    let landscape (size: PageSize) : PageSize =
+        size.Landscape ()
+
+    /// <summary>The size with its longer side vertical.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Helpers.PageSizeExtensions.Portrait(QuestPDF.Helpers.PageSize)"/>.</remarks>
+    let portrait (size: PageSize) : PageSize =
+        size.Portrait ()
+
+    /// <summary>A page size of a width and a height.</summary>
+    /// <remarks>
+    /// When both lengths share a unit, QuestPDF converts them; otherwise both are converted with
+    /// <see cref="M:QuestPDF.FSharp.LengthModule.points(QuestPDF.FSharp.Length)"/>. Maps to the
+    /// <see cref="T:QuestPDF.Helpers.PageSize"/> constructor.
+    /// </remarks>
+    let custom (width: Length) (height: Length) : PageSize =
+        if width.Unit = height.Unit then
+            QuestPDF.Helpers.PageSize (width.Value, height.Value, width.Unit)
+        else
+            QuestPDF.Helpers.PageSize (Length.points width, Length.points height, Unit.Point)

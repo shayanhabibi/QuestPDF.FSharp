@@ -102,7 +102,7 @@ most on experiments that would otherwise need a rebuild per attempt.
 `runTestsInAssemblyWithCLIArgs` finds no tests in a session. Pass the test values directly:
 
 ```fsharp
-Expecto.Tests.runTestsWithCLIArgs [] [| "--filter-test-case"; "hello greets by name" |] QuestPDF.FSharp.Tests.Say.tests;;
+Expecto.Tests.runTestsWithCLIArgs [] [| "--filter-test-case"; "len of int is points" |] QuestPDF.FSharp.Tests.UnitsTests.tests;;
 ```
 
 The result is the exit code plus Expecto's console output, colour codes included. To read which
@@ -114,7 +114,7 @@ let printer =
     { Expecto.Impl.TestPrinters.silent with
         failed = (fun name msg _ -> async { lock failures (fun () -> failures.Add $"{name}: {msg.Trim()}") })
         exn = (fun name e _ -> async { lock failures (fun () -> failures.Add $"{name}: {e.GetType().Name}: {e.Message}") }) };;
-Expecto.Impl.runEval { Expecto.Impl.ExpectoConfig.defaultConfig with printer = printer; runInParallel = false } QuestPDF.FSharp.Tests.Say.tests
+Expecto.Impl.runEval { Expecto.Impl.ExpectoConfig.defaultConfig with printer = printer; runInParallel = false } QuestPDF.FSharp.Tests.UnitsTests.tests
 |> Async.RunSynchronously;;
 String.concat "\n" failures;;
 ```

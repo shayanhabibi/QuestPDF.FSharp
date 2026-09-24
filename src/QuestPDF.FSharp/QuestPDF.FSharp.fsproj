@@ -8,10 +8,20 @@
         <PackageId>QuestPDF.FSharp</PackageId>
         <Title>QuestPDF.FSharp</Title>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Library.fs" />
+        <Compile Include="Units.fs" />
+        <Compile Include="Primitives.fs" />
+        <Compile Include="Core.fs" />
+        <Compile Include="Measured.fs" />
+        <Compile Include="Style.fs" />
+        <Compile Include="Modifiers.fs" />
+        <Compile Include="Text.fs" />
+        <Compile Include="Document.fs" />
+        <Compile Include="Generate.fs" />
+        <Compile Include="Setup.fs" />
         <None Include="../../README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
