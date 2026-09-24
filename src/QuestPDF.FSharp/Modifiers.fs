@@ -48,6 +48,6 @@ module Modifiers =
         fun (Slot container) -> Slot (container.Background color)
 
     /// <summary>Sets the default text style of every text in the content.</summary>
-    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextStyleExtensions.DefaultTextStyle(QuestPDF.Infrastructure.IContainer,System.Func{QuestPDF.Infrastructure.TextStyle,QuestPDF.Infrastructure.TextStyle})"/>.</remarks>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.DefaultTextStyle(QuestPDF.Infrastructure.IContainer,System.Func{QuestPDF.Infrastructure.TextStyle,QuestPDF.Infrastructure.TextStyle})"/>.</remarks>
     let textStyle (style: Style) : Modifier =
-        fun (Slot container) -> Slot (container.DefaultTextStyle (Func<TextStyle, TextStyle> style))
+        fun (Slot container) -> Slot (container.DefaultTextStyle (Func<TextStyle, TextStyle> (Style.apply style)))

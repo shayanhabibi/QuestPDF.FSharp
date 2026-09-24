@@ -17,14 +17,39 @@ let private lengthModifiers: (string * Modifier * Modifier * Modifier * (IContai
       "paddingLeft", paddingLeft 10, paddingLeft 7.5, paddingLeft (3 * mm), (fun c v u -> c.PaddingLeft (v, u))
       "paddingRight", paddingRight 10, paddingRight 7.5, paddingRight (3 * mm), (fun c v u -> c.PaddingRight (v, u)) ]
 
+/// A background outside the text; each padding side moves an edge of the background or the text.
+let private shaded (modifier: Modifier) : Content =
+    modifier
+    >> background Colors.Grey.Lighten3
+    >> text "p"
+
+let private rawShaded (apply: IContainer -> IContainer) (c: IContainer) =
+    (apply c).Background(Colors.Grey.Lighten3).Text ("p")
+    |> ignore
+
 [<Tests>]
 let tests =
     testList
         "Modifiers"
         [ for name, ofInt, ofFloat, ofMm, apply in lengthModifiers do
-              equivalent $"{name} int" (ofInt >> text "p") (fun c -> (apply c 10f Unit.Point).Text ("p") |> ignore)
-              equivalent $"{name} float" (ofFloat >> text "p") (fun c -> (apply c 7.5f Unit.Point).Text ("p") |> ignore)
-              equivalent $"{name} mm" (ofMm >> text "p") (fun c -> (apply c 3f Unit.Millimetre).Text ("p") |> ignore)
+              equivalent $"{name} int" (shaded ofInt) (rawShaded (fun c -> apply c 10f Unit.Point))
+              equivalent $"{name} float" (shaded ofFloat) (rawShaded (fun c -> apply c 7.5f Unit.Point))
+              equivalent $"{name} mm" (shaded ofMm) (rawShaded (fun c -> apply c 3f Unit.Millimetre))
+              distinct $"{name} changes the output" (shaded ofInt) (rawShaded id)
+          test "each padding side renders differently" {
+              configure ()
+
+              let rendered =
+                  [ for name, _, _, _, apply in lengthModifiers -> name, (rawContent (rawShaded (fun c -> apply c 10f Unit.Point))).GeneratePdf () ]
+
+              let collisions =
+                  [ for a, x in rendered do
+                        for b, y in rendered do
+                            if a < b && x = y then
+                                yield a, b ]
+
+              Expect.isEmpty collisions "every padding modifier has a distinct rendering"
+          }
           equivalent "background" (background Colors.Grey.Lighten3 >> text "b") (fun c ->
               c.Background(Colors.Grey.Lighten3).Text ("b")
               |> ignore)

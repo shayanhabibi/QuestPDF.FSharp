@@ -10,17 +10,48 @@ open QuestPDF.Infrastructure
 open QuestPDF.FSharp
 open QuestPDF.FSharp.Tests.Support
 
-/// An A5 page with a body text, plus the part under test before the content.
+/// An A5 page with a shaded body that fills the content area, plus the part under test before the content.
 let private pageWith (name: string) (part: PagePart) (raw: PageDescriptor -> unit) =
-    equivalentPage name [ Page.size PageSizes.A5; part; Page.content (text "body") ] (fun p ->
-        p.Size PageSizes.A5
-        raw p
-        p.Content().Text ("body") |> ignore)
+    equivalentPage
+        name
+        [ Page.size PageSizes.A5
+          part
+          Page.content (background Colors.Grey.Lighten3 >> text "body") ]
+        (fun p ->
+            p.Size PageSizes.A5
+            raw p
 
+            p.Content().Background(Colors.Grey.Lighten3).Text ("body")
+            |> ignore)
+
+/// The five page slots with their raw QuestPDF accessors.
+let private slots: (string * (PageDescriptor -> IContainer)) list =
+    [ "header", (fun p -> p.Header ())
+      "content", (fun p -> p.Content ())
+      "footer", (fun p -> p.Footer ())
+      "background", (fun p -> p.Background ())
+      "foreground", (fun p -> p.Foreground ()) ]
+
+/// Fills every slot except the named one with its own name, through raw QuestPDF calls.
+let private fillOthers (name: string) (p: PageDescriptor) =
+    for other, get in slots do
+        if other <> name then
+            (get p).Text (other) |> ignore
+
+/// A page with every slot filled: the named slot through the wrapper, the others raw. QuestPDF raises on a slot
+/// filled twice, so a wrapper slot mapped to another slot fails the comparison.
 let private slot (name: string) (part: Content -> PagePart) (raw: PageDescriptor -> IContainer) =
-    equivalentPage name [ Page.size PageSizes.A5; part (text name) ] (fun p ->
-        p.Size PageSizes.A5
-        (raw p).Text (name) |> ignore)
+    equivalentPage
+        name
+        [ Page.size PageSizes.A5
+          Page.margin 20
+          fillOthers name
+          part (text "tested") ]
+        (fun p ->
+            p.Size PageSizes.A5
+            p.Margin 20f
+            fillOthers name p
+            (raw p).Text ("tested") |> ignore)
 
 let pageParts =
     testList
@@ -45,6 +76,51 @@ let pageParts =
           slot "footer" Page.footer (fun p -> p.Footer ())
           slot "background" Page.background (fun p -> p.Background ())
           slot "foreground" Page.foreground (fun p -> p.Foreground ())
+          test "a slot filled twice raises DocumentComposeException" {
+              configure ()
+
+              for name, get in slots do
+                  Expect.throwsT<DocumentComposeException>
+                      (fun () ->
+                          (rawPage (fun p ->
+                              fillOthers "" p
+                              (get p).Text ("again") |> ignore))
+                              .GeneratePdf ()
+                          |> ignore)
+                      $"{name} filled twice"
+          }
+          test "each margin side renders differently" {
+              configure ()
+
+              let margins: (string * (PageDescriptor -> unit)) list =
+                  [ "none", ignore
+                    "margin", (fun p -> p.Margin (1f, Unit.Centimetre))
+                    "marginV", (fun p -> p.MarginVertical (1f, Unit.Centimetre))
+                    "marginH", (fun p -> p.MarginHorizontal (1f, Unit.Centimetre))
+                    "marginTop", (fun p -> p.MarginTop (1f, Unit.Centimetre))
+                    "marginBottom", (fun p -> p.MarginBottom (1f, Unit.Centimetre))
+                    "marginLeft", (fun p -> p.MarginLeft (1f, Unit.Centimetre))
+                    "marginRight", (fun p -> p.MarginRight (1f, Unit.Centimetre)) ]
+
+              let rendered =
+                  [ for name, margin in margins ->
+                        name,
+                        (rawPage (fun p ->
+                            p.Size PageSizes.A5
+                            margin p
+
+                            p.Content().Background(Colors.Grey.Lighten3).Text ("body")
+                            |> ignore))
+                            .GeneratePdf () ]
+
+              let collisions =
+                  [ for a, x in rendered do
+                        for b, y in rendered do
+                            if a < b && x = y then
+                                yield a, b ]
+
+              Expect.isEmpty collisions "every margin setting has a distinct rendering"
+          }
           test "two contents on a page raise DocumentComposeException" {
               configure ()
 

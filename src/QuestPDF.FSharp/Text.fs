@@ -53,6 +53,7 @@ module Text =
         TextPart (fun style descriptor -> applyStyle style (descriptor.Span value))
 
     /// <summary>Applies a style to a span or a page number. With nested calls, the outer style applies first and the inner style overrides it.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextSpanDescriptorExtensions.Style``1(``0,QuestPDF.Infrastructure.TextStyle)"/> on the span descriptor.</remarks>
     let withStyle (style: Style) (part: TextPart) : TextPart =
         TextPart (fun outer descriptor ->
             let combined =
@@ -63,6 +64,10 @@ module Text =
             part.Draw (Some combined) descriptor)
 
     /// <summary>A span of text in a style; equal to <c>span value |&gt; withStyle style</c>.</summary>
+    /// <remarks>
+    /// Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.Span(System.String)"/> followed by
+    /// <see cref="M:QuestPDF.Fluent.TextSpanDescriptorExtensions.Style``1(``0,QuestPDF.Infrastructure.TextStyle)"/>.
+    /// </remarks>
     let styled (style: Style) (value: string) : TextPart =
         span value |> withStyle style
 
@@ -83,7 +88,7 @@ module Text =
     /// <summary>Sets the default style of every span in the block.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.DefaultTextStyle(System.Func{QuestPDF.Infrastructure.TextStyle,QuestPDF.Infrastructure.TextStyle})"/>.</remarks>
     let style (style: Style) : TextPart =
-        block (fun descriptor -> descriptor.DefaultTextStyle (Func<TextStyle, TextStyle> style))
+        block (fun descriptor -> descriptor.DefaultTextStyle (Func<TextStyle, TextStyle> (Style.apply style)))
 
     /// <summary>Aligns the block to the left.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.AlignLeft"/>.</remarks>

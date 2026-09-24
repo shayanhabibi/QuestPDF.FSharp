@@ -7,20 +7,20 @@ open QuestPDF.Infrastructure
 
 /// <summary>
 /// The implementations behind the <c>inline</c> shims, taking a <see cref="T:QuestPDF.FSharp.Length"/> or a
-/// <c>float</c> in place of any numeric argument. Callers with a <c>Length</c> available may use them directly.
+/// <c>float</c> in place of a numeric argument. Callers with a <c>Length</c> available may use them directly.
 /// </summary>
 [<EditorBrowsable(EditorBrowsableState.Never)>]
 [<RequireQualifiedAccess>]
 module Measured =
     /// <summary>Implements <c>Style.size</c>.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextStyleExtensions.FontSize(QuestPDF.Infrastructure.TextStyle,System.Single)"/>.</remarks>
-    let fontSize (size: float) : TextStyle -> TextStyle =
-        fun style -> style.FontSize (float32 size)
+    let fontSize (size: float) : Styled -> Styled =
+        fun (Styled style) -> Styled (style.FontSize (float32 size))
 
     /// <summary>Implements <c>Style.lineHeight</c>.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextStyleExtensions.LineHeight(QuestPDF.Infrastructure.TextStyle,System.Nullable{System.Single})"/>.</remarks>
-    let lineHeight (factor: float) : TextStyle -> TextStyle =
-        fun style -> style.LineHeight (Nullable (float32 factor))
+    let lineHeight (factor: float) : Styled -> Styled =
+        fun (Styled style) -> Styled (style.LineHeight (Nullable (float32 factor)))
 
     /// <summary>Implements <c>padding</c>.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PaddingExtensions.Padding(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>

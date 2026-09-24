@@ -74,13 +74,42 @@ type LengthWitness =
     /// <summary>The length itself.</summary>
     static member ToLength(_: LengthWitness, value: Length) : Length = value
 
-/// <summary>Conversion of length arguments.</summary>
+/// <summary>The overload set behind numeric style arguments: int, int64, float, float32 and decimal.</summary>
+[<EditorBrowsable(EditorBrowsableState.Never)>]
+type NumberWitness =
+    | NumberWitness
+
+    /// <summary>An integer.</summary>
+    static member ToFloat(_: NumberWitness, value: int) : float =
+        float value
+
+    /// <summary>A 64-bit integer.</summary>
+    static member ToFloat(_: NumberWitness, value: int64) : float =
+        float value
+
+    /// <summary>A float.</summary>
+    static member ToFloat(_: NumberWitness, value: float) : float = value
+
+    /// <summary>A float32.</summary>
+    static member ToFloat(_: NumberWitness, value: float32) : float =
+        float value
+
+    /// <summary>A decimal.</summary>
+    static member ToFloat(_: NumberWitness, value: decimal) : float =
+        float value
+
+/// <summary>Conversion of length and numeric arguments.</summary>
 [<AutoOpen>]
 module LengthOps =
     /// <summary>Resolves a <c>ToLength</c> overload on the witness type or on the value type.</summary>
     [<EditorBrowsable(EditorBrowsableState.Never)>]
     let inline toLengthWith (witness: ^W) (value: ^a) : Length =
         ((^W or ^a): (static member ToLength: ^W * ^a -> Length) (witness, value))
+
+    /// <summary>Resolves a <c>ToFloat</c> overload on the witness type or on the value type.</summary>
+    [<EditorBrowsable(EditorBrowsableState.Never)>]
+    let inline toFloatWith (witness: ^W) (value: ^a) : float =
+        ((^W or ^a): (static member ToFloat: ^W * ^a -> float) (witness, value))
 
     /// <summary>The length of an int, float or float32 (in points) or of a <c>Length</c>.</summary>
     let inline len value =

@@ -18,6 +18,19 @@ let private alignments =
       "alignEnd", Text.alignEnd, (fun t -> t.AlignEnd ())
       "justify", Text.justify, (fun t -> t.Justify ()) ]
 
+/// A paragraph of several lines, so justification changes every line but the last.
+let private paragraph = String.replicate 30 "aligned words "
+
+/// Two layouts for the alignment tests. Across both, every alignment and the absence of one render differently.
+/// Each context is a name, the wrapper direction and earlier parts, and the raw direction and earlier calls.
+let private contexts: (string * Modifier * TextPart list * (IContainer -> IContainer) * (TextDescriptor -> unit)) list =
+    [ "left to right", id, [], id, ignore
+      "right to left after alignCenter",
+      modify (fun c -> c.ContentFromRightToLeft ()),
+      [ Text.alignCenter ],
+      (fun c -> c.ContentFromRightToLeft ()),
+      (fun t -> t.AlignCenter ()) ]
+
 [<Tests>]
 let tests =
     testList
@@ -71,10 +84,40 @@ let tests =
                   t.Span ("a") |> ignore))
           testList
               "alignment"
-              [ for name, part, apply in alignments ->
-                    equivalent
-                        name
-                        (richText [ part; Text.span "aligned" ])
-                        (rich (fun t ->
-                            apply t
-                            t.Span ("aligned") |> ignore)) ] ]
+              [ for context, wrapperDirection, earlier, rawDirection, before in contexts do
+                    for name, part, apply in alignments do
+                        equivalent
+                            $"{name}, {context}"
+                            (wrapperDirection
+                             >> richText (earlier @ [ part; Text.span paragraph ]))
+                            (fun c ->
+                                (rawDirection c)
+                                    .Text (fun t ->
+                                        before t
+                                        apply t
+                                        t.Span (paragraph) |> ignore))
+                test "the alignments render differently across the contexts" {
+                    configure ()
+
+                    let renderings (apply: TextDescriptor -> unit) =
+                        [ for _, _, _, rawDirection, before in contexts ->
+                              (rawContent (fun c ->
+                                  (rawDirection c)
+                                      .Text (fun t ->
+                                          before t
+                                          apply t
+                                          t.Span (paragraph) |> ignore)))
+                                  .GeneratePdf () ]
+
+                    let rendered =
+                        ("no alignment", renderings ignore)
+                        :: [ for name, _, apply in alignments -> name, renderings apply ]
+
+                    let collisions =
+                        [ for a, x in rendered do
+                              for b, y in rendered do
+                                  if a < b && x = y then
+                                      yield a, b ]
+
+                    Expect.isEmpty collisions "every alignment differs from every other and from no alignment in some context"
+                } ] ]

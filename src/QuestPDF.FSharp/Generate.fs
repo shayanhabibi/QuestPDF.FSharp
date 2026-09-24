@@ -6,8 +6,8 @@ open QuestPDF.Fluent
 open QuestPDF.Infrastructure
 
 /// <summary>
-/// PDF generation of any <see cref="T:QuestPDF.Infrastructure.IDocument"/>. Each function raises
-/// <see cref="T:System.InvalidOperationException"/> when no license is set.
+/// PDF generation of any <see cref="T:QuestPDF.Infrastructure.IDocument"/>. Each function requires a license set by
+/// <c>License.*</c> and otherwise raises <see cref="T:System.InvalidOperationException"/>.
 /// </summary>
 [<RequireQualifiedAccess>]
 module Pdf =

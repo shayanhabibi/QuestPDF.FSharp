@@ -116,7 +116,7 @@ module Page =
     /// <summary>Sets the default text style of the page.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.DefaultTextStyle(System.Func{QuestPDF.Infrastructure.TextStyle,QuestPDF.Infrastructure.TextStyle})"/>.</remarks>
     let textStyle (style: Style) : PagePart =
-        fun page -> page.DefaultTextStyle (Func<TextStyle, TextStyle> style)
+        fun page -> page.DefaultTextStyle (Func<TextStyle, TextStyle> (Style.apply style))
 
     /// <summary>Lays out content from right to left.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.ContentFromRightToLeft"/>.</remarks>
@@ -155,42 +155,55 @@ module Meta =
         DocumentPart (MetadataSetter apply)
 
     /// <summary>Sets the title.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.DocumentMetadata.Title"/>.</remarks>
     let title (value: string) : DocumentPart =
         set (fun metadata -> metadata.Title <- value)
 
     /// <summary>Sets the author.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.DocumentMetadata.Author"/>.</remarks>
     let author (value: string) : DocumentPart =
         set (fun metadata -> metadata.Author <- value)
 
     /// <summary>Sets the subject.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.DocumentMetadata.Subject"/>.</remarks>
     let subject (value: string) : DocumentPart =
         set (fun metadata -> metadata.Subject <- value)
 
     /// <summary>Sets the keywords.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.DocumentMetadata.Keywords"/>.</remarks>
     let keywords (value: string) : DocumentPart =
         set (fun metadata -> metadata.Keywords <- value)
 
     /// <summary>Sets the creator application.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.DocumentMetadata.Creator"/>.</remarks>
     let creator (value: string) : DocumentPart =
         set (fun metadata -> metadata.Creator <- value)
 
     /// <summary>Sets the producer application.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.DocumentMetadata.Producer"/>.</remarks>
     let producer (value: string) : DocumentPart =
         set (fun metadata -> metadata.Producer <- value)
 
     /// <summary>Sets the language, as a tag such as <c>en-US</c>.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.DocumentMetadata.Language"/>.</remarks>
     let language (value: string) : DocumentPart =
         set (fun metadata -> metadata.Language <- value)
 
     /// <summary>Sets the creation date.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.DocumentMetadata.CreationDate"/>.</remarks>
     let created (date: DateTimeOffset) : DocumentPart =
         set (fun metadata -> metadata.CreationDate <- date)
 
     /// <summary>Sets the modification date.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.DocumentMetadata.ModifiedDate"/>.</remarks>
     let modified (date: DateTimeOffset) : DocumentPart =
         set (fun metadata -> metadata.ModifiedDate <- date)
 
     /// <summary>Sets the creation and modification dates. Documents with the same content and date generate identical bytes.</summary>
+    /// <remarks>
+    /// Sets <see cref="P:QuestPDF.Infrastructure.DocumentMetadata.CreationDate"/> and
+    /// <see cref="P:QuestPDF.Infrastructure.DocumentMetadata.ModifiedDate"/>.
+    /// </remarks>
     let dated (date: DateTimeOffset) : DocumentPart =
         set (fun metadata ->
             metadata.CreationDate <- date

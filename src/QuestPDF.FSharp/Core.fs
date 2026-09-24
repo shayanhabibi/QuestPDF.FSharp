@@ -14,6 +14,11 @@ type Content = Slot -> unit
 /// <summary>Wraps a slot, returning the inner slot. <c>&gt;&gt;</c> applies modifiers from the outside in.</summary>
 type Modifier = Slot -> Slot
 
+/// <summary>A text style within a style composition.</summary>
+/// <remarks>Wraps a QuestPDF <see cref="T:QuestPDF.Infrastructure.TextStyle"/>.</remarks>
+[<Struct>]
+type Styled = Styled of TextStyle
+
 /// <summary>A page setting or a page slot filling, listed in <c>page [ ... ]</c>.</summary>
 type PagePart = PageDescriptor -> unit
 

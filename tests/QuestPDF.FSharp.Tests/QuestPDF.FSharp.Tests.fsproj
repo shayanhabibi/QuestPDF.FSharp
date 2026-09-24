@@ -15,11 +15,13 @@
         <Compile Include="Support/PdfText.fs" />
         <Compile Include="UnitsTests.fs" />
         <Compile Include="CoreTests.fs" />
+        <Compile Include="StyleProbe.fs" />
         <Compile Include="StyleTests.fs" />
         <Compile Include="TextTests.fs" />
         <Compile Include="DocumentTests.fs" />
         <Compile Include="GenerateTests.fs" />
         <Compile Include="ModifierTests.fs" />
+        <Compile Include="DocsTests.fs" />
         <Compile Include="ExamplesTests.fs" />
         <Compile Include="Main.fs" />
     </ItemGroup>

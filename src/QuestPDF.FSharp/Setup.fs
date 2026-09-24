@@ -4,22 +4,22 @@ open System
 open QuestPDF.Drawing
 open QuestPDF.Infrastructure
 
-/// <summary>
-/// The QuestPDF license declaration, required before generation. The choice is a legal declaration by the
-/// caller; QuestPDF.FSharp never sets it.
-/// </summary>
+/// <summary>The QuestPDF license declaration, required before generation and chosen by the caller.</summary>
 /// <remarks>Sets <see cref="P:QuestPDF.Settings.License"/>.</remarks>
 [<RequireQualifiedAccess>]
 module License =
     /// <summary>Declares the Community license.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Settings.License"/> to <see cref="F:QuestPDF.Infrastructure.LicenseType.Community"/>.</remarks>
     let community () : unit =
         QuestPDF.Settings.License <- Nullable LicenseType.Community
 
     /// <summary>Declares the Professional license.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Settings.License"/> to <see cref="F:QuestPDF.Infrastructure.LicenseType.Professional"/>.</remarks>
     let professional () : unit =
         QuestPDF.Settings.License <- Nullable LicenseType.Professional
 
     /// <summary>Declares the Enterprise license.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Settings.License"/> to <see cref="F:QuestPDF.Infrastructure.LicenseType.Enterprise"/>.</remarks>
     let enterprise () : unit =
         QuestPDF.Settings.License <- Nullable LicenseType.Enterprise
 
