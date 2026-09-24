@@ -19,6 +19,18 @@ let private rawSample (c: IContainer) =
             r.AutoItem().Text ("left") |> ignore
             r.AutoItem().Text ("right") |> ignore)
 
+/// An A5 page with right-to-left content direction.
+let private rtlPage (content: Content) : PagePart list =
+    [ Page.size PageSizes.A5
+      Page.margin 20
+      Page.rightToLeft
+      Page.content content ]
+
+let private rawRtlPage (p: PageDescriptor) =
+    p.Size PageSizes.A5
+    p.Margin 20f
+    p.ContentFromRightToLeft ()
+
 /// The transform modifiers, with the raw call each maps to.
 let private transforms: (string * Modifier * (IContainer -> IContainer)) list =
     [ "rotate int", rotate 30, (fun c -> c.Rotate (30f))
@@ -52,7 +64,15 @@ let tests =
         [ for name, modifier, apply in transforms do
               equivalent name (modifier >> sample) (fun c -> rawSample (apply c))
               distinct $"{name} changes the output" (modifier >> sample) rawSample
-          equivalent "contentLtr" (contentLtr >> sample) (fun c -> rawSample (c.ContentFromLeftToRight ()))
+          equivalentPage "contentLtr in a right-to-left page" (rtlPage (contentLtr >> sample)) (fun p ->
+              rawRtlPage p
+              rawSample (p.Content().ContentFromLeftToRight ()))
+          test "contentLtr changes the output in a right-to-left page" {
+              configure ()
+              let ltr = Pdf.bytes (wrapPage (rtlPage (contentLtr >> sample)))
+              let rtl = Pdf.bytes (wrapPage (rtlPage sample))
+              Expect.isFalse (ltr = rtl) "the row reads left to right inside the right-to-left page"
+          }
           test "the transforms render differently" {
               configure ()
 

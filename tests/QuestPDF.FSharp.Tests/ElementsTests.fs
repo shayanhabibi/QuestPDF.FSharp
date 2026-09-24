@@ -10,12 +10,18 @@ open QuestPDF.FSharp.Tests.Support
 
 type private Marker = class end
 
-/// A 24 x 16 px PNG, embedded in the test assembly.
-let private png =
-    use stream = typeof<Marker>.Assembly.GetManifestResourceStream "swatch.png"
+let private resource (name: string) =
+    use stream = typeof<Marker>.Assembly.GetManifestResourceStream name
     use copy = new MemoryStream ()
     stream.CopyTo copy
     copy.ToArray ()
+
+/// A 24 x 16 px PNG, embedded in the test assembly.
+let private png = resource "swatch.png"
+
+/// A 64 x 64 px opaque PNG of random pixels, embedded in the test assembly. Drawn 20 pt wide, its encoding changes
+/// with every non-default encoding option.
+let private noise = resource "noise.png"
 
 let private svg =
     """<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10" viewBox="0 0 20 10"><rect width="20" height="10" fill="#3366cc"/><circle cx="5" cy="5" r="4" fill="#ffcc00"/></svg>"""
@@ -29,19 +35,14 @@ let private imageForms: (string * ImageOption * Modifier * (IContainer -> IConta
       Image.fitUnproportionally,
       width 100 >> height 40,
       (fun c -> c.Width(100f).Height (40f)),
-      (fun d -> d.FitUnproportionally ())
-      "original", Image.original, width 100, (fun c -> c.Width (100f)), (fun d -> d.UseOriginalImage ())
-      "dpi", Image.dpi 36, width 100, (fun c -> c.Width (100f)), (fun d -> d.WithRasterDpi (36))
-      "quality",
-      Image.quality ImageCompressionQuality.Low,
-      width 100,
-      (fun c -> c.Width (100f)),
-      (fun d -> d.WithCompressionQuality (ImageCompressionQuality.Low))
-      "options compose",
-      Image.fitArea >> Image.dpi 36,
-      width 100 >> height 40,
-      (fun c -> c.Width(100f).Height (40f)),
-      (fun d -> d.FitArea().WithRasterDpi (36)) ]
+      (fun d -> d.FitUnproportionally ()) ]
+
+/// The encoding options, drawn on the noise image in a 20 pt box, with the raw call each maps to.
+let private encodingForms: (string * ImageOption * (ImageDescriptor -> ImageDescriptor)) list =
+    [ "original", Image.original, (fun d -> d.UseOriginalImage ())
+      "dpi", Image.dpi 36, (fun d -> d.WithRasterDpi (36))
+      "quality", Image.quality ImageCompressionQuality.Low, (fun d -> d.WithCompressionQuality (ImageCompressionQuality.Low))
+      "options compose", Image.fitWidth >> Image.dpi 36, (fun d -> d.FitWidth().WithRasterDpi (36)) ]
 
 [<Tests>]
 let tests =
@@ -121,6 +122,11 @@ let tests =
                 }
                 for name, option, box, rawBox, rawOption in imageForms do
                     equivalent $"Image.bytesWith {name}" (box >> Image.bytesWith option png) (fun c -> rawOption ((rawBox c).Image png) |> ignore)
+                for name, option, rawOption in encodingForms do
+                    equivalent $"Image.bytesWith {name}" (width 20 >> Image.bytesWith option noise) (fun c ->
+                        rawOption (c.Width(20f).Image noise) |> ignore)
+
+                    distinct $"{name} changes the output" (width 20 >> Image.bytesWith option noise) (fun c -> c.Width(20f).Image (noise) |> ignore)
                 distinct
                     "fit options change the output"
                     (width 100

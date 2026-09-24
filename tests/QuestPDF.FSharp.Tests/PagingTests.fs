@@ -27,14 +27,30 @@ let private rawWithHeader (header: IContainer -> unit) =
         header (p.Header ())
         rawLongColumn (p.Content ()))
 
-/// The modifiers that take no argument, with the raw call each maps to.
-let private pagingModifiers: (string * Modifier * (IContainer -> IContainer)) list =
-    [ "showEntire", showEntire, (fun c -> c.ShowEntire ())
-      "preventPageBreak", preventPageBreak, (fun c -> c.PreventPageBreak ())
-      "showOnce", showOnce, (fun c -> c.ShowOnce ())
-      "skipOnce", skipOnce, (fun c -> c.SkipOnce ())
-      "repeat", repeat, (fun c -> c.Repeat ())
-      "stopPaging", stopPaging, (fun c -> c.StopPaging ()) ]
+/// The modifiers that take no argument, with the raw call each maps to, and whether the modifier changes the split block.
+let private pagingModifiers: (string * Modifier * (IContainer -> IContainer) * bool) list =
+    [ "showEntire", showEntire, (fun c -> c.ShowEntire ()), true
+      "preventPageBreak", preventPageBreak, (fun c -> c.PreventPageBreak ()), true
+      "showOnce", showOnce, (fun c -> c.ShowOnce ()), false
+      "skipOnce", skipOnce, (fun c -> c.SkipOnce ()), true
+      "repeat", repeat, (fun c -> c.Repeat ()), false
+      "stopPaging", stopPaging, (fun c -> c.StopPaging ()), true ]
+
+/// A 400 pt block followed by a block of numbered lines under the modifier; the lines break across the first page.
+let private splitBlock (lines: int) (modifier: Modifier) : Content =
+    column
+        [ height 400 >> text "top"
+          modifier
+          >> column [ for i in 1..lines -> text $"line {i}" ] ]
+
+let private rawSplitBlock (lines: int) (apply: IContainer -> IContainer) (c: IContainer) =
+    c.Column (fun col ->
+        col.Item().Height(400f).Text ("top") |> ignore
+
+        (apply (col.Item ()))
+            .Column (fun inner ->
+                for i in 1..lines do
+                    inner.Item().Text ($"line {i}") |> ignore))
 
 let private isEven (context: ShowIfContext) =
     context.PageNumber % 2 = 0
@@ -43,20 +59,25 @@ let private isEven (context: ShowIfContext) =
 let tests =
     testList
         "Paging"
-        [ for name, modifier, apply in pagingModifiers do
-              equivalent
-                  name
-                  (column
-                      [ text "first"
-                        modifier
-                        >> background Colors.Grey.Lighten3
-                        >> text "second" ])
-                  (fun c ->
-                      c.Column (fun col ->
-                          col.Item().Text ("first") |> ignore
+        [ for name, modifier, apply, changesSplit in pagingModifiers do
+              equivalent name (splitBlock 20 modifier) (rawSplitBlock 20 apply)
 
-                          (apply (col.Item ())).Background(Colors.Grey.Lighten3).Text ("second")
-                          |> ignore))
+              if changesSplit then
+                  distinct $"{name} changes the split block" (splitBlock 20 modifier) (rawSplitBlock 20 id)
+          test "preventPageBreak moves a block that would break to the next page" {
+              configure ()
+              let kept = pageTexts (Pdf.bytes (wrapContent (splitBlock 20 preventPageBreak)))
+              let split = pageTexts (Pdf.bytes (wrapContent (splitBlock 20 id)))
+              Expect.equal kept[0] "top" "the lines start on page 2"
+              Expect.stringStarts split[0] "topline 1" "without preventPageBreak the lines start on page 1"
+          }
+          test "preventPageBreak breaks a block taller than a page" {
+              configure ()
+              let texts = pageTexts (Pdf.bytes (wrapContent (splitBlock 60 preventPageBreak)))
+              Expect.equal texts.Length 3 "three pages"
+              Expect.equal texts[0] "top" "the lines start on page 2"
+              Expect.stringStarts texts[1] "line 1line 2" "the lines continue across pages"
+          }
           test "showOnce and skipOnce in a header" {
               configure ()
 
@@ -106,6 +127,14 @@ let tests =
 
               Expect.equal (firstPage (ensureSpace 200)) "top" "the lines start on page 2"
               Expect.stringStarts (firstPage id) "topline 1" "without ensureSpace the lines start on page 1"
+          }
+          test "ensureSpace keeps content that fits on the current page" {
+              configure ()
+
+              let texts =
+                  pageTexts (Pdf.bytes (wrapContent (column [ text "a"; ensureSpace 1000 >> text "b" ])))
+
+              Expect.equal texts [ "ab" ] "one page, although less than 1000 pt remains"
           }
           equivalent "showIf true" (showIf true >> text "shown") (fun c -> c.ShowIf(true).Text ("shown") |> ignore)
           equivalent "showIf false" (showIf false >> text "hidden") (fun c -> c.ShowIf(false).Text ("hidden") |> ignore)

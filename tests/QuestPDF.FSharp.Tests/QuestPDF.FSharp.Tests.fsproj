@@ -35,6 +35,7 @@
 
     <ItemGroup>
         <EmbeddedResource Include="Fixtures/swatch.png" LogicalName="swatch.png" />
+        <EmbeddedResource Include="Fixtures/noise.png" LogicalName="noise.png" />
     </ItemGroup>
 
     <ItemGroup>

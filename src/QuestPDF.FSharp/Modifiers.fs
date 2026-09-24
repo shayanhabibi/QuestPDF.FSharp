@@ -271,8 +271,9 @@ module Modifiers =
     let stopPaging: Modifier = fun (Slot container) -> Slot (container.StopPaging ())
 
     /// <summary>
-    /// Moves the content to the next page when less than a height remains on the current page; the height is in points and
-    /// accepts int, int64, float, float32 or decimal.
+    /// Moves content that would break across pages to the next page when less than a height remains on the current page.
+    /// Content that fits whole in the remaining space stays on the current page. The height is in points and accepts int,
+    /// int64, float, float32 or decimal.
     /// </summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ElementExtensions.EnsureSpace(QuestPDF.Infrastructure.IContainer,System.Single)"/>.</remarks>
     let inline ensureSpace minHeight : Modifier =
