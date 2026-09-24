@@ -116,8 +116,24 @@ let support =
 
               let a, b = build (), build ()
               Expect.isFalse (a = b) "PDF/UA output carries a random id"
-              Expect.equal (normalizeIds a).Length a.Length "same length"
               Expect.isTrue (normalizeIds a = normalizeIds b) "equal after normalizing"
+          }
+          test "normalizeIds zeroes a trailer /ID in hex or literal strings" {
+              let trailer (id: string) =
+                  Text.Encoding.Latin1.GetBytes (
+                      "trailer\n<</Size 14\n/ID ["
+                      + id
+                      + " "
+                      + id
+                      + "]>>\nstartxref\n9\n%%EOF"
+                  )
+
+              let hex = trailer "<0123456789ABCDEF0123456789ABCDEF>"
+              let literal = trailer @"({\021*3\264}6\251\266X@q,\332$o)"
+              let escapedParen = trailer @"(a\)b\c\(d)"
+              Expect.isTrue (normalizeIds literal = normalizeIds hex) "a literal ID normalizes like a hex ID"
+              Expect.isTrue (normalizeIds escapedParen = normalizeIds hex) "escaped parentheses stay inside the string"
+              Expect.equal (normalizeIds hex).Length hex.Length "a hex ID keeps its length"
           } ]
 
 [<Tests>]

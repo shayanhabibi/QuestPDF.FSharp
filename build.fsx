@@ -194,6 +194,7 @@ module Stage =
 
     let generateDocs = input {
         let! watch = Options.watch
+        and! config = Options.config
         return stage "docs" {
             quiet
             run (
@@ -201,8 +202,26 @@ module Stage =
                 |> Cmd.arg "fsdocs"
                 |> Cmd.arg (if watch then "watch" else "build")
                 |> Cmd.arg "--eval"
-                |> Cmd.argIf (not watch) [ "--clean" ]
+                |> Cmd.arg "--properties"
+                |> Cmd.arg $"Configuration={config}"
+                |> Cmd.argIf (not watch) [ "--clean"; "--strict" ]
                 )
+        }
+    }
+    /// Fails when a page evaluated with an error: fsdocs --strict stops on compile errors only, and a snippet that
+    /// throws leaves "No value returned by any evaluator" in the page.
+    let checkDocs = input {
+        let! watch = Options.watch
+        return stage "check docs" {
+            when' (not watch)
+            run (async {
+                let failed =
+                    !! "output/**/*.html"
+                    |> Seq.filter (fun page -> System.IO.File.ReadAllText(page).Contains "No value returned by any evaluator")
+                    |> Seq.toList
+                if not failed.IsEmpty then
+                    failwithf "snippets failed to evaluate in: %s" (String.concat ", " failed)
+            })
         }
     }
 exit <| rootCommandOfScript {
@@ -233,6 +252,7 @@ exit <| rootCommandOfScript {
         Stage.restore
         Stage.build
         Stage.generateDocs
+        Stage.checkDocs
     }
     command "test" {
         alias "tests"

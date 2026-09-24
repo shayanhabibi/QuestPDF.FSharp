@@ -9,17 +9,28 @@ open QuestPDF.FSharp.Tests.Coverage
 let private isObsolete (m: MemberInfo) =
     m.IsDefined (typeof<ObsoleteAttribute>, false)
 
-/// The public, non-obsolete members of the QuestPDF fluent extension classes and descriptors, as
-/// <c>Type.Member</c>.
+/// Types whose public members are the fluent API: every type of the QuestPDF.Fluent and QuestPDF.Companion
+/// namespaces, and the extension classes of every other QuestPDF namespace. Delegates and enums have no fluent members.
+let private isFluentType (t: Type) =
+    let fluentNamespace =
+        t.Namespace = "QuestPDF.Fluent"
+        || t.Namespace = "QuestPDF.Companion"
+
+    let extensionClass =
+        t.IsAbstract
+        && t.IsSealed
+        && t.Name.EndsWith "Extensions"
+
+    (fluentNamespace || extensionClass)
+    && not t.IsEnum
+    && not (typeof<Delegate>.IsAssignableFrom t)
+    && not (isObsolete t)
+
+/// The public, non-obsolete methods of the QuestPDF fluent types, as <c>Type.Member</c>.
 let private questPdfMembers =
     lazy
         (typeof<QuestPDF.Fluent.Document>.Assembly.GetExportedTypes ()
-         |> Seq.filter (fun t ->
-             (t.Namespace = "QuestPDF.Fluent"
-              || t.Namespace = "QuestPDF.Companion")
-             && (t.Name.EndsWith "Extensions"
-                 || t.Name.EndsWith "Descriptor")
-             && not (isObsolete t))
+         |> Seq.filter isFluentType
          |> Seq.collect (fun t ->
              t.GetMethods (
                  BindingFlags.Public
@@ -78,6 +89,14 @@ let tests =
                   |> Set.toList
 
               Expect.equal missing [] "unmapped QuestPDF members"
+          }
+          test "the scan reaches documents, document operations and page size extensions" {
+              for key in
+                  [ "Document.Create"
+                    "Document.Merge"
+                    "DocumentOperation.LoadFile"
+                    "PageSizeExtensions.Landscape" ] do
+                  Expect.isTrue (questPdfMembers.Value.Contains key) key
           }
           test "every mapping names a current QuestPDF member" {
               let stale =

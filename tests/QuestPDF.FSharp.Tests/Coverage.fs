@@ -8,8 +8,8 @@ type Mapping =
     /// Reached through <c>raw</c>, <c>fluent</c>, <c>modify</c> or a lambda part, for the reason given.
     | Raw of string
 
-/// Every public, non-obsolete member of the QuestPDF fluent extension classes and descriptors, keyed as
-/// <c>Type.Member</c>.
+/// Every public, non-obsolete method of the QuestPDF.Fluent and QuestPDF.Companion types and of the QuestPDF extension
+/// classes, keyed as <c>Type.Member</c>.
 let mappings: (string * Mapping) list =
     [ "AlignmentExtensions.AlignBottom", Wrapped [ "alignBottom" ]
       "AlignmentExtensions.AlignCenter", Wrapped [ "alignCenter" ]
@@ -37,6 +37,56 @@ let mappings: (string * Mapping) list =
       "DecorationDescriptor.Before", Wrapped [ "Decoration.before" ]
       "DecorationDescriptor.Content", Wrapped [ "Decoration.content" ]
       "DecorationExtensions.Decoration", Wrapped [ "decoration" ]
+      "Document.Compose", Raw "the IDocument implementation QuestPDF calls during generation"
+      "Document.Create", Wrapped [ "document"; "page" ]
+      "Document.GetMetadata", Raw "reads back the metadata of a built document; call it on the Document that document returns"
+      "Document.GetSettings", Raw "reads back the settings of a built document; call it on the Document that document returns"
+      "Document.Merge",
+      Raw "merging documents is planned for a later version of QuestPDF.FSharp; Document.Merge accepts the documents that document returns"
+      "Document.WithMetadata",
+      Wrapped
+          [ "Meta.title"
+            "Meta.author"
+            "Meta.subject"
+            "Meta.keywords"
+            "Meta.creator"
+            "Meta.producer"
+            "Meta.language"
+            "Meta.created"
+            "Meta.modified"
+            "Meta.dated" ]
+      "Document.WithSettings",
+      Wrapped
+          [ "Output.pdfA"
+            "Output.pdfUA"
+            "Output.compress"
+            "Output.imageQuality"
+            "Output.imageDpi"
+            "Output.rightToLeft" ]
+      "DocumentOperation.AddAttachment",
+      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
+      "DocumentOperation.Decrypt",
+      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
+      "DocumentOperation.Encrypt",
+      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
+      "DocumentOperation.ExtendMetadata",
+      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
+      "DocumentOperation.Linearize",
+      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
+      "DocumentOperation.LoadFile",
+      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
+      "DocumentOperation.MergeFile",
+      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
+      "DocumentOperation.OverlayFile",
+      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
+      "DocumentOperation.RemoveRestrictions",
+      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
+      "DocumentOperation.Save",
+      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
+      "DocumentOperation.TakePages",
+      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
+      "DocumentOperation.UnderlayFile",
+      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
       "DynamicComponentExtensions.Dynamic", Raw "dynamic components are planned for a later version of QuestPDF.FSharp"
       "DynamicComponentExtensions.Element", Raw "dynamic components are planned for a later version of QuestPDF.FSharp"
       "DynamicImageDescriptor.UseOriginalImage", Raw "dynamic images are planned for a later version of QuestPDF.FSharp"
@@ -133,7 +183,7 @@ let mappings: (string * Mapping) list =
       "PaddingExtensions.PaddingVertical", Wrapped [ "paddingV" ]
       "PageDescriptor.Background", Wrapped [ "Page.background" ]
       "PageDescriptor.Content", Wrapped [ "Page.content" ]
-      "PageDescriptor.ContentFromLeftToRight", Raw "left-to-right is the default page direction"
+      "PageDescriptor.ContentFromLeftToRight", Wrapped [ "Page.leftToRight" ]
       "PageDescriptor.ContentFromRightToLeft", Wrapped [ "Page.rightToLeft" ]
       "PageDescriptor.ContinuousSize", Wrapped [ "Page.continuous" ]
       "PageDescriptor.DefaultTextStyle", Wrapped [ "Page.textStyle" ]
@@ -151,6 +201,8 @@ let mappings: (string * Mapping) list =
       "PageDescriptor.MinSize", Wrapped [ "Page.minSize" ]
       "PageDescriptor.PageColor", Wrapped [ "Page.color" ]
       "PageDescriptor.Size", Wrapped [ "Page.sizeOf"; "Page.size" ]
+      "PageSizeExtensions.Landscape", Wrapped [ "PageSize.landscape" ]
+      "PageSizeExtensions.Portrait", Wrapped [ "PageSize.portrait" ]
       "PageExtensions.Page", Wrapped [ "page" ]
       "RotateExtensions.Rotate", Wrapped [ "rotate" ]
       "RotateExtensions.RotateLayoutClockwise", Wrapped [ "rotateLayoutCw" ]

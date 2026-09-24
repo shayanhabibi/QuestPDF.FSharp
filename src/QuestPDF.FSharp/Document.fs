@@ -50,10 +50,15 @@ module DocumentElements =
             | SettingsSetter set -> set settings
             | PageDefinition _ -> ()
 
+        let rightToLeft = settings.ContentDirection = ContentDirection.RightToLeft
+
         Document
             .Create(fun container ->
                 for pageParts in pages do
                     container.Page (fun descriptor ->
+                        if rightToLeft then
+                            descriptor.ContentFromRightToLeft ()
+
                         for part in pageParts do
                             part descriptor)
                     |> ignore)
@@ -136,6 +141,10 @@ module Page =
     /// <summary>Lays out content from right to left.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.ContentFromRightToLeft"/>.</remarks>
     let rightToLeft: PagePart = fun page -> page.ContentFromRightToLeft ()
+
+    /// <summary>Lays out content from left to right, overriding <c>Output.rightToLeft</c> for this page.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.ContentFromLeftToRight"/>.</remarks>
+    let leftToRight: PagePart = fun page -> page.ContentFromLeftToRight ()
 
     /// <summary>Fills the header, repeated at the top of every page.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.PageDescriptor.Header"/>.</remarks>
@@ -263,11 +272,14 @@ module Output =
     let imageDpi (dpi: int) : DocumentPart =
         set (fun settings -> settings.ImageRasterDpi <- dpi)
 
-    /// <summary>Sets the document content direction to right-to-left.</summary>
+    /// <summary>
+    /// Lays out every page of the document from right to left. <c>Page.leftToRight</c> restores left to right for
+    /// one page.
+    /// </summary>
     /// <remarks>
-    /// Sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.ContentDirection"/>. In QuestPDF 2026.9.0 the
-    /// layout of a page follows the page direction, set by <c>Page.rightToLeft</c>; generated pages are unchanged
-    /// by this setting.
+    /// Sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.ContentDirection"/> and calls
+    /// <see cref="M:QuestPDF.Fluent.PageDescriptor.ContentFromRightToLeft"/> on each page before its parts. In
+    /// QuestPDF 2026.9.0 the setting alone leaves the pages unchanged.
     /// </remarks>
     let rightToLeft: DocumentPart =
         set (fun settings -> settings.ContentDirection <- ContentDirection.RightToLeft)

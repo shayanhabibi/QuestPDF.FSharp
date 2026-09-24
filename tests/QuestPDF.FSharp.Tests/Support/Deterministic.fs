@@ -50,10 +50,13 @@ let wrapContent (content: Content) : IDocument =
 let private zeroHex (value: string) =
     Regex.Replace (value, "[0-9A-Fa-f]", "0")
 
-let private zeroAngleHex (m: Match) =
-    Regex.Replace (m.Value, "<[0-9A-Fa-f]*>", fun hex -> "<" + zeroHex (hex.Value.Trim ('<', '>')) + ">")
+/// A PDF string object: a hex string, or a literal string with backslash escapes.
+let private pdfString = @"(?:<[0-9A-Fa-f]*>|\((?:\x5C[\s\S]|[^\x5C()])*\))"
 
-/// Zeroes the XMP uuid and the trailer /ID of a PDF/A or PDF/UA file; the length is preserved.
+let private zeroId = "<00000000000000000000000000000000>"
+
+/// Zeroes the XMP uuid and replaces the trailer /ID of a PDF/A or PDF/UA file with zero hex strings. The length is
+/// preserved when the file writes the IDs as 16-byte hex strings; QuestPDF writes some as literal strings.
 let normalizeIds (pdf: byte[]) : byte[] =
     let text = Encoding.Latin1.GetString pdf
 
@@ -61,6 +64,14 @@ let normalizeIds (pdf: byte[]) : byte[] =
         Regex.Replace (text, @"uuid:[0-9A-Fa-f\-]{36}", fun m -> "uuid:" + zeroHex (m.Value.Substring 5))
 
     let text =
-        Regex.Replace (text, @"/ID\s*\[\s*<[0-9A-Fa-f]*>\s*<[0-9A-Fa-f]*>\s*\]", zeroAngleHex)
+        Regex.Replace (
+            text,
+            @"/ID\s*\[\s*"
+            + pdfString
+            + @"\s*"
+            + pdfString
+            + @"\s*\]",
+            fun _ -> "/ID [" + zeroId + " " + zeroId + "]"
+        )
 
     Encoding.Latin1.GetBytes text

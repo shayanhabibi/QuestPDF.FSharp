@@ -71,6 +71,7 @@ let pageParts =
           pageWith "color" (Page.color Colors.Amber.Lighten4) (fun p -> p.PageColor Colors.Amber.Lighten4)
           pageWith "textStyle" (Page.textStyle (Style.size 16)) (fun p -> p.DefaultTextStyle (fun (s: TextStyle) -> s.FontSize 16f))
           pageWith "rightToLeft" Page.rightToLeft (fun p -> p.ContentFromRightToLeft ())
+          pageWith "leftToRight" Page.leftToRight (fun p -> p.ContentFromLeftToRight ())
           slot "header" Page.header (fun p -> p.Header ())
           slot "content" Page.content (fun p -> p.Content ())
           slot "footer" Page.footer (fun p -> p.Footer ())
@@ -195,6 +196,13 @@ let documents =
               let first = Pdf.bytes (build ())
               Thread.Sleep 1100
               Expect.isFalse (first = Pdf.bytes (build ())) "the default dates are DateTimeOffset.Now"
+          }
+          test "without Meta.dated one document value generates the same bytes across seconds" {
+              configure ()
+              let built = document [ page [ Page.content (text "now") ] ]
+              let first = Pdf.bytes built
+              Thread.Sleep 1100
+              Expect.isTrue (first = Pdf.bytes built) "the dates are fixed when the document is built"
           } ]
 
 [<Tests>]

@@ -38,11 +38,24 @@ module Pdf =
     let show (document: IDocument) : unit =
         (licensed document).GeneratePdfAndShow ()
 
-    /// <summary>An image of each page, in page order, in a format and at a resolution in dots per inch.</summary>
-    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.GenerateExtensions.GenerateImages(QuestPDF.Infrastructure.IDocument,QuestPDF.Infrastructure.ImageGenerationSettings)"/>.</remarks>
+    /// <summary>
+    /// An image of each page, in page order, in a format and at a resolution in dots per inch. The settings of the
+    /// document are unchanged afterwards.
+    /// </summary>
+    /// <remarks>
+    /// Maps to <see cref="M:QuestPDF.Fluent.GenerateExtensions.GenerateImages(QuestPDF.Infrastructure.IDocument,QuestPDF.Infrastructure.ImageGenerationSettings)"/>,
+    /// which sets <see cref="P:QuestPDF.Infrastructure.DocumentSettings.ImageRasterDpi"/> of the document to the
+    /// image resolution; the previous value is restored.
+    /// </remarks>
     let images (format: ImageFormat) (dpi: int) (document: IDocument) : byte[] list =
-        (licensed document).GenerateImages (ImageGenerationSettings (ImageFormat = format, RasterDpi = dpi))
-        |> List.ofSeq
+        let settings = (licensed document).GetSettings ()
+        let rasterDpi = settings.ImageRasterDpi
+
+        try
+            document.GenerateImages (ImageGenerationSettings (ImageFormat = format, RasterDpi = dpi))
+            |> List.ofSeq
+        finally
+            settings.ImageRasterDpi <- rasterDpi
 
     /// <summary>An SVG document of each page, in page order.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.GenerateExtensions.GenerateSvg(QuestPDF.Infrastructure.IDocument)"/>.</remarks>

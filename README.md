@@ -41,14 +41,17 @@ document [
 | Elements | `lineH`/`lineV`, `Image.file`/`bytes`/`shared`, `Svg.text`, `pageBreak`, `placeholder` |
 | Paging | `showOnce`, `skipOnce`, `repeat`, `ensureSpace`, `preventPageBreak`, `showEntire`, `showWhen`, sections and links |
 | Transforms | `rotate`, `scale`, `flipH`/`flipV`, `offsetX`/`offsetY`, `zIndex` |
-| Pages | `Page.size`/`sizeOf`/`minSize`/`maxSize`/`continuous`, margins, colour, header/content/footer, background/foreground |
-| Document | `Meta.*` metadata (`Meta.dated` pins both dates for reproducible bytes), `Output.*` settings: `pdfA`, `pdfUA`, `compress`, `imageQuality`, `imageDpi` |
+| Pages | `Page.size`/`sizeOf`/`minSize`/`maxSize`/`continuous`, margins, colour, header/content/footer, background/foreground, `rightToLeft`/`leftToRight` |
+| Document | `Meta.*` metadata (`Meta.dated` pins both dates for reproducible bytes), `Output.*` settings: `pdfA`, `pdfUA`, `compress`, `imageQuality`, `imageDpi`, `rightToLeft` |
 | Generation | `Pdf.bytes`/`save`/`write`/`show`, `Pdf.images` (PNG/JPEG/WebP per page), `Pdf.svgs`, `Pdf.companion` |
 | Setup | `License.*`, `Font.registerFile`/`registerDirectory`/`registerBytes`/`useSystemFonts`/`strict`/`registered` |
 | Interop | `raw`, `fluent` and `modify` lift fluent code; `Content.run` mounts wrapper content in raw code; `Text.raw`; any lambda is a valid part |
 
-Every public QuestPDF fluent member is mapped to a wrapper function or to the raw escape hatch in
-`tests/QuestPDF.FSharp.Tests/Coverage.fs`; a reflection test fails when a QuestPDF upgrade adds an unmapped member.
+Every public method of the `QuestPDF.Fluent` and `QuestPDF.Companion` types (the descriptors, `Document`,
+`DocumentOperation` and the extension classes) and of the QuestPDF extension classes in other namespaces, such as
+`PageSizeExtensions`, is mapped to a wrapper function or to the raw escape hatch in
+`tests/QuestPDF.FSharp.Tests/Coverage.fs`. A reflection test fails when a QuestPDF upgrade adds an unmapped method.
+The [interop page](https://shayanhabibi.github.io/QuestPDF.FSharp/interop.html) renders the table.
 
 ## Build CLI
 
@@ -66,7 +69,7 @@ dotnet fsi build.fsx -- --help
 | `format` | Formats every source file with Fantomas (`--dry-format` checks instead) |
 | `publish` | Builds, tests, packs and pushes to NuGet (`--api-key`, or the `NUGET_API_KEY` env var) |
 | `bump` | Bumps the version of a project |
-| `docs` | Builds the fsdocs site from `docs/` (`--watch` to serve it) |
+| `docs` | Builds the fsdocs site from `docs/`, evaluating every page, and fails on a snippet that does not compile or run (`--watch` to serve it) |
 
 Global flags: `--quick` skips restores and cleaning,
 `--format` formats before building, `--dry-format` checks formatting before building,
@@ -78,7 +81,8 @@ Global flags: `--quick` skips restores and cleaning,
 build.fsx                      the build CLI
 src/QuestPDF.FSharp/           the library
 tests/QuestPDF.FSharp.Tests/   the Expecto suite
-docs/                          fsdocs content
+docs/                          fsdocs pages: literate .fsx scripts evaluated by the docs build
+fonts/                         Lato (SIL OFL 1.1), registered by the docs pages for their page images
 ```
 
 ### Adding a project
