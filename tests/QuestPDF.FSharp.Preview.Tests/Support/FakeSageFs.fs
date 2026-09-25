@@ -94,6 +94,7 @@ type FakeDaemon() =
     let mutable eventConnections = 0
     let mutable sessions = """{"sessions":[]}"""
     let mutable exec = 200, fixture "exec-success.json"
+    let mutable execFor: (string -> int * string) option = None
     let mutable onExec: unit -> unit = ignore
     let mutable eventDelay = TimeSpan.Zero
 
@@ -160,7 +161,12 @@ type FakeDaemon() =
 
             execs.Enqueue body
             onExec ()
-            let status, reply = exec
+
+            let status, reply =
+                match execFor with
+                | Some answer -> answer body
+                | None -> exec
+
             respond context status "application/json; charset=utf-8" reply
         | _ -> respond context 404 "text/plain" ""
 
@@ -192,6 +198,11 @@ type FakeDaemon() =
     member _.Exec
         with get () = exec
         and set value = exec <- value
+
+    /// The status code and body of POST /exec by the request body, in place of Exec when set.
+    member _.ExecFor
+        with get () = execFor
+        and set value = execFor <- value
 
     /// Runs on each POST /exec after the body is recorded and before the reply, as the evaluation of the script.
     member _.OnExec

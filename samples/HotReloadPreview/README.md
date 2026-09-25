@@ -12,7 +12,8 @@ daemon (`sagefs`).
 3. Open http://localhost:5800/ and edit `invoice.fsx` or `parts/header.fsx`. Every save reloads the script; a
    compile error shows over the last good pages.
 
-Outside this repository, replace the `#r` lines of `invoice.fsx` with `#r "nuget: QuestPDF.FSharp.Preview"`.
+Outside this repository, replace the `#r` lines of `invoice.fsx` with `#r "nuget: QuestPDF.FSharp.Preview, 1.0.0"`.
+Keep the version: a reference without one is resolved again on every reload.
 
 ## Project: `HotReloadPreview.fsproj`
 

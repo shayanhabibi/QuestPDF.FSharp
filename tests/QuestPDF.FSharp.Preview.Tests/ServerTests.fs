@@ -125,6 +125,30 @@ let private http =
                   Expect.stringContains svg.CacheControl "immutable" "hashed pages are immutable"
                   Expect.stringStarts (Text.Encoding.ASCII.GetString (get server "/document.pdf").Body) "%PDF" "the PDF")
           }
+          test "the page SVG asks for the weights of the fonts the PDF uses" {
+              configure ()
+
+              let styled () =
+                  document
+                      [ page
+                            [ Page.content (
+                                  column
+                                      [ text "regular"
+                                        styledText Style.semiBold "semibold"
+                                        styledText Style.bold "bold" ]
+                              ) ] ]
+
+              withServer styled (fun server ->
+                  let svg = (get server "/page/1.svg").Text
+
+                  let weights =
+                      [ for m in Regex.Matches (svg, "<text[^>]*>") ->
+                            let weight = Regex.Match (m.Value, "font-weight=\"([^\"]*)\"")
+                            if weight.Success then weight.Groups[1].Value else "" ]
+
+                  Expect.equal weights [ ""; "600"; "700" ] "regular, semibold and bold"
+                  Expect.stringContains svg "font-weight:700;" "a rule serves Lato-Bold at 700")
+          }
           test "an SSE reader receives a version after a change and none after an identical render" {
               configure ()
               let mutable line = "before"

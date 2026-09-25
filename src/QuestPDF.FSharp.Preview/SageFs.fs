@@ -64,20 +64,34 @@ module internal SageFsClient =
         with error ->
             Error (unreachable daemon error)
 
-    /// Loads a script again into the session of the current process, and returns when the load has finished.
+    /// The text of a file; None when it cannot be read.
+    let private read (path: string) : string option =
+        try
+            Some (File.ReadAllText path)
+        with _ ->
+            None
+
+    /// Loads a script again into the session of the current process, and returns when the load has finished. After a
+    /// compile error, each file the script loads is loaded on its own, in load order, until one fails to compile; the
+    /// errors then name that file.
     let reload (daemon: Uri) (script: string) (projects: string) (currentDirectory: string) : ReloadOutcome =
         match session daemon projects currentDirectory with
         | Error reason -> Routing reason
         | Ok session ->
-            try
-                let request = new HttpRequestMessage (HttpMethod.Post, Uri (daemon, "exec"))
+            let load (file: string) =
+                try
+                    let request = new HttpRequestMessage (HttpMethod.Post, Uri (daemon, "exec"))
 
-                request.Content <- new StringContent (ExecProtocol.request script session.WorkingDirectory, Encoding.UTF8, "application/json")
+                    request.Content <- new StringContent (ExecProtocol.request file session.WorkingDirectory, Encoding.UTF8, "application/json")
 
-                let status, body = send request (TimeSpan.FromMinutes 5.0)
-                ExecProtocol.parse script status body
-            with error ->
-                Routing (unreachable daemon error)
+                    let status, body = send request (TimeSpan.FromMinutes 5.0)
+                    ExecProtocol.parse file status body
+                with error ->
+                    Routing (unreachable daemon error)
+
+            match load script with
+            | Compile _ as failed -> ExecProtocol.attribute load (ExecProtocol.loadOrder read script) failed
+            | outcome -> outcome
 
     /// Turns on file watching for every project file of a session, through the dashboard of the daemon, and returns
     /// the number of watched files.
@@ -152,7 +166,10 @@ type internal ProjectNudger(daemon: Uri, session: unit -> Result<SessionInfo, st
                         finally
                             reader.Dispose ()
                             connected.Reset ()
-                            lasting <- lasting || opened.Elapsed >= TimeSpan.FromSeconds 5.0
+
+                            lasting <-
+                                lasting
+                                || opened.Elapsed >= TimeSpan.FromSeconds 5.0
                 finally
                     response.Dispose ()
             with _ ->

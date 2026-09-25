@@ -138,4 +138,19 @@ let tests =
                         Expect.equal style.LocalName "style" "the first child"
                         Expect.equal style.InnerText css "the rules as text"
                     }
-                test "no rules leave the page unchanged" { Expect.equal (FontFace.embed "" "<svg></svg>") "<svg></svg>" "unchanged" } ] ]
+                test "no rules leave the page unchanged" { Expect.equal (FontFace.embed "" "<svg></svg>") "<svg></svg>" "unchanged" } ]
+          testList
+              "weights"
+              [ test "the weights Skia writes one step low are raised to the weights of the text" {
+                    let text (weight: string) =
+                        $"<text font-size=\"12\" font-weight=\"{weight}\" font-family=\"Lato\">t</text>"
+
+                    for written, meant in [ "400", "500"; "500", "600"; "600", "700"; "bold", "800"; "800", "900" ] do
+                        Expect.equal (FontFace.weights $"<svg>{text written}</svg>") $"<svg>{text meant}</svg>" written
+                }
+                test "text without a weight and the light weights are kept" {
+                    let svg =
+                        "<svg><text font-family=\"Lato\">400 600 bold</text><text font-weight=\"300\">t</text></svg>"
+
+                    Expect.equal (FontFace.weights svg) svg "unchanged"
+                } ] ]

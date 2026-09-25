@@ -52,7 +52,12 @@ index: 1
   changes; write `let invoice () = document [...]`. The preview shows a hint when the function returns the same
   document on every call.
 - **A SageFs session reloads only the files it watches.** Project sessions start with watching off. `Preview.show`
-  turns it on for the session; after a hard reset, send `preview.fsx` again.
+  turns it on for the session.
+- **A hard reset stops a project preview.** The reset starts a new process for the session, so the page stops
+  answering and watching is off again. Send `preview.fsx` again.
+- **Pin the package version in a live script:** `#r "nuget: QuestPDF.FSharp.Preview, 1.0.0"`. Every save loads the
+  script again, and F# Interactive resolves a reference without a version on every load. That adds one to several
+  seconds to each reload.
 - **`let title () = failwith "todo"` has type `unit -> 'a`.** Under SageFs Hot Reload, fixing it later is a signature
   change that its callers do not see. Annotate the result: `let title () : string = failwith "todo"`.
 - **Scripts under `Preview.Live` run their top level on every save.** Keep it cheap and repeatable: the license, the
@@ -62,5 +67,5 @@ index: 1
 - **A class library needs `<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>`** to load in a SageFs
   session. Without it, QuestPDF's native library is missing, `QuestPDF.Settings` fails to initialise, and the session
   needs a hard reset.
-- **Pin the SDK with `global.json`** in folders you open in SageFs. Without it, a session can pick a preview SDK and
-  fail at warm-up.
+- **Pin the SDK with `global.json`** in folders you open in SageFs, and add it before `dotnet new console`. Without
+  it, a session can pick a preview SDK and fail at warm-up, and `dotnet new` targets the framework of the preview SDK.

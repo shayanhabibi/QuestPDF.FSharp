@@ -112,6 +112,123 @@ let private diagnostics =
               Expect.isEmpty (ExecProtocol.diagnostics script "Error: Evaluation failed: Exception: boom") "none"
           } ]
 
+let private loads =
+    testList
+        "loads"
+        [ test "a directive names one or more files in regular, verbatim and triple-quoted strings" {
+              let text =
+                  String.concat
+                      "\n"
+                      [ """#r "nuget: X" """
+                        """#load "parts/a.fsx" """
+                        """  #load @"C:\b.fsx" "c.fsx" """
+                        "#load \"\"\"d.fsx\"\"\""
+                        """#load "e\\f.fsx" """
+                        "let x = 1" ]
+
+              Expect.equal (ExecProtocol.loads text) [ "parts/a.fsx"; @"C:\b.fsx"; "c.fsx"; "d.fsx"; @"e\f.fsx" ] "the paths in order"
+          }
+          test "a commented directive and a #load inside a string are left out" {
+              let text =
+                  String.concat
+                      "\n"
+                      [ """// #load "a.fsx" """
+                        """let s = "#load \"b.fsx\"" """
+                        "(*"
+                        """#load "c.fsx" """
+                        "*)" ]
+
+              Expect.equal (ExecProtocol.loads text) [] "no paths"
+          } ]
+
+let private loadOrder =
+    testList
+        "loadOrder"
+        [ test "loaded files come before the files that load them, each once, without the script" {
+              let root =
+                  if System.OperatingSystem.IsWindows () then
+                      @"C:\w"
+                  else
+                      "/w"
+
+              let at (relative: string) =
+                  System.IO.Path.GetFullPath (System.IO.Path.Combine (root, relative))
+
+              let files =
+                  Map
+                      [ at "main.fsx", "#load \"parts/b.fsx\" \"parts/a.fsx\""
+                        at "parts/b.fsx", "#load \"a.fsx\""
+                        at "parts/a.fsx", "module A"
+                        at "unused.fsx", "" ]
+
+              Expect.equal (ExecProtocol.loadOrder files.TryFind (at "main.fsx")) [ at "parts/a.fsx"; at "parts/b.fsx" ] "a, then b"
+          }
+          test "a file that cannot be read, and a cycle, end the walk without failing" {
+              let root =
+                  if System.OperatingSystem.IsWindows () then
+                      @"C:\w"
+                  else
+                      "/w"
+
+              let at (relative: string) =
+                  System.IO.Path.GetFullPath (System.IO.Path.Combine (root, relative))
+
+              let files =
+                  Map
+                      [ at "main.fsx", "#load \"a.fsx\" \"missing.fsx\""
+                        at "a.fsx", "#load \"main.fsx\"" ]
+
+              Expect.equal (ExecProtocol.loadOrder files.TryFind (at "main.fsx")) [ at "a.fsx" ] "a only"
+          } ]
+
+let private attribute =
+    let error (file: string) (line: int) =
+        { File = file
+          Line = line
+          Column = 1
+          Message = "m" }
+
+    let failed = Compile [ error script 5 ]
+
+    testList
+        "attribute"
+        [ test "the errors of the first loaded file that fails to compile replace the errors of the script" {
+              let probed = ResizeArray<string> ()
+
+              let probe (file: string) =
+                  probed.Add file
+
+                  match file with
+                  | "b.fsx" -> Compile [ error "b.fsx" 5 ]
+                  | _ -> Loaded
+
+              Expect.equal (ExecProtocol.attribute probe [ "a.fsx"; "b.fsx"; "c.fsx" ] failed) (Compile [ error "b.fsx" 5 ]) "b's errors"
+              Expect.equal (List.ofSeq probed) [ "a.fsx"; "b.fsx" ] "probes stop at b"
+          }
+          test "when every loaded file compiles, the errors stay with the script" {
+              let probe _ =
+                  Runtime "boom"
+
+              Expect.equal (ExecProtocol.attribute probe [ "a.fsx" ] failed) failed "unchanged"
+          }
+          test "a probe that cannot reach the session ends the search" {
+              let probed = ResizeArray<string> ()
+
+              let probe (file: string) =
+                  probed.Add file
+                  Routing "down"
+
+              Expect.equal (ExecProtocol.attribute probe [ "a.fsx"; "b.fsx" ] failed) failed "unchanged"
+              Expect.equal (List.ofSeq probed) [ "a.fsx" ] "one probe"
+          }
+          test "an outcome other than a compile error makes no probe" {
+              let probe (file: string) =
+                  failwith $"probed {file}"
+
+              for outcome in [ Loaded; Runtime "boom"; Routing "down" ] do
+                  Expect.equal (ExecProtocol.attribute probe [ "a.fsx" ] outcome) outcome (string outcome)
+          } ]
+
 let private issues =
     testList
         "issue"
@@ -131,4 +248,5 @@ let private issues =
           } ]
 
 [<Tests>]
-let tests = testList "ExecProtocol" [ request; parse; diagnostics; issues ]
+let tests =
+    testList "ExecProtocol" [ request; parse; diagnostics; loads; loadOrder; attribute; issues ]

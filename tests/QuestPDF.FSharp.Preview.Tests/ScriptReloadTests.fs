@@ -155,6 +155,34 @@ let tests =
 
                   Expect.equal live.Server.Snapshot.Hashes pages "the pages")
           }
+          test "a compile error in a file the script loads names that file" {
+              withLive (fun live ->
+                  let parts = Directory.CreateDirectory (Path.Combine (live.Directory, "parts"))
+                  let header = Path.Combine (parts.FullName, "header.fsx")
+                  File.WriteAllText (header, "module Header")
+                  live.Save "#load \"parts/header.fsx\""
+                  live.Run "first"
+
+                  // SageFs names no file: the load of the script and the load of the header fail alike.
+                  live.Daemon.ExecFor <- Some (fun _ -> 200, fixture "exec-compile-error-loaded.json")
+                  File.WriteAllText (header, "module Header // broken")
+
+                  let failed () =
+                      match live.Server.Status with
+                      | Preview.CompileFailed _ -> true
+                      | _ -> false
+
+                  Expect.isTrue (eventually failed) $"CompileFailed, got {live.Server.Status}"
+
+                  match live.Server.Status with
+                  | Preview.CompileFailed [ d ] -> Expect.equal (d.File, d.Line, d.Column) (header, 5, 27) "the header position"
+                  | other -> failtest $"expected one compile error, got %A{other}"
+
+                  let loaded = live.Daemon.Execs |> List.map code
+                  Expect.equal loaded.Length 2 "the reload and one probe"
+                  Expect.stringStarts loaded[0] $"#load @\"{live.Script}\"" "the script first"
+                  Expect.stringStarts loaded[1] $"#load @\"{header}\"" "then the header")
+          }
           test "a successful reload clears the compile error and the rerun script bumps the version" {
               withLive (fun live ->
                   live.Run "first"

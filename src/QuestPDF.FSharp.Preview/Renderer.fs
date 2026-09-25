@@ -124,7 +124,10 @@ type internal Engine(port: int, env: ServeEnv, initialSettings: RenderSettings, 
 
                 let svgs =
                     Pdf.svgs current
-                    |> List.map (FontFace.embed (FontFace.css served))
+                    |> List.map (
+                        FontFace.weights
+                        >> FontFace.embed (FontFace.css served)
+                    )
 
                 lock sync (fun () -> fonts <- served)
                 Pages (svgs, clock.Elapsed)

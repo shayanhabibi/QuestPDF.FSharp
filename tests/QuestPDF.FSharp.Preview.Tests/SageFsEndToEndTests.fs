@@ -327,15 +327,30 @@ let tests =
                               page.Kind = "rendered"
                               && page.Svg.Contains "Edit two")
 
-                      rewrite (Path.Combine (directory, "parts", "header.fsx")) "$\"Invoice #{number}\"" "$\"Bill #{number}\""
+                      let headerFile = Path.Combine (directory, "parts", "header.fsx")
+                      rewrite headerFile "$\"Invoice #{number}\"" "$\"Bill #{number}\""
                       let header = waitFor 3.0 "the header edit" (fun () -> page.Svg.Contains "Bill #1")
 
+                      rewrite headerFile "$\"Bill #{number}\"" "(number + 0)"
+
+                      let loadedBroken =
+                          waitFor 6.0 "the loaded file's compile error" (fun () -> page.Kind = "compileFailed")
+
+                      let snapshot = page.Snapshot
+                      Expect.stringContains snapshot "header.fsx" $"the diagnostic names the loaded file: {snapshot}"
+                      Expect.isFalse (snapshot.Contains "invoice.fsx") $"the diagnostic does not name the script: {snapshot}"
+                      rewrite headerFile "(number + 0)" "$\"Bill #{number}\""
+
+                      waitFor 6.0 "the loaded file's fix" (fun () -> page.Kind = "rendered")
+                      |> ignore
+
                       printfn
-                          "SageFs e2e script latencies: edit %.0f ms, compile error %.0f ms, fix %.0f ms, loaded file %.0f ms"
+                          "SageFs e2e script latencies: edit %.0f ms, compile error %.0f ms, fix %.0f ms, loaded file %.0f ms, loaded file error %.0f ms"
                           edit.TotalMilliseconds
                           broken.TotalMilliseconds
                           fixedTime.TotalMilliseconds
-                          header.TotalMilliseconds)
+                          header.TotalMilliseconds
+                          loadedBroken.TotalMilliseconds)
               finally
                   tryDelete directory)
           e2e "a saved project file patches the document function of a Hot Reload session" (fun () ->

@@ -33,8 +33,8 @@ let freePort () =
 
 `QuestPDF.FSharp.Preview` serves the pages of a document function to a browser and renders them again when the code
 changes. Under [SageFs](https://github.com/WillEhrendreich/SageFs), a save in any editor reloads the code: the page
-updates in about half a second, keeps its scroll position, and shows compile errors and exceptions over the last good
-pages.
+updates within half a second (0.25 to 0.5 s measured for both recipes), keeps its scroll position, and shows compile
+errors and exceptions over the last good pages.
 
 ![The preview page with a compile error over the last good pages](../img/preview.png)
 
@@ -64,7 +64,7 @@ mkdir fonts          # copy the .ttf files you use, e.g. Lato-*.ttf (SIL OFL)
 `invoice.fsx`:
 
 ```fsharp
-#r "nuget: QuestPDF.FSharp.Preview"
+#r "nuget: QuestPDF.FSharp.Preview, 1.0.0"
 
 open QuestPDF.FSharp
 
@@ -87,13 +87,22 @@ let invoice () =
 Preview.Live invoice
 ```
 
+Keep the version in the `#r` line. Every save loads the script again, and F# Interactive resolves a reference without
+a version on every load: that took 1 to 5 s a reload in our measurements, and about a second more on the first
+reload after an error. With the version, a reload took 0.25 to 0.4 s, after an error too.
+
 1. **Start the daemon** with `sagefs`, or let the VS Code extension start it.
 2. **Create a session on the folder** in the **REPL** workflow with **no projects**:
    - VS Code: open the folder; the extension creates the session.
    - Dashboard: http://localhost:37750/dashboard, create a session with the folder as the working directory, no
      projects and the REPL workflow.
    - MCP: `create_session {"working_directory": "<folder>", "projects": "", "workflow": "interactive"}`.
-3. **Evaluate the file once**: *SageFs: Evaluate File* in VS Code, or `#load "invoice.fsx";;` in the dashboard REPL.
+3. **Evaluate the file once**:
+   - VS Code: *SageFs: Evaluate File*.
+   - Dashboard REPL: `#load "invoice.fsx";;`.
+   - MCP: `send_fsharp_code {"agentName": "<your name>", "working_directory": "<folder>", "code": "#load \"invoice.fsx\";;"}`.
+     SageFs 0.6.828 refuses the call without `agentName`.
+
    Evaluating a selection is not enough, because `Preview.Live` needs the path of the file; the page says so. The
    evaluation prints:
 
@@ -103,12 +112,16 @@ Preview.Live invoice
    ```
 
 4. **Open the URL** and edit the script in any editor. On save the page updates.
-   - A typo shows the compiler error, such as `invoice.fsx(14,40): The type 'int' does not match...`, over the
-     dimmed last good pages.
+   - A typo shows the compiler error over the dimmed last good pages. The banner names the full path of the file, the
+     line and the column, such as `C:\work\invoice\invoice.fsx(16,40): The type 'int' does not match the type
+     'Content'`.
    - An exception in `invoice ()` shows its message and stack trace.
    - Fixing either clears the banner.
    - Saving any `.fs` or `.fsx` file under the script's folder, such as a file the script `#load`s, reloads the
      script.
+   - An error in a file the script `#load`s names that file, such as `C:\work\invoice\parts\header.fsx(5,23)`.
+     SageFs reports no file name, so after a compile error the preview loads each file the script `#load`s on its own,
+     in load order, until one fails; those loads run the top level of each file, as every reload does.
 5. **Stop** by stopping the session, or with `Preview.stop 5800`.
 
 ## The project recipe
@@ -116,31 +129,75 @@ Preview.Live invoice
 In an application, the preview re-renders a function of a compiled module while SageFs Hot Reload patches the
 module on save.
 
-1. **Create the app** with `dotnet new console -lang F#`. A class library also needs
-   `<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>` in its project file. Then:
-   - add a `global.json`;
-   - `dotnet add package QuestPDF.FSharp.Preview`;
-   - put `let build () = document [...]` in `Invoice.fs`.
-2. **Build once** with `dotnet build`.
-3. **Create a session** for the project in the **Hot Reload** workflow: *SageFs: Switch Workflow → Hot Reload* in
-   VS Code, the workflow dropdown of the dashboard, or `workflow: "live"` over MCP.
-4. **Send `preview.fsx`** to the session:
+1. **Create the app.** Add `global.json` first: `dotnet new console` targets the newest SDK installed, and with a
+   preview SDK such as 11.0 installed, a project created before `global.json` targets `net11.0`. `dotnet add package`
+   then fails with `NETSDK1045`.
+
+   ```shell
+   mkdir invoice-app && cd invoice-app
+   dotnet new globaljson --sdk-version 10.0.100 --roll-forward latestFeature
+   dotnet new console -lang F#
+   dotnet add package QuestPDF.FSharp.Preview
+   mkdir fonts          # copy the .ttf files you use, e.g. Lato-*.ttf (SIL OFL)
+   ```
+
+   A class library also needs `<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>` in its project file.
+2. **Add `Invoice.fs`** with a module, so that `Invoice.build` names the document function:
+
+   ```fsharp
+   module Invoice
+
+   open QuestPDF.FSharp
+
+   let build () =
+       document [
+           page [
+               Page.size PageSizes.A5
+               Page.margin (1 * cm)
+               Page.content (text "Thank you for your business.")
+           ]
+       ]
+   ```
+
+   F# compiles files in project order, so list it before `Program.fs` in `invoice-app.fsproj`:
+
+   ```xml
+   <ItemGroup>
+     <Compile Include="Invoice.fs" />
+     <Compile Include="Program.fs" />
+   </ItemGroup>
+   ```
+
+3. **Build once** with `dotnet build`.
+4. **Create a session** for the project in the **Hot Reload** workflow: *SageFs: Switch Workflow → Hot Reload* in
+   VS Code, the workflow dropdown of the dashboard, or
+   `create_session {"working_directory": "<folder>", "projects": "<folder>/invoice-app.fsproj", "workflow": "live"}`
+   over MCP.
+5. **Write `preview.fsx`** next to the project file:
 
    ```fsharp
    open QuestPDF.FSharp
 
    License.community ()
-   Font.registerDirectory "path/to/fonts"
+   Font.useSystemFonts false
+   Font.registerDirectory (System.IO.Path.Combine (__SOURCE_DIRECTORY__, "fonts"))
    Preview.show Invoice.build
    ```
 
-   It prints the URL and `Preview: SageFs session <sid>, watching <n> files`: the preview turns on SageFs file
-   watching for the session, which is off in a new session.
-5. **Edit and save `Invoice.fs`.** The page updates.
+   `__SOURCE_DIRECTORY__` is the folder of `preview.fsx`. A relative path such as `"fonts"` resolves against the
+   working directory of the session instead.
+6. **Send `preview.fsx`** to the session by loading it, as in step 3 of the script recipe: *SageFs: Evaluate File*,
+   `#load "preview.fsx";;` in the dashboard REPL, or `send_fsharp_code` with that code. It prints the URL and
+   `Preview: SageFs session <sid>, watching <n> files`: the preview turns on SageFs file watching for the session,
+   which is off in a new session.
+7. **Edit and save `Invoice.fs`.** The page updates.
    - Keep the signature of `build`. A changed signature, a new type, or a helper that becomes generic needs a hard
      reset of the session and `preview.fsx` again.
    - A compile error leaves the last good pages up without a banner; the editor shows the error.
-   - A hard reset clears the watched files of the session. Sending `preview.fsx` again turns watching back on.
+   - A hard reset starts a new process for the session. The old process serves the page until the rebuild finishes,
+     then the page stops answering and watching is off. Send `preview.fsx` again: it starts a new server, whose page
+     reloads itself, and turns watching back on. The number of watched files it prints can differ from the first
+     send.
 
 ## What reloads
 
@@ -205,12 +262,40 @@ once, and the page shows a hint when the function returns the same document on e
 | `Fonts` | `[]` | font files or folders served to the browser in addition to the `Font.register*` fonts |
 | `OpenBrowser` | `false` | opens the page on the first start of a port |
 
-The page draws the SVG of each page with the fonts of `Font.register*` and `Options.Fonts`. Its **PDF** link serves
-the PDF itself, for checks where the exact output matters.
+The page draws the SVG of each page with the fonts of `Font.register*` and `Options.Fonts`, at the weights the PDF
+uses. Its **PDF** link serves the PDF itself, for checks where the exact output matters.
+
+## Endpoints
+
+Scripts, CI checks and agents can read the preview over HTTP at `http://localhost:<port>`:
+
+| Path | Content |
+|------|---------|
+| `/` | the page |
+| `/snapshot` | the state as JSON, described below |
+| `/events` | server-sent events: an event named `version` whose data is the `/snapshot` JSON, sent on connect and on each new version |
+| `/page/<n>.svg` | page `n`, from 1, as SVG with its `@font-face` rules; `?h=<hash>` from `pages` makes it cacheable |
+| `/font/<i>` | the font of the `i`th `@font-face` rule, from 0 |
+| `/document.pdf` | the PDF of the current document function, rendered on request |
+
+The `/snapshot` JSON:
+
+| Field | Meaning |
+|-------|---------|
+| `instance` | an id of the running server; it changes when the server starts again, such as after a hard reset |
+| `version` | increases when the pages, the status or the hint change |
+| `pages` | the content hash of each page, in order |
+| `status` | an object whose `kind` is `starting`, `rendered` (with `pages` and `renderMs`), `renderFailed` (with `error`), `compileFailed` (with `diagnostics`: `file`, `line`, `column`, `message`) or `reloadFailed` (with `reason`) |
+| `hint` | the text of the hint banner, or `null` |
+| `reload` | `sagefs-script`, `sagefs-project` or `manual` |
+
+For example, `curl -s http://localhost:5800/snapshot` right after a typo in a loaded file returns a status such as
+`{"kind":"compileFailed","diagnostics":[{"file":"C:\\work\\invoice\\parts\\header.fsx","line":5,"column":23,"message":"..."}]}`.
 
 ## Troubleshooting
 
 See the [gotchas](../gotchas.html): pass a function rather than a document, keep the top level of a live script
-cheap, turn on file watching for a project session, annotate a helper that is still `failwith "todo"`, pin the SDK
-with `global.json`, and give a class library `CopyLocalLockFileAssemblies`.
+cheap, pin the package version in a live script, turn on file watching for a project session, send `preview.fsx`
+again after a hard reset, annotate a helper that is still `failwith "todo"`, pin the SDK with `global.json` before
+`dotnet new`, and give a class library `CopyLocalLockFileAssemblies`.
 *)

@@ -58,10 +58,7 @@ module Preview =
     /// <summary>A compiler error reported for a saved script.</summary>
     type Diagnostic =
         {
-            /// <summary>
-            /// The path of the reloaded script. An error in a file loaded by the script carries the line and column
-            /// within that file.
-            /// </summary>
+            /// <summary>The full path of the file that holds the error: the reloaded script or a file it loads.</summary>
             File: string
             /// <summary>The line of the error, from 1.</summary>
             Line: int

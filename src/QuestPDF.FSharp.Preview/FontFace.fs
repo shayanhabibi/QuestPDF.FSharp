@@ -3,6 +3,7 @@ namespace QuestPDF.FSharp.PreviewServer
 open System
 open System.IO
 open System.Text
+open System.Text.RegularExpressions
 open QuestPDF.FSharp
 
 /// The CSS face of a font file: the typographic family, the weight class and the italic flag.
@@ -177,3 +178,32 @@ module internal FontFace =
             else
                 let data = css.Replace ("]]>", "]]]]><![CDATA[>")
                 svg.Insert (tagEnd + 1, "<style><![CDATA[" + data + "]]></style>")
+
+    /// A text element's start tag.
+    let private textTag =
+        Regex ("<(text|tspan)\\b[^>]*>", RegexOptions.CultureInvariant)
+
+    /// A font-weight attribute whose value Skia writes for a weight of 500 or more.
+    let private skiaWeight =
+        Regex ("\\bfont-weight=\"(400|500|600|bold|800)\"", RegexOptions.CultureInvariant)
+
+    /// The SVG of a page with the font-weight attributes of its text set to the weights of the text style. Skia writes
+    /// the weights 500 to 900 one step low, and 800 as bold.
+    let weights (svg: string) : string =
+        textTag.Replace (
+            svg,
+            fun tag ->
+                skiaWeight.Replace (
+                    tag.Value,
+                    fun weight ->
+                        let meant =
+                            match weight.Groups[1].Value with
+                            | "400" -> "500"
+                            | "500" -> "600"
+                            | "600" -> "700"
+                            | "bold" -> "800"
+                            | _ -> "900"
+
+                        $"font-weight=\"{meant}\""
+                )
+        )
