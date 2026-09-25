@@ -33,7 +33,7 @@ let freePort () =
 
 `QuestPDF.FSharp.Preview` serves the pages of a document function to a browser and renders them again when the code
 changes. Under [SageFs](https://github.com/WillEhrendreich/SageFs), a save in any editor reloads the code: the page
-updates within half a second (0.25 to 0.5 s measured for both recipes), keeps its scroll position, and shows compile
+updates in about half a second (0.25 to 0.6 s measured for both recipes), keeps its scroll position, and shows compile
 errors and exceptions over the last good pages.
 
 ![The preview page with a compile error over the last good pages](../img/preview.png)
