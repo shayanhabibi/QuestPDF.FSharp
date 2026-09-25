@@ -42,6 +42,15 @@ type PdfLayerPart = DocumentOperation.LayerConfiguration -> unit
 /// <summary>An option of an attachment, listed in <c>PdfFile.attach path [ ... ]</c>.</summary>
 type AttachmentPart = DocumentOperation.DocumentAttachment -> unit
 
+/// <summary>A password or permission of a 40-bit encryption, listed in <c>PdfFile.encrypt40 [ ... ]</c>.</summary>
+type Encryption40Part = DocumentOperation.Encryption40Bit -> unit
+
+/// <summary>A password or permission of a 128-bit encryption, listed in <c>PdfFile.encrypt128 [ ... ]</c>.</summary>
+type Encryption128Part = DocumentOperation.Encryption128Bit -> unit
+
+/// <summary>A password or permission of a 256-bit encryption, listed in <c>PdfFile.encrypt256 [ ... ]</c>.</summary>
+type Encryption256Part = DocumentOperation.Encryption256Bit -> unit
+
 /// <summary>
 /// A PDF file and the qpdf operations to apply to it on <c>PdfFile.save</c>. Each operation returns a new value; the
 /// source file is read on save.
@@ -119,12 +128,13 @@ module Attachment =
 
     /// <summary>Sets the relationship of the file to the document, as PDF/A-3 files declare it.</summary>
     /// <remarks>Sets <see cref="P:QuestPDF.Fluent.DocumentOperation.DocumentAttachment.Relationship"/>.</remarks>
-    let relationship (value: DocumentOperation.DocumentAttachmentRelationship) : AttachmentPart =
+    let relationship (value: DocumentAttachmentRelationship) : AttachmentPart =
         closure (fun attachment -> attachment.Relationship <- Nullable value)
 
 /// <summary>
 /// Passwords and permissions of an encryption, listed in <c>PdfFile.encrypt40</c>, <c>PdfFile.encrypt128</c> or
-/// <c>PdfFile.encrypt256</c>. Every permission is allowed by default.
+/// <c>PdfFile.encrypt256</c>. Every permission is allowed by default. A list bound apart from the call needs its part
+/// type, as in <c>let common : Encryption256Part list = [ ... ]</c>.
 /// </summary>
 [<RequireQualifiedAccess>]
 module Encryption =
@@ -273,17 +283,17 @@ module PdfFile =
 
     /// <summary>Encrypts the file with 40-bit RC4 encryption.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.DocumentOperation.Encrypt(QuestPDF.Fluent.DocumentOperation.Encryption40Bit)"/>.</remarks>
-    let encrypt40 (parts: (DocumentOperation.Encryption40Bit -> unit) list) (file: PdfFile) : PdfFile =
+    let encrypt40 (parts: Encryption40Part list) (file: PdfFile) : PdfFile =
         file.Then (fun operation -> operation.Encrypt (configured parts (DocumentOperation.Encryption40Bit ())))
 
     /// <summary>Encrypts the file with 128-bit encryption.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.DocumentOperation.Encrypt(QuestPDF.Fluent.DocumentOperation.Encryption128Bit)"/>.</remarks>
-    let encrypt128 (parts: (DocumentOperation.Encryption128Bit -> unit) list) (file: PdfFile) : PdfFile =
+    let encrypt128 (parts: Encryption128Part list) (file: PdfFile) : PdfFile =
         file.Then (fun operation -> operation.Encrypt (configured parts (DocumentOperation.Encryption128Bit ())))
 
     /// <summary>Encrypts the file with 256-bit AES encryption.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.DocumentOperation.Encrypt(QuestPDF.Fluent.DocumentOperation.Encryption256Bit)"/>.</remarks>
-    let encrypt256 (parts: (DocumentOperation.Encryption256Bit -> unit) list) (file: PdfFile) : PdfFile =
+    let encrypt256 (parts: Encryption256Part list) (file: PdfFile) : PdfFile =
         file.Then (fun operation -> operation.Encrypt (configured parts (DocumentOperation.Encryption256Bit ())))
 
     /// <summary>Writes a linearized file, which PDF viewers can display before the whole file is downloaded.</summary>

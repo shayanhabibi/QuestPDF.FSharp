@@ -88,6 +88,37 @@ let private rawSample (c: IContainer) =
         col.Item().Text ("first") |> ignore
         col.Item().Text ("second") |> ignore)
 
+/// The number of times the item content is built while generating a column of three items, each deferred by the given
+/// wrapper function.
+let private wrapperBuilds (defer: Content -> Content) =
+    configure ()
+    let calls = ref 0
+
+    let counted: Content =
+        fun slot ->
+            calls.Value <- calls.Value + 1
+            text "item" slot
+
+    Pdf.bytes (wrapContent (column [ for _ in 1..3 -> defer counted ])) |> ignore
+    calls.Value
+
+/// The number of times the item content is built while generating a column of three items, each deferred by the given
+/// raw QuestPDF call.
+let private rawBuilds (defer: IContainer -> Action<IContainer> -> unit) =
+    configure ()
+    let calls = ref 0
+
+    let counted =
+        Action<IContainer> (fun inner ->
+            calls.Value <- calls.Value + 1
+            inner.Text ("item") |> ignore)
+
+    let document =
+        rawContent (fun c -> c.Column (fun col -> for _ in 1..3 do defer (col.Item ()) counted))
+
+    document.GeneratePdf () |> ignore
+    calls.Value
+
 [<Tests>]
 let tests =
     testList
@@ -97,6 +128,18 @@ let tests =
               [ equivalent "lazyContent" (padding 5 >> lazyContent sample) (fun c -> c.Padding(5f).Lazy (fun inner -> rawSample inner))
                 equivalent "lazyContentCached" (padding 5 >> lazyContentCached sample) (fun c ->
                     c.Padding(5f).LazyWithCache (fun inner -> rawSample inner))
+                test "lazyContent builds its content as often as Lazy" {
+                    Expect.equal (wrapperBuilds lazyContent) (rawBuilds (fun c build -> c.Lazy build)) "builds per item"
+                }
+                test "lazyContentCached builds its content as often as LazyWithCache" {
+                    Expect.equal
+                        (wrapperBuilds lazyContentCached)
+                        (rawBuilds (fun c build -> c.LazyWithCache build))
+                        "builds per item"
+                }
+                test "lazyContent and lazyContentCached differ in builds" {
+                    Expect.notEqual (wrapperBuilds lazyContent) (wrapperBuilds lazyContentCached) "cached builds fewer times"
+                }
                 equivalent "nested lazyContent" (lazyContent (column [ lazyContent (text "inner"); text "outer" ])) (fun c ->
                     c.Lazy (fun outer ->
                         outer.Column (fun col ->

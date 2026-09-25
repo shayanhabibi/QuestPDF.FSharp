@@ -191,6 +191,18 @@ $"first-page.pdf exists: {IO.File.Exists firstPage}"
 (*** include-it ***)
 
 (**
+A list of `Encryption.*` parts bound apart from the call needs its part type, `Encryption40Part`, `Encryption128Part`
+or `Encryption256Part`, since the same setters serve every strength. The file also carries its source as an attachment:
+*)
+
+let common: Encryption256Part list = [ Encryption.ownerPassword "owner"; Encryption.allowPrinting false ]
+
+PdfFile.load source
+|> PdfFile.attach source [ Attachment.relationship DocumentAttachmentRelationship.Source ]
+|> PdfFile.encrypt256 (Encryption.userPassword "reader" :: common)
+|> PdfFile.save firstPage
+
+(**
 ## Reproducible output
 
 `document` fixes the metadata when it builds the document. Without `Meta.dated`, both dates are the time of the
