@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <RepositoryUrl>https://github.com/shayanhabibi/QuestPDF.FSharp</RepositoryUrl>
+        <RepositoryUrl>https://github.com/shayanhabibi/FSharp.QuestPDF</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Authors>shayanhabibi</Authors>
@@ -19,8 +19,8 @@
 
     <PropertyGroup>
         <FsDocsAllowExecutableProject>true</FsDocsAllowExecutableProject>
-        <PackageProjectUrl>https://shayanhabibi.github.io/QuestPDF.FSharp</PackageProjectUrl>
-        <FsDocsLicenseLink>https://github.com/shayanhabibi/QuestPDF.FSharp/blob/master/LICENSE</FsDocsLicenseLink>
+        <PackageProjectUrl>https://shayanhabibi.github.io/FSharp.QuestPDF</PackageProjectUrl>
+        <FsDocsLicenseLink>https://github.com/shayanhabibi/FSharp.QuestPDF/blob/master/LICENSE</FsDocsLicenseLink>
     </PropertyGroup>
 
     <!--

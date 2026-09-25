@@ -1,9 +1,9 @@
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -20,7 +20,7 @@ let render (document: QuestPDF.Infrastructure.IDocument) =
     |> String.concat "\n"
 
 (**
-# QuestPDF.FSharp
+# FSharp.QuestPDF
 
 An idiomatic F# layer over [QuestPDF](https://www.questpdf.com/) 2026.9.0 (net10.0). Layouts are plain functions
 composed with `>>`, containers take lists, and the output is byte-identical to the equivalent fluent QuestPDF code.
@@ -28,14 +28,14 @@ composed with `>>`, containers take lists, and the output is byte-identical to t
 ## Install
 
 ```shell
-dotnet add package QuestPDF.FSharp
+dotnet add package FSharp.QuestPDF
 ```
 
 QuestPDF needs a license before it generates anything. The Community license covers most users; see the
-[QuestPDF license terms](https://www.questpdf.com/license/). QuestPDF.FSharp never sets it for you:
+[QuestPDF license terms](https://www.questpdf.com/license/). FSharp.QuestPDF never sets it for you:
 *)
 
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 
@@ -43,11 +43,11 @@ License.community ()
 ### In F# Interactive and scripts
 
 QuestPDF's default font, Lato, is copied next to a compiled application only. A script run by `dotnet fsi`, or code
-sent to F# Interactive, references the package with `#r "nuget: QuestPDF.FSharp"` and registers a font before it
+sent to F# Interactive, references the package with `#r "nuget: FSharp.QuestPDF"` and registers a font before it
 generates, or generation raises `DocumentDrawingException`:
 
 ```fsharp
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.registerDirectory "path/to/fonts"   // a folder of .ttf or .otf files; Font.registerFile takes one file
@@ -87,7 +87,7 @@ render hello
 4. **Numbers are bare.** A length accepts `int`, `int64`, `float`, `float32` or `decimal` (points) or a `Length`
    such as `5 * mm`. The unit passes through to QuestPDF unconverted.
 5. **`inline` functions are one-line shims** over the non-inline `Measured.*` functions.
-6. **One open.** `open QuestPDF.FSharp` brings in the elements, modifiers and `Colors`/`PageSizes`/`Color`/`PageSize`.
+6. **One open.** `open FSharp.QuestPDF` brings in the elements, modifiers and `Colors`/`PageSizes`/`Color`/`PageSize`.
 7. **No hidden global state.** The license, fonts and settings are explicit calls.
 8. **Escape hatches both ways:** `raw`, `fluent`, `modify`, `Content.run`, `Text.raw`, and `Pdf.*` on any `IDocument`.
 
@@ -105,7 +105,7 @@ render hello
 - [Interop](interop.html): mixing wrapper and fluent QuestPDF code, and the full mapping table
 - [Testing your documents](testing-your-documents.html): byte equivalence, text extraction and snapshots
 - Recipes: [invoice](recipes/invoice.html), [resume](recipes/resume.html) and
-  [a live preview on save](recipes/hot-reload-preview.html) with `QuestPDF.FSharp.Preview` and SageFs
+  [a live preview on save](recipes/hot-reload-preview.html) with `FSharp.QuestPDF.Preview` and SageFs
 - [Gotchas](gotchas.html)
 
 ## Building these docs

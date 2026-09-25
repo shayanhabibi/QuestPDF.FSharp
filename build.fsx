@@ -182,11 +182,13 @@ module Stage =
         let! apiKey = Options.apiKey
         // One separator style: on Windows a mixed "C:\...\bin/*.nupkg" matches no files.
         let packages = System.IO.Path.Combine(Repo.VirtualFileSystem.bin.ToString(), "*.nupkg")
+        // No --skip-duplicate: it treats every 409 as an existing version, and nuget.org also answers 409 for an
+        // ID in a reserved prefix, so a rejected push passed as success. The workflow skips versions already out.
         return stage "publish" {
             quiet
             failIfIgnored
             when' apiKey.IsSome
-            run (cmd $"dotnet nuget push {packages} -k {apiKey.Value} -s https://api.nuget.org/v3/index.json --skip-duplicate")
+            run (cmd $"dotnet nuget push {packages} -k {apiKey.Value} -s https://api.nuget.org/v3/index.json")
         }
     }
 
@@ -203,12 +205,12 @@ module Stage =
         }
     }
 
-    /// Runs the SageFs end-to-end checks of QuestPDF.FSharp.Preview, which need a SageFs daemon on port 37749.
+    /// Runs the SageFs end-to-end checks of FSharp.QuestPDF.Preview, which need a SageFs daemon on port 37749.
     let previewE2e = input {
         let! config = Options.config
         return stage "preview e2e" {
             envVars [ ("QPDF_SAGEFS_E2E", "1") ]
-            run (cmd $"dotnet run --project tests/QuestPDF.FSharp.Preview.Tests -c {config} -- --filter-test-list SageFs")
+            run (cmd $"dotnet run --project tests/FSharp.QuestPDF.Preview.Tests -c {config} -- --filter-test-list SageFs")
         }
     }
 
@@ -237,7 +239,7 @@ module Stage =
             run (async {
                 for page in !! "output/reference/*.html" do
                     let html = System.IO.File.ReadAllText page
-                    let unlinked = QuestPDF.FSharp.Build.QuestPdfLinks.unlink html
+                    let unlinked = FSharp.QuestPDF.Build.QuestPdfLinks.unlink html
                     if unlinked <> html then
                         System.IO.File.WriteAllText (page, unlinked)
             })
@@ -299,7 +301,7 @@ exit <| rootCommandOfScript {
         Stage.runTests
     }
     command "preview-e2e" {
-        description "Runs the SageFs end-to-end checks of QuestPDF.FSharp.Preview against a running daemon"
+        description "Runs the SageFs end-to-end checks of FSharp.QuestPDF.Preview against a running daemon"
         Stage.restore
         Stage.previewE2e
     }

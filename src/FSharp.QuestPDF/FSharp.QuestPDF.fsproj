@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>FSharp.QuestPDF</RootNamespace>
+        <AssemblyName>FSharp.QuestPDF</AssemblyName>
+        <PackageId>FSharp.QuestPDF</PackageId>
+        <Title>FSharp.QuestPDF</Title>
+        <Version>0.1.0</Version>
+        <Description>An idiomatic F# layer over QuestPDF: layouts are plain functions composed with &gt;&gt;, containers take lists, lengths are bare numbers or 5 * mm, and the output is byte-identical to the equivalent fluent QuestPDF code.</Description>
+        <PackageTags>fsharp;f#;pdf;questpdf;pdf-generation;document;report;layout</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <!-- Deterministic source paths in the packaged PDBs. Only the packages set it: the tests find repository
+             files through __SOURCE_DIRECTORY__, which it rewrites to /_/. -->
+        <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Units.fs" />
+        <Compile Include="Core.fs" />
+        <Compile Include="Measured.fs" />
+        <Compile Include="Primitives.fs" />
+        <Compile Include="Style.fs" />
+        <Compile Include="Modifiers.fs" />
+        <Compile Include="StyledBox.fs" />
+        <Compile Include="Text.fs" />
+        <Compile Include="Dynamic.fs" />
+        <Compile Include="Elements.fs" />
+        <Compile Include="Layout.fs" />
+        <Compile Include="Semantic.fs" />
+        <Compile Include="Flow.fs" />
+        <Compile Include="Document.fs" />
+        <Compile Include="Operations.fs" />
+        <Compile Include="Generate.fs" />
+        <Compile Include="Setup.fs" />
+        <None Include="../../README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="QuestPDF" Version="2026.9.0" />
+      <!-- Pinned so the package does not require the FSharp.Core of whichever SDK packed it. -->
+      <PackageReference Update="FSharp.Core" Version="10.0.100" />
+    </ItemGroup>
+
+</Project>

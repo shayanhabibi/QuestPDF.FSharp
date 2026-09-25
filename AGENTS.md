@@ -8,7 +8,7 @@ If it is not setup in your environment, ask your USER for permission to set it u
 ## F# semantics — use `fslangmcp`, not grep
 
 The repo ships an `fslangmcp` MCP server (`.mcp.json`, FsLangMCP over FSAC +
-FSharp.Compiler.Service). It loads `QuestPDF.FSharp.slnx`, so it sees exactly the projects the
+FSharp.Compiler.Service). It loads `FSharp.QuestPDF.slnx`, so it sees exactly the projects the
 solution references.
 
 Requires the `fslangmcp`, `fsautocomplete` and `fantomas` global tools; `fslangmcp
@@ -27,7 +27,7 @@ short binding names `create` can recur in thousands of members, and `find` resol
   on a clean tree and reports not_found on the same tree with unrelated compile errors. Never
   conclude "no usages" from a `find` taken while `check` says `errors`.
 - `check` — fresh whole-workspace type-check verdict (`clean`/`errors`) with structured
-  diagnostics, no build artifacts. Roughly 8s. An incremental `dotnet build QuestPDF.FSharp.slnx` is
+  diagnostics, no build artifacts. Roughly 8s. An incremental `dotnet build FSharp.QuestPDF.slnx` is
   about as fast, so prefer `check` for the structured diagnostics, not for speed.
 - `fcs_refactor_impact` — run this *before* changing any public signature. Returns blast radius,
   whether the symbol is public API (i.e. a breaking change), covering tests, and a verify list.
@@ -102,7 +102,7 @@ most on experiments that would otherwise need a rebuild per attempt.
 `runTestsInAssemblyWithCLIArgs` finds no tests in a session. Pass the test values directly:
 
 ```fsharp
-Expecto.Tests.runTestsWithCLIArgs [] [| "--filter-test-case"; "len of int is points" |] QuestPDF.FSharp.Tests.UnitsTests.tests;;
+Expecto.Tests.runTestsWithCLIArgs [] [| "--filter-test-case"; "len of int is points" |] FSharp.QuestPDF.Tests.UnitsTests.tests;;
 ```
 
 The result is the exit code plus Expecto's console output, colour codes included. To read which
@@ -114,7 +114,7 @@ let printer =
     { Expecto.Impl.TestPrinters.silent with
         failed = (fun name msg _ -> async { lock failures (fun () -> failures.Add $"{name}: {msg.Trim()}") })
         exn = (fun name e _ -> async { lock failures (fun () -> failures.Add $"{name}: {e.GetType().Name}: {e.Message}") }) };;
-Expecto.Impl.runEval { Expecto.Impl.ExpectoConfig.defaultConfig with printer = printer; runInParallel = false } QuestPDF.FSharp.Tests.UnitsTests.tests
+Expecto.Impl.runEval { Expecto.Impl.ExpectoConfig.defaultConfig with printer = printer; runInParallel = false } FSharp.QuestPDF.Tests.UnitsTests.tests
 |> Async.RunSynchronously;;
 String.concat "\n" failures;;
 ```

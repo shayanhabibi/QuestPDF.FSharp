@@ -3,7 +3,7 @@
     "fslangmcp": {
       "type": "stdio",
       "command": "fslangmcp",
-      "args": ["--project", "QuestPDF.FSharp.slnx"],
+      "args": ["--project", "FSharp.QuestPDF.slnx"],
       "env": {}
     },
     "sagefs": {

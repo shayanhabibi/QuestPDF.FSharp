@@ -7,10 +7,10 @@ index: 1
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -35,7 +35,7 @@ on the second page, the footer row carries the total, and the page footer number
 
 open System
 open System.Globalization
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 let fixedDate = DateTimeOffset (2026, 1, 2, 3, 4, 5, TimeSpan.Zero)
 
@@ -153,7 +153,7 @@ The same invoice written against QuestPDF's fluent API, for comparison. Both gen
 
 open QuestPDF.Fluent
 open QuestPDF.Infrastructure
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 module Raw =
     let headCell (c: IContainer) (s: string) =

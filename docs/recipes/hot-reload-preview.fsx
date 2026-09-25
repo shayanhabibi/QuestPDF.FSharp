@@ -7,11 +7,11 @@ index: 3
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
-#r "../../src/QuestPDF.FSharp.Preview/bin/Release/net10.0/QuestPDF.FSharp.Preview.dll"
+#r "../../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
+#r "../../src/FSharp.QuestPDF.Preview/bin/Release/net10.0/FSharp.QuestPDF.Preview.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -31,7 +31,7 @@ let freePort () =
 (**
 # Recipe: a live preview on save
 
-`QuestPDF.FSharp.Preview` serves the pages of a document function to a browser and renders them again when the code
+`FSharp.QuestPDF.Preview` serves the pages of a document function to a browser and renders them again when the code
 changes. Under [SageFs](https://github.com/WillEhrendreich/SageFs), a save in any editor reloads the code: the page
 updates in about half a second (0.25 to 0.6 s measured for both recipes), keeps its scroll position, and shows compile
 errors and exceptions over the last good pages.
@@ -39,7 +39,7 @@ errors and exceptions over the last good pages.
 ![The preview page with a compile error over the last good pages](../img/preview.png)
 
 ```shell
-dotnet add package QuestPDF.FSharp.Preview
+dotnet add package FSharp.QuestPDF.Preview
 ```
 
 The runnable version of both recipes is `samples/HotReloadPreview` in the repository.
@@ -64,9 +64,9 @@ mkdir fonts          # copy the .ttf files you use, e.g. Lato-*.ttf (SIL OFL)
 `invoice.fsx`:
 
 ```fsharp
-#r "nuget: QuestPDF.FSharp.Preview, 0.1.0"
+#r "nuget: FSharp.QuestPDF.Preview, 0.1.0"
 
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -137,7 +137,7 @@ module on save.
    mkdir invoice-app && cd invoice-app
    dotnet new globaljson --sdk-version 10.0.100 --roll-forward latestFeature
    dotnet new console -lang F#
-   dotnet add package QuestPDF.FSharp.Preview
+   dotnet add package FSharp.QuestPDF.Preview
    mkdir fonts          # copy the .ttf files you use, e.g. Lato-*.ttf (SIL OFL)
    ```
 
@@ -147,7 +147,7 @@ module on save.
    ```fsharp
    module Invoice
 
-   open QuestPDF.FSharp
+   open FSharp.QuestPDF
 
    let build () =
        document [
@@ -176,7 +176,7 @@ module on save.
 5. **Write `preview.fsx`** next to the project file:
 
    ```fsharp
-   open QuestPDF.FSharp
+   open FSharp.QuestPDF
 
    License.community ()
    Font.useSystemFonts false

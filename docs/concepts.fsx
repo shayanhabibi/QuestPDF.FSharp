@@ -7,10 +7,10 @@ index: 1
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -31,7 +31,7 @@ let render (document: QuestPDF.Infrastructure.IDocument) =
 
 ## Slots, content and modifiers
 
-QuestPDF builds a page by filling containers. QuestPDF.FSharp names the three roles:
+QuestPDF builds a page by filling containers. FSharp.QuestPDF names the three roles:
 
 | Type | Definition | Role |
 |------|------------|------|
@@ -43,7 +43,7 @@ QuestPDF builds a page by filling containers. QuestPDF.FSharp names the three ro
 the fluent chain `c.Padding(10).Background(c).Text("x")`:
 *)
 
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 let badge = padding 10 >> background Colors.Blue.Lighten4 >> text "A badge"
 

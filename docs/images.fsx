@@ -7,10 +7,10 @@ index: 7
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -36,10 +36,10 @@ let render (document: QuestPDF.Infrastructure.IDocument) =
 `Image.fitUnproportionally`, `Image.dpi`, `Image.quality` or `Image.original`. A modifier sets the box the image
 fills.
 
-The logo here is itself a QuestPDF.FSharp page, rendered with `Pdf.images`:
+The logo here is itself a FSharp.QuestPDF page, rendered with `Pdf.images`:
 *)
 
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 let logo: byte[] =
     document [

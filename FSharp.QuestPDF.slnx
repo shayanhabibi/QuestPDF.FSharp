@@ -1,0 +1,28 @@
+<Solution>
+  <Folder Name="/.environment/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path=".config/dotnet-tools.json" />
+    <File Path="global.json" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Build/">
+    <File Path="build.fsx" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/FSharp.QuestPDF/FSharp.QuestPDF.fsproj" />
+    <Project Path="src/FSharp.QuestPDF.Preview/FSharp.QuestPDF.Preview.fsproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FSharp.QuestPDF.Tests/FSharp.QuestPDF.Tests.fsproj" />
+    <Project Path="tests/FSharp.QuestPDF.Preview.Tests/FSharp.QuestPDF.Preview.Tests.fsproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/HotReloadPreview/HotReloadPreview.fsproj" />
+  </Folder>
+  <Folder Name="/docs/">
+    <File Path="docs/index.md" />
+  </Folder>
+</Solution>

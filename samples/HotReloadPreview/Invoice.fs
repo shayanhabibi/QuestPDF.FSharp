@@ -2,7 +2,7 @@
 module Invoice
 
 open QuestPDF.Fluent
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 type Line =
     { Item: string

@@ -7,10 +7,10 @@ index: 4
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -34,7 +34,7 @@ let render (document: QuestPDF.Infrastructure.IDocument) =
 `column` stacks content vertically; `columnSpaced` adds a gap between items.
 *)
 
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 let box (color: Color) (label: string) = background color >> padding 6 >> text label
 

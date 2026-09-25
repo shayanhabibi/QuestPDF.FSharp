@@ -7,10 +7,10 @@ index: 5
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -37,7 +37,7 @@ A `table` list holds the column definitions, an optional header and footer, and 
 bottom; `Table.cells` adds a list of them, and `Table.cell` makes one.
 *)
 
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 let cellBox = borderBottom 0.5 >> borderColor Colors.Grey.Lighten1 >> padding 4
 let head label = Table.cell (background Colors.Grey.Lighten3 >> padding 4 >> styledText Style.semiBold label)

@@ -7,10 +7,10 @@ index: 3
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -35,7 +35,7 @@ let render (document: QuestPDF.Infrastructure.IDocument) =
 QuestPDF's text style, so `>>` composes styles the way it composes layout.
 *)
 
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 let title = Style.size 18 >> Style.bold >> Style.color Colors.Indigo.Darken2
 let muted = Style.size 9 >> Style.italic >> Style.color Colors.Grey.Darken1

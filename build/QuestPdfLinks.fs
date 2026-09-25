@@ -1,5 +1,5 @@
 /// Rewrites of the generated API reference, loaded by build.fsx and tested by the test project.
-module QuestPDF.FSharp.Build.QuestPdfLinks
+module FSharp.QuestPDF.Build.QuestPdfLinks
 
 open System.Text.RegularExpressions
 

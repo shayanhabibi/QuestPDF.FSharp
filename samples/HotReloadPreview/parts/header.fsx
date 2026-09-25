@@ -1,7 +1,7 @@
 // Loaded by invoice.fsx: saving this file reloads invoice.fsx.
 module Header
 
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 /// The page header of an invoice number.
 let title (number: int) =

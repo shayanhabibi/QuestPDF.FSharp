@@ -7,10 +7,10 @@ index: 9
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -31,13 +31,13 @@ let render (document: QuestPDF.Infrastructure.IDocument) =
 
 ## Fluent code inside wrapper content
 
-Raw interop code opens `QuestPDF.Fluent` and `QuestPDF.Infrastructure` beside `QuestPDF.FSharp`, in any order: the
+Raw interop code opens `QuestPDF.Fluent` and `QuestPDF.Infrastructure` beside `FSharp.QuestPDF`, in any order: the
 wrapper modules and the QuestPDF types that share a name, such as `Image`, resolve either way.
 *)
 
 open QuestPDF.Fluent
 open QuestPDF.Infrastructure
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 let mixed =
     column [
@@ -90,19 +90,19 @@ render fluentDocument
 ## Mapping from fluent calls
 
 Every public member of the `QuestPDF.Fluent` and `QuestPDF.Companion` types, and of the QuestPDF extension classes,
-is listed below with its QuestPDF.FSharp counterparts or the reason it is reached through the escape hatches. The
-table is generated from `tests/QuestPDF.FSharp.Tests/Coverage.fs`; a test fails when a QuestPDF upgrade adds a
+is listed below with its FSharp.QuestPDF counterparts or the reason it is reached through the escape hatches. The
+table is generated from `tests/FSharp.QuestPDF.Tests/Coverage.fs`; a test fails when a QuestPDF upgrade adds a
 member the file does not list.
 *)
 
 (*** hide ***)
-#load "../tests/QuestPDF.FSharp.Tests/Coverage.fs"
+#load "../tests/FSharp.QuestPDF.Tests/Coverage.fs"
 
-open QuestPDF.FSharp.Tests.Coverage
+open FSharp.QuestPDF.Tests.Coverage
 
 let encode (value: string) = Net.WebUtility.HtmlEncode value
 
-[ "<table><thead><tr><th>QuestPDF member</th><th>QuestPDF.FSharp</th></tr></thead><tbody>"
+[ "<table><thead><tr><th>QuestPDF member</th><th>FSharp.QuestPDF</th></tr></thead><tbody>"
   for key, mapping in mappings do
       let target =
           match mapping with

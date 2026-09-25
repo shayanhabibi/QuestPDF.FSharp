@@ -7,10 +7,10 @@ index: 8
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -43,7 +43,7 @@ let render (document: QuestPDF.Infrastructure.IDocument) =
 | `Pdf.companionAsync doc` | the same preview as an `Async<unit>` that stops on cancellation |
 
 `Pdf.companion` blocks until the Companion app closes; [a live preview on save](recipes/hot-reload-preview.html)
-with `QuestPDF.FSharp.Preview` serves the pages to a browser without blocking.
+with `FSharp.QuestPDF.Preview` serves the pages to a browser without blocking.
 
 Every function takes any `IDocument`, including a fluent `Document.Create(...)`, and raises
 `InvalidOperationException` until a license is set with `License.community ()`, `License.professional ()` or
@@ -51,7 +51,7 @@ Every function takes any `IDocument`, including a fluent `Document.Create(...)`,
 *)
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 let note = document [ page [ Page.sizeOf 200 80; Page.margin 10; Page.content (text "A short note.") ] ]
 
@@ -175,7 +175,7 @@ $"The bundle has {(Pdf.images ImageFormat.Png 24 bundle).Length} pages."
 syntax, such as `"1-3,r1"`.
 *)
 
-let folder = IO.Directory.CreateTempSubdirectory "questpdf-fsharp-docs"
+let folder = IO.Directory.CreateTempSubdirectory "fsharp-questpdf-docs"
 let source = IO.Path.Combine (folder.FullName, "bundle.pdf")
 let firstPage = IO.Path.Combine (folder.FullName, "first-page.pdf")
 

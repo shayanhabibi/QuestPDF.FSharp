@@ -7,10 +7,10 @@ index: 2
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -37,7 +37,7 @@ weight, angle, scale factor or ratio, such as the argument of `Style.size` or `r
 types.
 *)
 
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 let a = padding 10          // 10 pt
 let b = padding 2.5         // 2.5 pt

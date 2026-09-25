@@ -1,7 +1,7 @@
 module Program
 
 open System.IO
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 [<EntryPoint>]
 let main argv =

@@ -55,7 +55,7 @@ index: 1
   turns it on for the session.
 - **A hard reset stops a project preview.** The reset starts a new process for the session, so the page stops
   answering and watching is off again. Send `preview.fsx` again.
-- **Pin the package version in a live script:** `#r "nuget: QuestPDF.FSharp.Preview, 0.1.0"`. Every save loads the
+- **Pin the package version in a live script:** `#r "nuget: FSharp.QuestPDF.Preview, 0.1.0"`. Every save loads the
   script again, and F# Interactive resolves a reference without a version on every load. That adds one to several
   seconds to each reload.
 - **`let title () = failwith "todo"` has type `unit -> 'a`.** Under SageFs Hot Reload, fixing it later is a signature

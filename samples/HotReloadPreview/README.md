@@ -1,6 +1,6 @@
 # HotReloadPreview
 
-The two recipes of [a live preview on save](https://shayanhabibi.github.io/QuestPDF.FSharp/recipes/hot-reload-preview.html),
+The two recipes of [a live preview on save](https://shayanhabibi.github.io/FSharp.QuestPDF/recipes/hot-reload-preview.html),
 runnable in this repository. Build the repository first (`dotnet fsi build.fsx -- build`), and start the SageFs
 daemon (`sagefs`).
 
@@ -12,7 +12,7 @@ daemon (`sagefs`).
 3. Open http://localhost:5800/ and edit `invoice.fsx` or `parts/header.fsx`. Every save reloads the script; a
    compile error shows over the last good pages.
 
-Outside this repository, replace the `#r` lines of `invoice.fsx` with `#r "nuget: QuestPDF.FSharp.Preview, 0.1.0"`.
+Outside this repository, replace the `#r` lines of `invoice.fsx` with `#r "nuget: FSharp.QuestPDF.Preview, 0.1.0"`.
 Keep the version: a reference without one is resolved again on every reload.
 
 ## Project: `HotReloadPreview.fsproj`

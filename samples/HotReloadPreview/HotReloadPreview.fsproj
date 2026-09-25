@@ -19,8 +19,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\QuestPDF.FSharp\QuestPDF.FSharp.fsproj" />
-        <ProjectReference Include="..\..\src\QuestPDF.FSharp.Preview\QuestPDF.FSharp.Preview.fsproj" />
+        <ProjectReference Include="..\..\src\FSharp.QuestPDF\FSharp.QuestPDF.fsproj" />
+        <ProjectReference Include="..\..\src\FSharp.QuestPDF.Preview\FSharp.QuestPDF.Preview.fsproj" />
     </ItemGroup>
 
 </Project>

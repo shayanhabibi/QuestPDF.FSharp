@@ -7,10 +7,10 @@ index: 2
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -34,7 +34,7 @@ functions, and `showEntire` keeps each job on one page.
 *)
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 let fixedDate = DateTimeOffset (2026, 1, 2, 3, 4, 5, TimeSpan.Zero)
 
@@ -83,7 +83,7 @@ let main =
         8
         [ styledText (Style.size 24 >> Style.bold) "Jane Doe"
           heading "Experience"
-          job "Lead dev" "2020–now" [ "Built QuestPDF.FSharp"; "Led a team of 4" ]
+          job "Lead dev" "2020–now" [ "Built FSharp.QuestPDF"; "Led a team of 4" ]
           job "Engineer" "2016–2020" [ "Shipped things" ] ]
 
 let resume =
@@ -108,7 +108,7 @@ The same resume written against QuestPDF's fluent API, for comparison. Both gene
 
 open QuestPDF.Fluent
 open QuestPDF.Infrastructure
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 module Raw =
     let accent = Colors.Teal.Darken2
@@ -180,7 +180,7 @@ module Raw =
                                     |> ignore
 
                                     heading (col.Item ()) "Experience"
-                                    job (col.Item ()) "Lead dev" "2020–now" [ "Built QuestPDF.FSharp"; "Led a team of 4" ]
+                                    job (col.Item ()) "Lead dev" "2020–now" [ "Built FSharp.QuestPDF"; "Led a team of 4" ]
                                     job (col.Item ()) "Engineer" "2016–2020" [ "Shipped things" ])))
                 |> ignore)
             .WithMetadata (DocumentMetadata (Title = "Jane Doe", CreationDate = fixedDate, ModifiedDate = fixedDate))

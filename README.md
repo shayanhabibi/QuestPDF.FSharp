@@ -1,4 +1,4 @@
-# QuestPDF.FSharp
+# FSharp.QuestPDF
 
 An idiomatic F# layer over [QuestPDF](https://www.questpdf.com/) 2026.9.0 (net10.0). Layouts are plain
 functions composed with `>>`, containers take lists, lengths are bare numbers or `5 * mm`, and the output is
@@ -7,7 +7,7 @@ byte-identical to the equivalent fluent QuestPDF code.
 ## Quick start
 
 ```fsharp
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 
@@ -35,7 +35,7 @@ Font.registerDirectory "path/to/fonts"   // a folder of .ttf or .otf files; Font
   the list.
 - Lengths accept `int`, `int64`, `float`, `float32` or `decimal` (points) or a `Length` such as `5 * mm` or
   `2.5 * cm`.
-- `open QuestPDF.FSharp` is the only open needed. Raw interop code also opens `QuestPDF.Fluent` and
+- `open FSharp.QuestPDF` is the only open needed. Raw interop code also opens `QuestPDF.Fluent` and
   `QuestPDF.Infrastructure`, in any order.
 - The license is never set implicitly: call `License.community ()` (or `professional`/`enterprise`) first.
 
@@ -56,15 +56,15 @@ Font.registerDirectory "path/to/fonts"   // a folder of .ttf or .otf files; Font
 | Document | `Meta.*` metadata (`Meta.dated` pins both dates for reproducible bytes), `Output.*` settings: `pdfA`, `pdfUA`, `compress`, `imageQuality`, `imageDpi`, `rightToLeft` |
 | Generation | `Pdf.bytes`/`save`/`write`/`show`, `Pdf.images` (PNG/JPEG/WebP per page), `Pdf.svgs`, `Pdf.companion`/`companionAsync`, `Pdf.merge` (`Merge.*` page numbering) |
 | PDF files | `PdfFile.load` ... `save` over qpdf: `takePages`, `merge`/`mergePages`, `overlay`/`underlay` (`PdfLayer.*`), `attach` (`Attachment.*`), `extendMetadata`, `encrypt40`/`128`/`256` (`Encryption.*`), `decrypt`, `removeRestrictions`, `linearize` |
-| Live preview | Live preview on save (`QuestPDF.FSharp.Preview`, SageFs): `Preview.Live`, `Preview.show`, `Preview.serve`; see the [recipe](https://shayanhabibi.github.io/QuestPDF.FSharp/recipes/hot-reload-preview.html) |
+| Live preview | Live preview on save (`FSharp.QuestPDF.Preview`, SageFs): `Preview.Live`, `Preview.show`, `Preview.serve`; see the [recipe](https://shayanhabibi.github.io/FSharp.QuestPDF/recipes/hot-reload-preview.html) |
 | Setup | `License.*`, `Font.registerFile`/`registerDirectory`/`registerBytes`/`useSystemFonts`/`strict`/`registered` |
 | Interop | `raw`, `fluent` and `modify` lift fluent code; `Content.run` mounts wrapper content in raw code; `Text.raw`; a descriptor lambda is a valid part of `page`, `row`, `table`, `Table.columns`, `layers`, `decoration`, `inlined` and `multiColumn` |
 
 Every public method of the `QuestPDF.Fluent` and `QuestPDF.Companion` types (the descriptors, `Document`,
 `DocumentOperation` and the extension classes) and of the QuestPDF extension classes in other namespaces, such as
 `PageSizeExtensions`, is mapped to a wrapper function or to the raw escape hatch in
-`tests/QuestPDF.FSharp.Tests/Coverage.fs`. A reflection test fails when a QuestPDF upgrade adds an unmapped method.
-The [interop page](https://shayanhabibi.github.io/QuestPDF.FSharp/interop.html) renders the table.
+`tests/FSharp.QuestPDF.Tests/Coverage.fs`. A reflection test fails when a QuestPDF upgrade adds an unmapped method.
+The [interop page](https://shayanhabibi.github.io/FSharp.QuestPDF/interop.html) renders the table.
 
 ## Build CLI
 
@@ -82,7 +82,7 @@ dotnet fsi build.fsx -- --help
 | `format` | Formats every source file with Fantomas (`--dry-format` checks instead) |
 | `publish` | Builds, tests, packs and pushes to NuGet (`--api-key`, or the `NUGET_API_KEY` env var) |
 | `bump` | Bumps the version of a project |
-| `preview-e2e` | Runs the SageFs end-to-end checks of `QuestPDF.FSharp.Preview` against a SageFs daemon on port 37749 |
+| `preview-e2e` | Runs the SageFs end-to-end checks of `FSharp.QuestPDF.Preview` against a SageFs daemon on port 37749 |
 | `docs` | Builds the fsdocs site from `docs/`, evaluating every page, and fails on a snippet that does not compile or run (`--watch` to serve it) |
 
 Global flags: `--quick` skips restores and cleaning,
@@ -94,10 +94,10 @@ Global flags: `--quick` skips restores and cleaning,
 ```
 build.fsx                      the build CLI
 build/                         build helpers loaded by build.fsx, such as the API reference link rewrite
-src/QuestPDF.FSharp/           the library
-src/QuestPDF.FSharp.Preview/   live browser previews reloaded on save under SageFs
-tests/QuestPDF.FSharp.Tests/   the Expecto suite
-tests/QuestPDF.FSharp.Preview.Tests/  the preview suite; its SageFs end-to-end checks run with preview-e2e
+src/FSharp.QuestPDF/           the library
+src/FSharp.QuestPDF.Preview/   live browser previews reloaded on save under SageFs
+tests/FSharp.QuestPDF.Tests/   the Expecto suite
+tests/FSharp.QuestPDF.Preview.Tests/  the preview suite; its SageFs end-to-end checks run with preview-e2e
 samples/                       runnable samples, built by the build command: HotReloadPreview
 docs/                          fsdocs pages: literate .fsx scripts evaluated by the docs build
 fonts/                         Lato (SIL OFL 1.1), registered by the docs pages for their page images

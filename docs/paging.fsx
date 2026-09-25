@@ -7,10 +7,10 @@ index: 6
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -47,7 +47,7 @@ content needs.
 A page takes one of each slot: two `Page.content` parts fail at generation with `DocumentComposeException`.
 *)
 
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 let paragraphs = [ for i in 1..14 do text $"Paragraph {i}: some content that flows from page to page." ]
 

@@ -7,10 +7,10 @@ index: 10
 *)
 (*** hide ***)
 #r "nuget: QuestPDF, 2026.9.0"
-#r "../src/QuestPDF.FSharp/bin/Release/net10.0/QuestPDF.FSharp.dll"
+#r "../src/FSharp.QuestPDF/bin/Release/net10.0/FSharp.QuestPDF.dll"
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false
@@ -35,7 +35,7 @@ A document generates the same bytes on every run once its dates and fonts are fi
 *)
 
 open System
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 License.community ()
 Font.useSystemFonts false   // only registered and bundled fonts
@@ -67,7 +67,7 @@ mean an identical file:
 
 open QuestPDF.Fluent
 open QuestPDF.Infrastructure
-open QuestPDF.FSharp
+open FSharp.QuestPDF
 
 let rawReceipt (total: decimal) =
     Document

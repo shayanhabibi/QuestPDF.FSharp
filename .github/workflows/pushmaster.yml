@@ -1,4 +1,4 @@
-name: workflow.yml
+name: Publish
 on:
   workflow_dispatch:
   push:
@@ -19,8 +19,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
-      - name: Run Script
+          global-json-file: global.json
+      # Both packages share one version. Publish only a version nuget.org does not have yet, so a rejected push
+      # fails the run instead of passing as a duplicate.
+      - name: Check whether this version is on NuGet
+        id: version
+        run: |
+          version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' src/FSharp.QuestPDF/FSharp.QuestPDF.fsproj)
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://api.nuget.org/v3-flatcontainer/fsharp.questpdf/$version/fsharp.questpdf.nuspec")
+          echo "FSharp.QuestPDF $version on nuget.org: HTTP $code"
+          if [ "$code" = 200 ]; then echo "published=true" >> "$GITHUB_OUTPUT"; else echo "published=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Publish
+        if: steps.version.outputs.published != 'true'
         run: dotnet fsi build.fsx -- publish --nuget-key ${{ secrets.NUGET_KEY }}
