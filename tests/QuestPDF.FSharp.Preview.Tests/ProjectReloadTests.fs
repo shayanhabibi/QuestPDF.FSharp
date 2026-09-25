@@ -13,9 +13,9 @@ open QuestPDF.FSharp.Preview.Tests.Support
 let private onePage (line: string) : Document =
     document [ page [ Page.size PageSizes.A5; Page.margin 20; Page.content (text line) ] ]
 
-/// Waits up to 3 s for a condition, checking every 20 ms.
-let private eventually (condition: unit -> bool) =
-    let deadline = DateTime.UtcNow + TimeSpan.FromSeconds 3.0
+/// Waits up to a number of seconds for a condition, checking every 20 ms.
+let private within (seconds: float) (condition: unit -> bool) =
+    let deadline = DateTime.UtcNow + TimeSpan.FromSeconds seconds
     let mutable met = condition ()
 
     while not met && DateTime.UtcNow < deadline do
@@ -23,6 +23,9 @@ let private eventually (condition: unit -> bool) =
         met <- condition ()
 
     met
+
+/// Waits up to 3 s for a condition, checking every 20 ms.
+let private eventually (condition: unit -> bool) = within 3.0 condition
 
 /// The session of the fake daemon.
 [<Literal>]
@@ -191,4 +194,137 @@ let tests =
                   Expect.equal project.Server.Snapshot.Reload "manual" "manual reload"
 
                   Expect.equal (project.Daemon.SessionRequests, project.Daemon.EventConnections, project.Daemon.WatchAlls.Length) (0, 0, 0) "no HTTP")
+          }
+          test "a nudge renders again 250 ms later, for a patch that lands after the event" {
+              withProject (fun project ->
+                  let mutable patched = false
+                  project.Serve (fun () -> onePage (if patched then "second" else "first"))
+                  Expect.isTrue (eventually (fun () -> project.Daemon.EventConnections = 1)) "the event stream"
+                  use _patch = new Timer ((fun _ -> patched <- true), null, 120, Timeout.Infinite)
+                  project.Daemon.Push ("state", hotReloadChanged sessionId)
+                  Expect.isTrue (eventually (fun () -> project.Page.Contains "second")) "the late patch")
+          }
+          test "serve returns once the event stream is open" {
+              withProject (fun project ->
+                  project.Daemon.EventDelay <- TimeSpan.FromMilliseconds 400.0
+                  let mutable line = "first"
+                  project.Serve (fun () -> onePage line)
+                  line <- "second"
+                  project.Daemon.Push ("state", hotReloadChanged sessionId)
+                  Expect.isTrue (eventually (fun () -> project.Page.Contains "second")) "a save right after serve")
+          }
+          test "a later serve on the port outside the project session stops the event reader" {
+              withProject (fun project ->
+                  let mutable line = "first"
+                  project.Serve (fun () -> onePage line)
+                  Expect.isTrue (eventually (fun () -> project.Daemon.EventConnections = 1)) "the event stream"
+
+                  Preview.serveWith
+                      project.Env
+                      { project.Options with
+                          Reload = Preview.Manual }
+                      (fun () -> onePage line)
+                  |> ignore
+
+                  let version = project.Server.Version
+                  line <- "second"
+                  project.Daemon.Push ("state", hotReloadChanged sessionId)
+                  Thread.Sleep 800
+                  Expect.equal project.Server.Snapshot.Reload "manual" "the reload mode"
+                  Expect.equal project.Server.Version version "the version")
+          }
+          test "a later serve on the port with another daemon reads the events of that daemon" {
+              withProject (fun project ->
+                  use other = new FakeDaemon ()
+                  other.Sessions <- project.Daemon.Sessions
+                  let mutable line = "first"
+                  project.Serve (fun () -> onePage line)
+                  Expect.isTrue (eventually (fun () -> project.Daemon.EventConnections = 1)) "the first stream"
+
+                  Preview.serveWith
+                      project.Env
+                      { project.Options with
+                          Reload = Preview.SageFs other.Uri }
+                      (fun () -> onePage line)
+                  |> ignore
+
+                  Expect.isTrue (eventually (fun () -> other.EventConnections = 1)) "the stream of the other daemon"
+                  line <- "second"
+                  other.Push ("state", hotReloadChanged sessionId)
+                  Expect.isTrue (eventually (fun () -> project.Page.Contains "second")) "the new text")
+          }
+          test "a session found after a failed serve clears ReloadFailed" {
+              withProject (fun project ->
+                  let sessions = project.Daemon.Sessions
+                  project.Daemon.Sessions <- """{"sessions":[]}"""
+                  project.Serve (fun () -> onePage "first")
+                  project.Daemon.Sessions <- sessions
+
+                  let rendered () =
+                      match project.Server.Status with
+                      | Preview.Rendered _ -> true
+                      | _ -> false
+
+                  Expect.isTrue (within 5.0 rendered) $"Rendered, got {project.Server.Status}")
+          }
+          test "a session found after a failed serve gets file watching once" {
+              withProject (fun project ->
+                  let sessions = project.Daemon.Sessions
+                  project.Daemon.Sessions <- """{"sessions":[]}"""
+                  project.Serve (fun () -> onePage "first")
+                  project.Daemon.Sessions <- sessions
+                  Expect.isTrue (within 5.0 (fun () -> not project.Daemon.WatchAlls.IsEmpty)) "a watch-all"
+                  project.Serve (fun () -> onePage "first")
+                  Thread.Sleep 500
+                  Expect.equal project.Daemon.WatchAlls [ $"/api/sessions/{sessionId}/hotreload/watch-all" ] "one watch-all")
+          }
+          test "a serve sent again once the session exists turns on file watching" {
+              withProject (fun project ->
+                  let sessions = project.Daemon.Sessions
+                  project.Daemon.Sessions <- """{"sessions":[]}"""
+                  project.Serve (fun () -> onePage "first")
+                  project.Daemon.Sessions <- sessions
+                  project.Serve (fun () -> onePage "first")
+                  Expect.equal project.Daemon.WatchAlls [ $"/api/sessions/{sessionId}/hotreload/watch-all" ] "a watch-all")
+          }
+          test "disposing a stale server leaves the event reader of the new server on the port" {
+              withProject (fun project ->
+                  let stale = Preview.serveWith project.Env project.Options (fun () -> onePage "first")
+                  Expect.isTrue (eventually (fun () -> project.Daemon.EventConnections = 1)) "the first stream"
+                  (stale :> IDisposable).Dispose ()
+                  let mutable line = "first"
+                  project.Serve (fun () -> onePage line)
+                  Expect.isTrue (eventually (fun () -> project.Daemon.EventConnections = 2)) "the second stream"
+                  (stale :> IDisposable).Dispose ()
+                  line <- "second"
+                  project.Daemon.Push ("state", hotReloadChanged sessionId)
+                  Expect.isTrue (eventually (fun () -> project.Page.Contains "second")) "the new text")
+          }
+          test "a stream that closes as soon as it opens is reopened with a growing delay" {
+              withProject (fun project ->
+                  project.Serve (fun () -> onePage "first")
+                  Expect.isTrue (eventually (fun () -> project.Daemon.EventConnections = 1)) "the event stream"
+                  let until = DateTime.UtcNow + TimeSpan.FromSeconds 4.0
+
+                  while DateTime.UtcNow < until do
+                      project.Daemon.DropStreams ()
+                      Thread.Sleep 20
+
+                  Expect.isLessThanOrEqual project.Daemon.EventConnections 5 "connections in 4 s")
+          }
+          test "a stop during serve leaves no event reader" {
+              withProject (fun project ->
+                  let env =
+                      { project.Env with
+                          OpenBrowser = fun _ -> Preview.stop project.Port }
+
+                  Preview.serveWith env { project.Options with OpenBrowser = true } (fun () -> onePage "first")
+                  |> ignore
+
+                  Thread.Sleep 1000
+                  Expect.isNone (Preview.tryServer project.Port) "the server is stopped"
+                  let connections = project.Daemon.EventConnections
+                  project.Daemon.DropStreams ()
+                  Thread.Sleep 1500
+                  Expect.equal project.Daemon.EventConnections connections "no reconnect")
           } ]

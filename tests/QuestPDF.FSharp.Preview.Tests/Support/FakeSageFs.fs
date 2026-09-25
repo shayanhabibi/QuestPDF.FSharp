@@ -95,6 +95,7 @@ type FakeDaemon() =
     let mutable sessions = """{"sessions":[]}"""
     let mutable exec = 200, fixture "exec-success.json"
     let mutable onExec: unit -> unit = ignore
+    let mutable eventDelay = TimeSpan.Zero
 
     let respond (context: HttpListenerContext) (status: int) (contentType: string) (body: string) =
         let bytes = Encoding.UTF8.GetBytes body
@@ -120,14 +121,34 @@ type FakeDaemon() =
             Interlocked.Increment &sessionRequests |> ignore
             respond context 200 "application/json" sessions
         | "GET", "/events" ->
-            let response = context.Response
-            response.StatusCode <- 200
-            response.ContentType <- "text/event-stream"
-            response.SendChunked <- true
-            let id = Guid.NewGuid ()
-            streams[id] <- response
-            write id response "retry: 500\n\n"
-            Interlocked.Increment &eventConnections |> ignore
+            let openStream () =
+                let response = context.Response
+                response.StatusCode <- 200
+                response.ContentType <- "text/event-stream"
+                response.SendChunked <- true
+                let id = Guid.NewGuid ()
+                streams[id] <- response
+                write id response "retry: 500\n\n"
+                Interlocked.Increment &eventConnections |> ignore
+
+            let delay = eventDelay
+
+            if delay > TimeSpan.Zero then
+                let late =
+                    Thread (
+                        (fun () ->
+                            Thread.Sleep delay
+
+                            try
+                                openStream ()
+                            with _ ->
+                                ()),
+                        IsBackground = true
+                    )
+
+                late.Start ()
+            else
+                openStream ()
         | "POST", "/exec" ->
             let reader = new StreamReader (context.Request.InputStream, Encoding.UTF8)
 
@@ -176,6 +197,11 @@ type FakeDaemon() =
     member _.OnExec
         with get () = onExec
         and set value = onExec <- value
+
+    /// The time GET /events waits before it answers; other requests are answered meanwhile.
+    member _.EventDelay
+        with get () = eventDelay
+        and set value = eventDelay <- value
 
     /// The bodies of the POST /exec requests, in arrival order.
     member _.Execs = List.ofSeq execs

@@ -100,16 +100,19 @@ module internal SageFsClient =
             Error (unreachable dashboard error)
 
 /// Calls nudge for every event of the SageFs daemon that reports new code in the session of the process, from a
-/// background thread. The event stream is opened again after it ends or fails, after 0.5 s doubled per failed attempt
-/// up to 10 s, and the session is identified again on every attempt.
+/// background thread. The event stream is opened again after it ends or fails, after 0.5 s doubled per attempt up to
+/// 10 s; the delay starts again at 0.5 s after a stream that delivered an event or stayed open for 5 s. The session is
+/// identified again on every attempt.
 type internal ProjectNudger(daemon: Uri, session: unit -> Result<SessionInfo, string>, nudge: unit -> unit) =
     let client = new HttpClient (Timeout = Timeout.InfiniteTimeSpan)
     let stopping = new CancellationTokenSource ()
+    let connected = new ManualResetEventSlim (false)
     let mutable disposed = false
 
-    /// Reads the event stream of the daemon until it ends, and returns whether the stream opened.
+    /// Reads the event stream of the daemon until it ends, and returns whether the stream delivered an event or stayed
+    /// open for 5 s.
     let read (sessionId: string) : bool =
-        let mutable opened = false
+        let mutable lasting = false
         let request = new HttpRequestMessage (HttpMethod.Get, Uri (daemon, "events"))
 
         try
@@ -119,7 +122,8 @@ type internal ProjectNudger(daemon: Uri, session: unit -> Result<SessionInfo, st
 
                 try
                     if response.IsSuccessStatusCode then
-                        opened <- true
+                        let opened = Diagnostics.Stopwatch.StartNew ()
+                        connected.Set ()
                         let reader = new StreamReader (response.Content.ReadAsStream stopping.Token)
 
                         try
@@ -134,16 +138,21 @@ type internal ProjectNudger(daemon: Uri, session: unit -> Result<SessionInfo, st
                                 pending <- state
 
                                 match event with
-                                | Some event when SageFsProtocol.nudges sessionId event ->
-                                    try
-                                        nudge ()
-                                    with _ ->
-                                        ()
-                                | _ -> ()
+                                | Some event ->
+                                    lasting <- true
+
+                                    if SageFsProtocol.nudges sessionId event then
+                                        try
+                                            nudge ()
+                                        with _ ->
+                                            ()
+                                | None -> ()
 
                                 line <- next ()
                         finally
                             reader.Dispose ()
+                            connected.Reset ()
+                            lasting <- lasting || opened.Elapsed >= TimeSpan.FromSeconds 5.0
                 finally
                     response.Dispose ()
             with _ ->
@@ -151,7 +160,7 @@ type internal ProjectNudger(daemon: Uri, session: unit -> Result<SessionInfo, st
         finally
             request.Dispose ()
 
-        opened
+        lasting
 
     let thread =
         Thread (
@@ -160,7 +169,7 @@ type internal ProjectNudger(daemon: Uri, session: unit -> Result<SessionInfo, st
                     let mutable attempt = 0
 
                     while not disposed do
-                        let opened =
+                        let lasting =
                             try
                                 match session () with
                                 | Ok found when not disposed -> read found.Id
@@ -168,21 +177,30 @@ type internal ProjectNudger(daemon: Uri, session: unit -> Result<SessionInfo, st
                             with _ ->
                                 false
 
-                        attempt <- if opened then 0 else attempt + 1
+                        attempt <- if lasting then 0 else attempt + 1
 
                         if not disposed then
                             try
-                                stopping.Token.WaitHandle.WaitOne (SageFsProtocol.reconnectDelay attempt)
+                                stopping.Token.WaitHandle.WaitOne (SageFsProtocol.reconnectDelay (attempt - 1))
                                 |> ignore
                             with _ ->
                                 ()
                 finally
-                    client.Dispose ()),
+                    client.Dispose ()
+                    stopping.Dispose ()
+                    connected.Dispose ()),
             IsBackground = true,
             Name = "QuestPDF preview SageFs events"
         )
 
     do thread.Start ()
+
+    /// Waits up to a timeout for the event stream to be open, and returns whether it is; false once disposed.
+    member _.WaitConnected(timeout: TimeSpan) : bool =
+        try
+            connected.Wait (timeout, stopping.Token)
+        with _ ->
+            false
 
     interface IDisposable with
         member _.Dispose() =

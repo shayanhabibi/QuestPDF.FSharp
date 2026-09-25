@@ -116,8 +116,39 @@ module Preview =
             false
         | _ -> false
 
-    /// The readers of SageFs events by port, for servers in SageFs project sessions.
-    let private nudgers = ConcurrentDictionary<int, Lazy<ProjectNudger>> ()
+    /// The link of a server to a SageFs project session: the reader of the daemon's events, whether the preview watches
+    /// project files, and the session file watching was turned on for.
+    type private ProjectLink =
+        { Server: Server
+          Daemon: Uri
+          Nudger: ProjectNudger
+          mutable WatchFiles: bool
+          mutable Watched: string option }
+
+    /// The links of servers in SageFs project sessions by port, guarded by projectSync.
+    let private links = Collections.Generic.Dictionary<int, ProjectLink> ()
+
+    let private projectSync = obj ()
+
+    /// Stops the reader of SageFs events of a port, when the link of the port satisfies a condition.
+    let private unlinkWhen (condition: ProjectLink -> bool) (port: int) =
+        let removed =
+            lock projectSync (fun () ->
+                match links.TryGetValue port with
+                | true, link when condition link ->
+                    links.Remove port |> ignore
+                    Some link.Nudger
+                | _ -> None)
+
+        removed
+        |> Option.iter (fun nudger -> (nudger :> IDisposable).Dispose ())
+
+    /// Stops the reader of SageFs events of a port.
+    let private unlink (port: int) = unlinkWhen (fun _ -> true) port
+
+    /// Stops the reader of SageFs events of the port of a server, when the reader belongs to the server.
+    let private unlinkServer (server: Server) =
+        unlinkWhen (fun link -> obj.ReferenceEquals (link.Server, server)) server.Port
 
     /// Stops the watchers of the scripts shown on a port and the reader of SageFs events of the port.
     let private stopWatchers (port: int) =
@@ -125,20 +156,27 @@ module Preview =
             if entry.IsValueCreated && entry.Value.Port = port then
                 unwatch path entry
 
-        match nudgers.TryRemove port with
-        | true, nudger when nudger.IsValueCreated -> (nudger.Value :> IDisposable).Dispose ()
-        | _ -> ()
+        unlink port
+
+    /// Whether a server is the server of its port.
+    let private current (server: Server) =
+        match servers.TryGetValue server.Port with
+        | true, entry -> entry.IsValueCreated && obj.ReferenceEquals (entry.Value, server)
+        | _ -> false
 
     let private release (server: Server) =
-        stopWatchers server.Port
-
         match servers.TryGetValue server.Port with
         | true, entry when
             entry.IsValueCreated
             && obj.ReferenceEquals (entry.Value, server)
             ->
+            stopWatchers server.Port
+
             servers.TryRemove (Collections.Generic.KeyValuePair (server.Port, entry))
             |> ignore
+
+            // A serve that ran before the removal may have linked the server again.
+            unlinkServer server
         | _ -> ()
 
     /// The render settings of options, with the reload mode shown in the status bar.
@@ -150,6 +188,10 @@ module Preview =
 
     /// The server of a port and whether this call started it. A started server has finished its first render.
     let internal start (env: ServeEnv) (options: Options) (reload: string) (reloadHint: string option) (document: unit -> IDocument) : Server * bool =
+        // SageFs events re-render only a server in a project session.
+        if reload <> "sagefs-project" then
+            unlink options.Port
+
         let renderSettings = settings options reload reloadHint
 
         let candidate =
@@ -200,38 +242,26 @@ module Preview =
         | Some daemon, Some projects -> Some (daemon, projects)
         | _ -> None
 
-    /// The server of a port, re-rendered on the SageFs events of the session in a SageFs project session. The first
-    /// start of a port prints the URL when announce is true, and in a project session turns on file watching for the
-    /// session.
-    let private serveIn (env: ServeEnv) (announce: bool) (options: Options) (document: unit -> IDocument) : Server =
-        let launch (reload: string) =
-            let server, started = start env options reload None document
+    /// Clears a routing failure of the server of a port in a SageFs project session, and turns on file watching for a
+    /// session found for the port once, when the preview watches project files.
+    let private identified (port: int) (session: SessionInfo) =
+        match servers.TryGetValue port with
+        | true, entry when
+            entry.IsValueCreated
+            && entry.Value.Snapshot.Reload = "sagefs-project"
+            ->
+            entry.Value.Engine.Reloaded Loaded
 
-            if started && announce then
-                printfn "Preview: %O" server.Url
+            let claimed =
+                lock projectSync (fun () ->
+                    match links.TryGetValue port with
+                    | true, link when link.WatchFiles && link.Watched <> Some session.Id ->
+                        link.Watched <- Some session.Id
+                        Some link.Daemon
+                    | _ -> None)
 
-            server, started
-
-        match projectSession env options with
-        | None -> launch "manual" |> fst
-        | Some (daemon, projects) ->
-            let server, started = launch "sagefs-project"
-            let port = options.Port
-
-            let identify () =
-                SageFsClient.session daemon projects (env.CurrentDirectory ())
-
-            let nudge () =
-                match servers.TryGetValue port with
-                | true, entry when entry.IsValueCreated -> entry.Value.Engine.Nudge ()
-                | _ -> ()
-
-            nudgers.GetOrAdd(port, lazy (new ProjectNudger (daemon, identify, nudge))).Force ()
-            |> ignore
-
-            match identify () with
-            | Error reason -> server.Engine.Reloaded (Routing reason)
-            | Ok session when started && options.WatchProjectFiles ->
+            match claimed with
+            | Some daemon ->
                 match SageFsClient.watchAll daemon session.Id with
                 | Ok count -> printfn "Preview: SageFs session %s, watching %d files" session.Id count
                 | Error reason ->
@@ -240,7 +270,86 @@ module Preview =
 
                     printfn "Preview: SageFs session %s; file watching is off: %s" session.Id reason
                     printfn "Preview: turn it on with: curl -X POST %O" route
-            | Ok _ -> ()
+            | None -> ()
+        | _ -> ()
+
+    /// The reader of SageFs events of the port of a server, started when the port has none or has one of another server
+    /// or daemon; None when the server is no longer the server of its port.
+    let private link (server: Server) (daemon: Uri) (watchFiles: bool) (identify: unit -> Result<SessionInfo, string>) =
+        let port = server.Port
+
+        let nudge () =
+            match servers.TryGetValue port with
+            | true, entry when entry.IsValueCreated -> entry.Value.Engine.Nudge ()
+            | _ -> ()
+
+        let find () =
+            match identify () with
+            | Ok session as found ->
+                identified port session
+                found
+            | failed -> failed
+
+        let linked, replaced =
+            lock projectSync (fun () ->
+                if not (current server) then
+                    None, None
+                else
+                    match links.TryGetValue port with
+                    | true, link when
+                        link.Daemon = daemon
+                        && obj.ReferenceEquals (link.Server, server)
+                        ->
+                        link.WatchFiles <- watchFiles
+                        Some link.Nudger, None
+                    | found ->
+                        let link =
+                            { Server = server
+                              Daemon = daemon
+                              Nudger = new ProjectNudger (daemon, find, nudge)
+                              WatchFiles = watchFiles
+                              Watched = None }
+
+                        links[port] <- link
+
+                        Some link.Nudger,
+                        (match found with
+                         | true, previous -> Some previous.Nudger
+                         | _ -> None))
+
+        replaced
+        |> Option.iter (fun nudger -> (nudger :> IDisposable).Dispose ())
+
+        linked
+
+    /// The server of a port, re-rendered on the SageFs events of the session in a SageFs project session. The first
+    /// start of a port prints the URL when announce is true. In a project session, file watching is turned on once for
+    /// the session found for the port, and the call returns once the event stream is open, waiting up to 2 s.
+    let private serveIn (env: ServeEnv) (announce: bool) (options: Options) (document: unit -> IDocument) : Server =
+        let launch (reload: string) =
+            let server, started = start env options reload None document
+
+            if started && announce then
+                printfn "Preview: %O" server.Url
+
+            server
+
+        match projectSession env options with
+        | None -> launch "manual"
+        | Some (daemon, projects) ->
+            let server = launch "sagefs-project"
+
+            let identify () =
+                SageFsClient.session daemon projects (env.CurrentDirectory ())
+
+            match link server daemon options.WatchProjectFiles identify with
+            | Some nudger ->
+                match identify () with
+                | Error reason -> server.Engine.Reloaded (Routing reason)
+                | Ok session ->
+                    identified options.Port session
+                    nudger.WaitConnected (TimeSpan.FromSeconds 2.0) |> ignore
+            | None -> ()
 
             server
 
@@ -276,7 +385,10 @@ module Preview =
                     None
 
             server
-            |> Option.iter (fun server -> (server :> IDisposable).Dispose ())
+            |> Option.iter (fun server ->
+                (server :> IDisposable).Dispose ()
+                // A serve that ran before the removal may have linked the server again.
+                unlinkServer server)
         | _ -> ()
 
     /// The banner of a script preview: why saving the script does not reload it.

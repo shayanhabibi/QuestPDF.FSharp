@@ -40,8 +40,8 @@ module Preview =
             /// <summary>The source of new code after a save. Default Auto.</summary>
             Reload: Reload
             /// <summary>
-            /// Turns on SageFs file watching for the projects of the session on the first start of a port. Default
-            /// true.
+            /// Turns on SageFs file watching for the projects of the session, once for each session found for a port.
+            /// Default true.
             /// </summary>
             WatchProjectFiles: bool
             /// <summary>
@@ -119,8 +119,9 @@ module Preview =
     /// <summary>
     /// Starts a preview of a document function on <c>options.Port</c> and returns the running server, after the first
     /// render. Calling it again for a running port replaces the document function and the options of that server,
-    /// re-renders at once, and returns the same server. Raises InvalidOperationException when the port stays in use
-    /// by another process for 15 s.
+    /// re-renders at once, and returns the same server. In a SageFs project session it returns once the event stream
+    /// of the daemon is open, waiting up to 2 s. Raises InvalidOperationException when the port stays in use by another
+    /// process for 15 s.
     /// </summary>
     val serve: options: Options -> document: (unit -> #IDocument) -> Server
 

@@ -373,8 +373,6 @@ let tests =
 
                       Expect.equal page.Kind "rendered" $"the first render: {page.Snapshot}"
                       Expect.stringContains page.Snapshot "\"reload\":\"sagefs-project\"" "the project reload mode"
-                      // SageFs applies saves of watched files only; the preview turned watching on.
-                      Thread.Sleep 1000
                       rewrite (Path.Combine (directory, "Invoice.fs")) "\"Thank you for your business.\"" "\"Patched body\""
 
                       let patched =
