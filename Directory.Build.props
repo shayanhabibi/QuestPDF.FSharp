@@ -17,10 +17,6 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true' Or '$(CI)' == 'true'">
-        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    </PropertyGroup>
-
     <PropertyGroup>
         <FsDocsAllowExecutableProject>true</FsDocsAllowExecutableProject>
         <PackageProjectUrl>https://shayanhabibi.github.io/QuestPDF.FSharp</PackageProjectUrl>

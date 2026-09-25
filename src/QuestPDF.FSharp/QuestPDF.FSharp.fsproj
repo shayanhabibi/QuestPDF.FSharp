@@ -12,6 +12,9 @@
         <PackageTags>fsharp;f#;pdf;questpdf;pdf-generation;document;report;layout</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <!-- Deterministic source paths in the packaged PDBs. Only the packages set it: the tests find repository
+             files through __SOURCE_DIRECTORY__, which it rewrites to /_/. -->
+        <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     </PropertyGroup>
 
     <ItemGroup>
