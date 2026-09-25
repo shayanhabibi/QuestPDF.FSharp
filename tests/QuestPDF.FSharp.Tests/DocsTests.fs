@@ -158,6 +158,8 @@ let private phantomParameterTypes =
       typeof<TableColumnsDefinitionDescriptor>
       typeof<LayersDescriptor>
       typeof<DecorationDescriptor>
+      typeof<InlinedDescriptor>
+      typeof<MultiColumnDescriptor>
       typeof<TextDescriptor>
       typeof<ImageDescriptor>
       typeof<SvgImageDescriptor>
