@@ -219,35 +219,35 @@ let mappings: (string * Mapping) list =
       "ScaleExtensions.Scale", Wrapped [ "scale" ]
       "ScaleExtensions.ScaleHorizontal", Wrapped [ "scaleH" ]
       "ScaleExtensions.ScaleVertical", Wrapped [ "scaleV" ]
-      "SemanticExtensions.SemanticArticle", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticBlockQuotation", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticCaption", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticCode", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticDivision", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticFigure", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticFormula", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticHeading1", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticHeading2", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticHeading3", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticHeading4", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticHeading5", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticHeading6", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticIgnore", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticImage", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticIndex", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticLanguage", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticLink", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticList", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticListItem", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticListItemBody", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticListLabel", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticParagraph", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticQuote", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticSection", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticSpan", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticTable", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticTableOfContents", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticTableOfContentsItem", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
+      "SemanticExtensions.SemanticArticle", Wrapped [ "Semantic.article" ]
+      "SemanticExtensions.SemanticBlockQuotation", Wrapped [ "Semantic.blockQuotation" ]
+      "SemanticExtensions.SemanticCaption", Wrapped [ "Semantic.caption" ]
+      "SemanticExtensions.SemanticCode", Wrapped [ "Semantic.code" ]
+      "SemanticExtensions.SemanticDivision", Wrapped [ "Semantic.division" ]
+      "SemanticExtensions.SemanticFigure", Wrapped [ "Semantic.figure" ]
+      "SemanticExtensions.SemanticFormula", Wrapped [ "Semantic.formula" ]
+      "SemanticExtensions.SemanticHeading1", Wrapped [ "Semantic.heading1" ]
+      "SemanticExtensions.SemanticHeading2", Wrapped [ "Semantic.heading2" ]
+      "SemanticExtensions.SemanticHeading3", Wrapped [ "Semantic.heading3" ]
+      "SemanticExtensions.SemanticHeading4", Wrapped [ "Semantic.heading4" ]
+      "SemanticExtensions.SemanticHeading5", Wrapped [ "Semantic.heading5" ]
+      "SemanticExtensions.SemanticHeading6", Wrapped [ "Semantic.heading6" ]
+      "SemanticExtensions.SemanticIgnore", Wrapped [ "Semantic.ignore" ]
+      "SemanticExtensions.SemanticImage", Wrapped [ "Semantic.image" ]
+      "SemanticExtensions.SemanticIndex", Wrapped [ "Semantic.index" ]
+      "SemanticExtensions.SemanticLanguage", Wrapped [ "Semantic.language" ]
+      "SemanticExtensions.SemanticLink", Wrapped [ "Semantic.link" ]
+      "SemanticExtensions.SemanticList", Wrapped [ "Semantic.list" ]
+      "SemanticExtensions.SemanticListItem", Wrapped [ "Semantic.listItem" ]
+      "SemanticExtensions.SemanticListItemBody", Wrapped [ "Semantic.listItemBody" ]
+      "SemanticExtensions.SemanticListLabel", Wrapped [ "Semantic.listLabel" ]
+      "SemanticExtensions.SemanticParagraph", Wrapped [ "Semantic.paragraph" ]
+      "SemanticExtensions.SemanticQuote", Wrapped [ "Semantic.quote" ]
+      "SemanticExtensions.SemanticSection", Wrapped [ "Semantic.section" ]
+      "SemanticExtensions.SemanticSpan", Wrapped [ "Semantic.span"; "Semantic.spanWith" ]
+      "SemanticExtensions.SemanticTable", Wrapped [ "Semantic.table" ]
+      "SemanticExtensions.SemanticTableOfContents", Wrapped [ "Semantic.tableOfContents" ]
+      "SemanticExtensions.SemanticTableOfContentsItem", Wrapped [ "Semantic.tableOfContentsItem" ]
       "ShrinkExtensions.Shrink", Wrapped [ "shrink" ]
       "ShrinkExtensions.ShrinkHorizontal", Wrapped [ "shrinkH" ]
       "ShrinkExtensions.ShrinkVertical", Wrapped [ "shrinkV" ]
@@ -280,7 +280,7 @@ let mappings: (string * Mapping) list =
       "TableCellExtensions.ColumnSpan", Wrapped [ "Cell.columnSpan" ]
       "TableCellExtensions.Row", Wrapped [ "Cell.at" ]
       "TableCellExtensions.RowSpan", Wrapped [ "Cell.rowSpan" ]
-      "TableCellExtensions.SemanticHorizontalHeader", Raw "semantic tagging is planned for a later version of QuestPDF.FSharp"
+      "TableCellExtensions.SemanticHorizontalHeader", Wrapped [ "Cell.horizontalHeader" ]
       "TableColumnsDefinitionDescriptor.ConstantColumn", Wrapped [ "Table.constant" ]
       "TableColumnsDefinitionDescriptor.RelativeColumn", Wrapped [ "Table.relative" ]
       "TableDescriptor.Cell", Wrapped [ "Table.cells" ]

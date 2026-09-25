@@ -25,6 +25,7 @@
         <Compile Include="LayoutColumnRowTests.fs" />
         <Compile Include="TextRichTests.fs" />
         <Compile Include="TableTests.fs" />
+        <Compile Include="SemanticTests.fs" />
         <Compile Include="LayersDecorationTests.fs" />
         <Compile Include="ElementsTests.fs" />
         <Compile Include="PagingTests.fs" />
