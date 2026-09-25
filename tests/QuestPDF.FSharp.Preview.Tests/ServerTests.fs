@@ -30,6 +30,14 @@ let private eventually (timeout: TimeSpan) (condition: unit -> bool) =
 
     met
 
+/// Holds a port through the prefix the server binds. An IPv4 TcpListener is not enough: on Linux, localhost can
+/// resolve to ::1, which it does not block.
+let private holdPort (port: int) =
+    let holder = new HttpListener ()
+    holder.Prefixes.Add $"http://localhost:{port}/"
+    holder.Start ()
+    holder
+
 let private rendering =
     testList
         "render"
@@ -176,10 +184,8 @@ let private http =
           test "serve waits for a port released within the bind timeout" {
               configure ()
               let port = freePort ()
-              let holder = new TcpListener (IPAddress.Loopback, port)
-              holder.Start ()
-
-              let release = new Timer ((fun _ -> holder.Stop ()), null, 1000, Timeout.Infinite)
+              let holder = holdPort port
+              let release = new Timer ((fun _ -> holder.Close ()), null, 1000, Timeout.Infinite)
 
               try
                   let server = Preview.serveWith testEnv (quiet port) (fun () -> onePage "late")
@@ -190,13 +196,12 @@ let private http =
                       Preview.stop port
               finally
                   release.Dispose ()
-                  holder.Stop ()
+                  holder.Close ()
           }
           test "serve raises naming the port when it stays in use" {
               configure ()
               let port = freePort ()
-              let holder = new TcpListener (IPAddress.Loopback, port)
-              holder.Start ()
+              let holder = holdPort port
 
               try
                   let error =
@@ -210,7 +215,7 @@ let private http =
                   Expect.stringContains error.Message (string port) "the port"
                   Expect.isNone (Preview.tryServer port) "no server"
               finally
-                  holder.Stop ()
+                  holder.Close ()
           }
           test "a disconnected client is pruned at the next keep-alive" {
               configure ()
@@ -302,9 +307,8 @@ let private http =
           test "stop during a bind retry frees the port and leaves no server" {
               configure ()
               let port = freePort ()
-              let holder = new TcpListener (IPAddress.Loopback, port)
-              holder.Start ()
-              let release = new Timer ((fun _ -> holder.Stop ()), null, 800, Timeout.Infinite)
+              let holder = holdPort port
+              let release = new Timer ((fun _ -> holder.Close ()), null, 800, Timeout.Infinite)
               let mutable outcome: Result<Preview.Server, exn> option = None
 
               let serving =
@@ -335,7 +339,7 @@ let private http =
                       listener.Close ()
               finally
                   release.Dispose ()
-                  holder.Stop ()
+                  holder.Close ()
                   Preview.stop port
           }
           test "the shell ignores a version older than the one shown" {
