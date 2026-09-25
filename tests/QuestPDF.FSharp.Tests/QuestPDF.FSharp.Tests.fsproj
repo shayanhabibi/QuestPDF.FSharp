@@ -13,6 +13,7 @@
         <Compile Include="Support/Deterministic.fs" />
         <Compile Include="Support/Equivalence.fs" />
         <Compile Include="Support/PdfText.fs" />
+        <Compile Include="Support/Fonts.fs" />
         <Compile Include="UnitsTests.fs" />
         <Compile Include="CoreTests.fs" />
         <Compile Include="StyleProbe.fs" />
@@ -29,6 +30,7 @@
         <Compile Include="PagingTests.fs" />
         <Compile Include="TransformTests.fs" />
         <Compile Include="OutputTests.fs" />
+        <Compile Include="SetupTests.fs" />
         <Compile Include="Coverage.fs" />
         <Compile Include="CoverageTests.fs" />
         <Compile Include="../../build/QuestPdfLinks.fs" Link="Support/QuestPdfLinks.fs" />

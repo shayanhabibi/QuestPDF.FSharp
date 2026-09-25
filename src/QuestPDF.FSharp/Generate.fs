@@ -64,7 +64,9 @@ module Pdf =
 
     /// <summary>
     /// Sends a document to the QuestPDF Companion app on its default port, 12500, for a live preview. The Companion
-    /// app must be running.
+    /// app must be running. Blocks until the Companion app closes. While running, it sets
+    /// <see cref="P:QuestPDF.Settings.EnableCaching"/> to false and
+    /// <see cref="P:QuestPDF.Settings.EnableDetailedLayoutErrors"/> to true for the process.
     /// </summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Companion.CompanionExtensions.ShowInCompanion(QuestPDF.Infrastructure.IDocument,System.Int32)"/>.</remarks>
     let companion (document: IDocument) : unit =
