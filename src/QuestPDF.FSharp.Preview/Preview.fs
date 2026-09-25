@@ -83,14 +83,18 @@ module Preview =
     /// The servers of the process by port.
     let private servers = ConcurrentDictionary<int, Lazy<Server>> ()
 
-    /// The script watchers of the process by full script path, compared case-insensitively on Windows.
-    let private scripts =
-        ConcurrentDictionary<string, Lazy<ScriptWatcher>> (
-            if OperatingSystem.IsWindows () then
-                StringComparer.OrdinalIgnoreCase
-            else
-                StringComparer.Ordinal
-        )
+    /// The comparison of full script paths: case-insensitive on Windows.
+    let private samePath: StringComparer =
+        if OperatingSystem.IsWindows () then
+            StringComparer.OrdinalIgnoreCase
+        else
+            StringComparer.Ordinal
+
+    /// The script watchers of the process by full script path.
+    let private scripts = ConcurrentDictionary<string, Lazy<ScriptWatcher>> (samePath)
+
+    /// The stopped watchers of the process by full script path, kept while their last reload may still run the script.
+    let private retired = ConcurrentDictionary<string, ScriptWatcher> (samePath)
 
     /// Stops the watcher of a script.
     let private unwatch (path: string) (entry: Lazy<ScriptWatcher>) =
@@ -99,6 +103,18 @@ module Preview =
             && entry.IsValueCreated
         then
             (entry.Value :> IDisposable).Dispose ()
+            retired[path] <- entry.Value
+
+    /// Whether a run of a script belongs to a reload of a stopped watcher; such a run leaves the preview stopped.
+    let private orphaned (path: string) =
+        match retired.TryGetValue path with
+        | true, watcher when watcher.Reloading -> true
+        | true, watcher ->
+            retired.TryRemove (Collections.Generic.KeyValuePair (path, watcher))
+            |> ignore
+
+            false
+        | _ -> false
 
     /// Stops the watchers of the scripts shown on a port.
     let private stopWatchers (port: int) =
@@ -153,6 +169,11 @@ module Preview =
         else
             let server = entry.Value
             server.Engine.Update (document, renderSettings)
+
+            // A reload issue belongs to the SageFs script mode.
+            if reload <> "sagefs-script" then
+                server.Engine.Reloaded Loaded
+
             server.Refresh ()
             server, false
 
@@ -226,6 +247,7 @@ module Preview =
             && File.Exists script
 
         match daemonOf env options with
+        | _ when known && orphaned (Path.GetFullPath script) -> ()
         | Some daemon when known ->
             let path = Path.GetFullPath script
             let server, started = start env options "sagefs-script" None document
@@ -240,12 +262,17 @@ module Preview =
             let reload () =
                 SageFsClient.reload daemon path projects (env.CurrentDirectory ())
 
+            let others (changed: string) =
+                not (samePath.Equals (changed, path))
+                && scripts.ContainsKey changed
+
             let candidate =
-                lazy (new ScriptWatcher (path, options.Port, env.Now, reload, report options.Port))
+                lazy (new ScriptWatcher (path, options.Port, env.Now, reload, report options.Port, others))
 
             let entry = scripts.GetOrAdd (path, candidate)
+            let first = obj.ReferenceEquals (entry, candidate)
 
-            if obj.ReferenceEquals (entry, candidate) then
+            if first then
                 try
                     entry.Force () |> ignore
                 with _ ->
@@ -253,12 +280,25 @@ module Preview =
                     |> ignore
 
                     reraise ()
-
-                match SageFsClient.session daemon projects (env.CurrentDirectory ()) with
-                | Ok session -> printfn "Preview: reloading %s through SageFs session %s on save" (Path.GetFileName path) session.Id
-                | Error reason -> printfn "Preview: reloading %s through SageFs on save; %s" (Path.GetFileName path) reason
             else
                 entry.Value.Retarget (options.Port, reload, report options.Port)
+
+            // Outside a reload the script was evaluated by hand: the new code replaces a failed reload, and the page
+            // shows whether saves can reach the session.
+            if not entry.Value.Reloading then
+                let name = Path.GetFileName path
+
+                match SageFsClient.session daemon projects (env.CurrentDirectory ()) with
+                | Ok session ->
+                    server.Engine.Reloaded Loaded
+
+                    if first then
+                        printfn "Preview: reloading %s through SageFs session %s on save" name session.Id
+                | Error reason ->
+                    server.Engine.Reloaded (Routing reason)
+
+                    if first then
+                        printfn "Preview: reloading %s through SageFs on save; %s" name reason
         | _ ->
             if known then
                 match scripts.TryGetValue (Path.GetFullPath script) with

@@ -34,7 +34,7 @@ type internal Snapshot =
         Pages: string list
         Hashes: string list
         Status: RenderStatus
-        /// The status of the last render, shown while no reload issue is set.
+        /// The status of the last render, shown while ReloadIssue is None.
         LastRender: RenderStatus
         /// The status of the last failed reload, shown over the render status until a reload succeeds.
         ReloadIssue: RenderStatus option

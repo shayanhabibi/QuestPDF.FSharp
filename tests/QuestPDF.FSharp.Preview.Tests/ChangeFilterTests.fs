@@ -82,6 +82,10 @@ let private classify =
                   "a root inside a bin folder"
 
               Expect.isTrue (ChangeFilter.classify root WatcherChangeTypes.Changed (under "binary.fsx")) "a file named bin*"
+          }
+          test "the extension counts in any letter case" {
+              for file in [ "Invoice.FSX"; "Lib.FS"; "parts.Fsx" ] do
+                  Expect.isTrue (ChangeFilter.classify root WatcherChangeTypes.Changed (under file)) file
           } ]
 
 let private debounce =

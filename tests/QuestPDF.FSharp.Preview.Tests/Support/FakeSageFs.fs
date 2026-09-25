@@ -54,6 +54,7 @@ type FakeDaemon() =
     let mutable sessionRequests = 0
     let mutable sessions = """{"sessions":[]}"""
     let mutable exec = 200, fixture "exec-success.json"
+    let mutable onExec: unit -> unit = ignore
 
     let respond (context: HttpListenerContext) (status: int) (contentType: string) (body: string) =
         let bytes = Encoding.UTF8.GetBytes body
@@ -78,6 +79,7 @@ type FakeDaemon() =
                     reader.Dispose ()
 
             execs.Enqueue body
+            onExec ()
             let status, reply = exec
             respond context status "application/json; charset=utf-8" reply
         | _ -> respond context 404 "text/plain" ""
@@ -111,6 +113,11 @@ type FakeDaemon() =
     member _.Exec
         with get () = exec
         and set value = exec <- value
+
+    /// Runs on each POST /exec after the body is recorded and before the reply, as the evaluation of the script.
+    member _.OnExec
+        with get () = onExec
+        and set value = onExec <- value
 
     /// The bodies of the POST /exec requests, in arrival order.
     member _.Execs = List.ofSeq execs

@@ -12,7 +12,7 @@ type internal ReloadOutcome =
     | Compile of DiagnosticInfo list
     /// The top level of the script raised.
     | Runtime of message: string
-    /// The daemon did not run the script: no session, several sessions, or no readable answer.
+    /// The script was left unevaluated: zero or several matching sessions, a failed connection, or an unreadable answer.
     | Routing of reason: string
 
 /// The /exec protocol of the SageFs daemon, as served by SageFs 0.6.828.
@@ -105,7 +105,7 @@ module internal ExecProtocol =
         else
             first
 
-    /// The root element of a JSON document; None when the text is no JSON.
+    /// The root element of a JSON document; None for text that fails to parse as JSON.
     let private json (body: string) : JsonElement option =
         try
             let document = JsonDocument.Parse body
@@ -119,14 +119,22 @@ module internal ExecProtocol =
 
     /// The outcome of an /exec response with a status code and a body.
     let parse (script: string) (status: int) (body: string) : ReloadOutcome =
+        let unreadable =
+            Routing $"The SageFs daemon answered HTTP {status} without a readable body."
+
         match json body with
-        | None -> Routing $"The SageFs daemon answered HTTP {status} without a readable body."
+        | None -> unreadable
+        | Some root when
+            root.ValueKind <> JsonValueKind.Object
+            && status >= 200
+            && status < 300
+            ->
+            unreadable
         | Some root when status >= 200 && status < 300 ->
             let succeeded =
-                root.ValueKind = JsonValueKind.Object
-                && (match root.TryGetProperty "success" with
-                    | true, value -> value.ValueKind <> JsonValueKind.False
-                    | false, _ -> true)
+                match root.TryGetProperty "success" with
+                | true, value -> value.ValueKind <> JsonValueKind.False
+                | false, _ -> true
 
             if succeeded then
                 Loaded

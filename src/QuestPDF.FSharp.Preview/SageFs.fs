@@ -3,6 +3,7 @@ namespace QuestPDF.FSharp.PreviewServer
 open System
 open System.IO
 open System.Net.Http
+open System.Net.NetworkInformation
 open System.Text
 open System.Threading
 
@@ -35,9 +36,23 @@ module internal SageFsClient =
 
         $"The SageFs daemon at {daemon} is unreachable: {error}"
 
+    /// Whether a daemon can accept connections: true for a remote host, and for a loopback host while a TCP listener
+    /// holds its port.
+    let private listening (daemon: Uri) =
+        // Windows retries a refused loopback connection for about 2 s per address of localhost.
+        try
+            not daemon.IsLoopback
+            || IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners ()
+               |> Array.exists (fun endpoint -> endpoint.Port = daemon.Port)
+        with _ ->
+            true
+
     /// The session of the current process, by the projects of SAGEFS_SESSION_PROJECTS or by the current directory.
     let session (daemon: Uri) (projects: string) (currentDirectory: string) : Result<SessionInfo, string> =
         try
+            if not (listening daemon) then
+                raise (HttpRequestException $"no process listens on port {daemon.Port}")
+
             let status, body =
                 send (new HttpRequestMessage (HttpMethod.Get, Uri (daemon, "api/sessions"))) (TimeSpan.FromSeconds 5.0)
 
@@ -65,8 +80,10 @@ module internal SageFsClient =
                 Routing (unreachable daemon error)
 
 /// Reloads a script on every save of an F# file in the script's directory tree, one reload at a time. Saves within
-/// 100 ms of each other make one reload, and saves during a reload make one follow-up reload.
-type internal ScriptWatcher(script: string, port: int, now: unit -> DateTime, reload: unit -> ReloadOutcome, report: ReloadOutcome -> unit) =
+/// 100 ms of each other make one reload, and saves during a reload make one follow-up reload. Saves of a path for
+/// which others is true, such as the script of another watcher, are ignored.
+type internal ScriptWatcher
+    (script: string, port: int, now: unit -> DateTime, reload: unit -> ReloadOutcome, report: ReloadOutcome -> unit, others: string -> bool) =
     let root = Path.GetDirectoryName script
     let window = TimeSpan.FromMilliseconds 100.0
     let sync = obj ()
@@ -75,16 +92,36 @@ type internal ScriptWatcher(script: string, port: int, now: unit -> DateTime, re
     let mutable target = port, reload, report
     let mutable disposed = false
 
+    /// Wakes the loop; a no-op once the loop has ended.
+    let signal () =
+        try
+            wake.Set () |> ignore
+        with :? ObjectDisposedException ->
+            ()
+
+    /// Shows an error of the watcher as a reload failure of the script.
+    let record (error: exn) =
+        if not disposed then
+            try
+                let _, _, report = lock sync (fun () -> target)
+                report (Routing $"The reload watcher of {Path.GetFileName script} failed: {error.Message}")
+            with _ ->
+                ()
+
     let save () =
         lock sync (fun () -> state <- ChangeFilter.event window (now ()) state)
-        wake.Set () |> ignore
+        signal ()
 
     let changed (change: WatcherChangeTypes) (path: string) =
-        try
-            if ChangeFilter.classify root change path then
-                save ()
-        with _ ->
-            ()
+        if not disposed then
+            try
+                if
+                    ChangeFilter.classify root change path
+                    && not (others path)
+                then
+                    save ()
+            with error ->
+                record error
 
     let watcher =
         new FileSystemWatcher (
@@ -113,27 +150,40 @@ type internal ScriptWatcher(script: string, port: int, now: unit -> DateTime, re
         finally
             lock sync (fun () -> state <- ChangeFilter.finished window (now ()) state)
 
+    /// One pass of the loop: a due reload, or a wait for the next save or due time.
+    let step () =
+        let start, wait =
+            lock sync (fun () ->
+                let next, start = ChangeFilter.tick (now ()) state
+                state <- next
+                start, ChangeFilter.wait (now ()) state)
+
+        if start then
+            run ()
+        else
+            match wait with
+            | Some wait ->
+                wake.WaitOne (max wait (TimeSpan.FromMilliseconds 1.0))
+                |> ignore
+            | None -> wake.WaitOne () |> ignore
+
     let thread =
         Thread (
             (fun () ->
-                while not disposed do
-                    try
-                        let start, wait =
-                            lock sync (fun () ->
-                                let next, start = ChangeFilter.tick (now ()) state
-                                state <- next
-                                start, ChangeFilter.wait (now ()) state)
+                try
+                    while not disposed do
+                        try
+                            step ()
+                        with error ->
+                            record error
 
-                        if start then
-                            run ()
-                        else
-                            match wait with
-                            | Some wait ->
-                                wake.WaitOne (max wait (TimeSpan.FromMilliseconds 1.0))
-                                |> ignore
-                            | None -> wake.WaitOne () |> ignore
-                    with _ ->
-                        ()),
+                            // A failing pass waits before the next, so a persistent error reports every 250 ms.
+                            try
+                                wake.WaitOne 250 |> ignore
+                            with _ ->
+                                ()
+                finally
+                    wake.Dispose ()),
             IsBackground = true,
             Name = "QuestPDF preview script reload"
         )
@@ -143,7 +193,13 @@ type internal ScriptWatcher(script: string, port: int, now: unit -> DateTime, re
         watcher.Created.Add (fun e -> changed e.ChangeType e.FullPath)
         watcher.Renamed.Add (fun e -> changed e.ChangeType e.FullPath)
         // A lost event buffer may hide a save.
-        watcher.Error.Add (fun _ -> save ())
+        watcher.Error.Add (fun _ ->
+            if not disposed then
+                try
+                    save ()
+                with error ->
+                    record error)
+
         watcher.EnableRaisingEvents <- true
         thread.Start ()
 
@@ -155,6 +211,9 @@ type internal ScriptWatcher(script: string, port: int, now: unit -> DateTime, re
         lock sync (fun () ->
             let port, _, _ = target
             port)
+
+    /// Whether a reload is in flight, from the request to the daemon until its outcome is reported.
+    member _.Reloading = lock sync (fun () -> state.InFlight)
 
     /// Replaces the port, the reload and the report of outcomes.
     member _.Retarget(nextPort: int, nextReload: unit -> ReloadOutcome, nextReport: ReloadOutcome -> unit) =
@@ -171,4 +230,4 @@ type internal ScriptWatcher(script: string, port: int, now: unit -> DateTime, re
                 with _ ->
                     ()
 
-                wake.Set () |> ignore
+                signal ()

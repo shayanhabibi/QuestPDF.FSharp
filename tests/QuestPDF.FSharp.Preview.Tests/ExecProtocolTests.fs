@@ -84,6 +84,12 @@ let private parse =
                   match ExecProtocol.parse script status "" with
                   | Routing reason -> Expect.stringContains reason (string status) "the status"
                   | other -> failtest $"expected Routing for {status}, got %A{other}"
+          }
+          test "a 2xx JSON body other than an object gives Routing with the status" {
+              for body in [ "[]"; "null"; "42" ] do
+                  match ExecProtocol.parse script 200 body with
+                  | Routing reason -> Expect.stringContains reason "HTTP 200 without a readable body" body
+                  | other -> failtest $"expected Routing for {body}, got %A{other}"
           } ]
 
 let private diagnostics =

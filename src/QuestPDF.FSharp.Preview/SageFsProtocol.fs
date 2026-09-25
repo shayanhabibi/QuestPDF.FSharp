@@ -23,7 +23,7 @@ module internal SageFsProtocol =
         | true, value when value.ValueKind = JsonValueKind.String -> value.GetString ()
         | _ -> ""
 
-    /// The sessions of a GET /api/sessions response; empty for a body that is no session list.
+    /// The sessions of a GET /api/sessions response; empty for a body other than a session list.
     let sessions (json: string) : SessionInfo list =
         try
             let document = JsonDocument.Parse json

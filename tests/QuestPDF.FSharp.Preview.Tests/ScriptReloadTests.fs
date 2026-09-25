@@ -8,6 +8,7 @@ open Expecto
 open QuestPDF.Fluent
 open QuestPDF.Helpers
 open QuestPDF.FSharp
+open QuestPDF.FSharp.PreviewServer
 open QuestPDF.FSharp.Preview.Tests.Support
 
 /// A one-page A5 document with a line of text.
@@ -179,30 +180,38 @@ let tests =
                   Expect.isGreaterThan live.Server.Version failedVersion "the version bumps"
                   Expect.stringContains (get live.Server "/page/1.svg").Text "second" "the new text")
           }
-          test "a stopped daemon gives ReloadFailed with the connection error, and renders continue" {
+          test "a stopped daemon gives ReloadFailed with the connection error, and polling continues" {
               withLive (fun live ->
                   let mutable line = "first"
-                  Preview.liveWith live.Env live.Options live.Script (fun () -> onePage line)
-                  live.Daemon.Stop ()
-                  live.Save "// version 2"
 
-                  let failed () =
+                  let options =
+                      { live.Options with
+                          Poll = Some (TimeSpan.FromMilliseconds 50.0) }
+
+                  Preview.liveWith live.Env options live.Script (fun () -> onePage line)
+                  let stream = new EventStream (live.Server)
+
+                  try
+                      live.Daemon.Stop ()
+                      live.Save "// version 2"
+
+                      let failed () =
+                          match live.Server.Status with
+                          | Preview.ReloadFailed _ -> true
+                          | _ -> false
+
+                      Expect.isTrue (within 5.0 failed) $"ReloadFailed, got {live.Server.Status}"
+
                       match live.Server.Status with
-                      | Preview.ReloadFailed _ -> true
-                      | _ -> false
+                      | Preview.ReloadFailed reason -> Expect.stringContains reason "unreachable" "the connection error"
+                      | _ -> ()
 
-                  // Windows retries a refused connection for about 2 s per address of localhost.
-                  Expect.isTrue (within 15.0 failed) $"ReloadFailed, got {live.Server.Status}"
-
-                  match live.Server.Status with
-                  | Preview.ReloadFailed reason -> Expect.stringContains reason "unreachable" "the connection error"
-                  | _ -> ()
-
-                  let before = live.Server.Snapshot.Hashes
-                  line <- "second"
-                  live.Server.Refresh ()
-                  Expect.notEqual live.Server.Snapshot.Hashes before "a new render"
-                  Expect.isTrue (failed ()) "the reload failure stays")
+                      let before = live.Server.Snapshot.Hashes
+                      line <- "second"
+                      Expect.isTrue (eventually (fun () -> live.Server.Snapshot.Hashes <> before)) "a polled render"
+                      Expect.isTrue (failed ()) "the reload failure stays"
+                  finally
+                      (stream :> IDisposable).Dispose ())
           }
           test "a script path that doesn't exist starts no watcher and hints to load the file" {
               withLive (fun live ->
@@ -266,4 +275,149 @@ let tests =
                   Expect.equal live.Server.Snapshot.Reload "sagefs-script" "SageFs reload"
                   live.Save "// version 2"
                   Expect.equal (live.Execs 1).Length 1 "one /exec")
+          }
+          test "a session that isn't identified shows ReloadFailed with the reason after Live" {
+              withLive (fun live ->
+                  live.Daemon.Sessions <- """{"sessions":[]}"""
+                  live.Run "first"
+
+                  let failed () =
+                      match live.Server.Status with
+                      | Preview.ReloadFailed reason -> reason.Contains "SageFs session not identified (0 matches)"
+                      | _ -> false
+
+                  Expect.isTrue (eventually failed) $"ReloadFailed, got {live.Server.Status}")
+          }
+          test "Live with manual reload and serve on the port clear a reload failure" {
+              withLive (fun live ->
+                  live.Run "first"
+                  live.Daemon.Exec <- 200, fixture "exec-compile-error.json"
+                  live.Save "// broken"
+
+                  let compileFailed () =
+                      match live.Server.Status with
+                      | Preview.CompileFailed _ -> true
+                      | _ -> false
+
+                  Expect.isTrue (eventually compileFailed) $"CompileFailed, got {live.Server.Status}"
+
+                  Preview.liveWith
+                      live.Env
+                      { live.Options with
+                          Reload = Preview.Manual }
+                      live.Script
+                      (fun () -> onePage "manual")
+
+                  match live.Server.Status with
+                  | Preview.Rendered _ -> ()
+                  | status -> failtest $"expected Rendered after manual Live, got {status}"
+
+                  live.Run "again"
+                  live.Save "// broken again"
+                  Expect.isTrue (eventually compileFailed) $"CompileFailed again, got {live.Server.Status}"
+
+                  Preview.serveWith live.Env (quiet live.Port) (fun () -> onePage "served")
+                  |> ignore
+
+                  match live.Server.Status with
+                  | Preview.Rendered _ -> ()
+                  | status -> failtest $"expected Rendered after serve, got {status}")
+          }
+          test "an evaluation of the script by hand clears a reload failure" {
+              withLive (fun live ->
+                  live.Run "first"
+                  live.Daemon.Exec <- 200, fixture "exec-compile-error.json"
+                  live.Save "// broken"
+
+                  let compileFailed () =
+                      match live.Server.Status with
+                      | Preview.CompileFailed _ -> true
+                      | _ -> false
+
+                  Expect.isTrue (eventually compileFailed) $"CompileFailed, got {live.Server.Status}"
+                  live.Run "fixed by hand"
+
+                  match live.Server.Status with
+                  | Preview.Rendered _ -> ()
+                  | status -> failtest $"expected Rendered, got {status}"
+
+                  Expect.stringContains (get live.Server "/page/1.svg").Text "fixed" "the new text")
+          }
+          test "Preview.stop during a reload leaves the port and the script stopped" {
+              withLive (fun live ->
+                  let started = new ManualResetEventSlim ()
+                  let proceed = new ManualResetEventSlim ()
+                  let finished = new ManualResetEventSlim ()
+
+                  live.Daemon.OnExec <-
+                      fun () ->
+                          started.Set ()
+                          proceed.Wait (TimeSpan.FromSeconds 5.0) |> ignore
+
+                          try
+                              live.Run "reloaded"
+                          finally
+                              finished.Set ()
+
+                  live.Run "first"
+                  live.Save "// version 2"
+                  Expect.isTrue (started.Wait (TimeSpan.FromSeconds 3.0)) "the reload started"
+                  Preview.stop live.Port
+                  proceed.Set ()
+                  Expect.isTrue (finished.Wait (TimeSpan.FromSeconds 10.0)) "the reload finished"
+                  Expect.isNone (Preview.tryServer live.Port) "no server"
+                  Expect.equal (watchers live.Script) 0 "no watcher")
+          }
+          test "saving one of two live scripts in a folder reloads only that script" {
+              withLive (fun live ->
+                  let other = Path.Combine (live.Directory, "other.fsx")
+                  File.WriteAllText (other, "// other")
+                  let otherPort = freePort ()
+
+                  try
+                      live.Run "first"
+
+                      Preview.liveWith live.Env { live.Options with Port = otherPort } other (fun () -> onePage "other")
+
+                      live.Save "// version 2"
+                      let execs = live.Execs 1
+                      Expect.equal execs.Length 1 "one /exec"
+                      Expect.stringStarts (code execs[0]) $"#load @\"{live.Script}\"" "the saved script"
+                  finally
+                      Preview.stop otherPort)
+          }
+          test "a script watcher records an error of its loop as a reload failure" {
+              let directory = tempDirectory ()
+              let script = Path.Combine (directory, "invoice.fsx")
+              File.WriteAllText (script, "// version 1")
+              let reports = Collections.Concurrent.ConcurrentQueue<ReloadOutcome> ()
+
+              let watcher =
+                  new ScriptWatcher (script, 0, (fun () -> failwith "the clock broke"), (fun () -> Loaded), reports.Enqueue, (fun _ -> false))
+
+              try
+                  let recorded () =
+                      reports
+                      |> Seq.exists (function
+                          | Routing reason -> reason.Contains "the clock broke"
+                          | _ -> false)
+
+                  Expect.isTrue (eventually recorded) $"the error recorded, got %A{List.ofSeq reports}"
+              finally
+                  (watcher :> IDisposable).Dispose ()
+
+                  try
+                      Directory.Delete (directory, true)
+                  with _ ->
+                      ()
+          }
+          test "a daemon on a closed loopback port is unreachable within 1 s" {
+              let daemon = Uri $"http://localhost:{freePort ()}/"
+              let clock = Diagnostics.Stopwatch.StartNew ()
+
+              match SageFsClient.session daemon "" (Path.GetTempPath ()) with
+              | Error reason -> Expect.stringContains reason "unreachable" "the reason"
+              | Ok session -> failtest $"expected an error, got {session}"
+
+              Expect.isLessThan clock.ElapsedMilliseconds 1000L "fails at once"
           } ]

@@ -18,7 +18,7 @@ type internal Debounce =
 /// The file-system events that count as a save of F# source, and the debounce of saves.
 [<RequireQualifiedAccess>]
 module internal ChangeFilter =
-    /// The folders under a watched root whose files never count.
+    /// The build and repository folders under a watched root, whose files are ignored.
     let private ignoredFolders = set [ "bin"; "obj"; ".git" ]
 
     /// Whether a file name is an editor's temporary or backup file.
@@ -30,7 +30,7 @@ module internal ChangeFilter =
         || name = "4913"
 
     /// Whether a file-system event under a watched root counts as a save of F# source: a change, creation or rename
-    /// onto an .fs or .fsx file outside bin, obj and .git folders, and not an editor's temporary file.
+    /// onto an .fs or .fsx file, in any letter case, outside bin, obj and .git folders, and not an editor's temporary file.
     let classify (root: string) (change: WatcherChangeTypes) (path: string) : bool =
         let counted =
             change = WatcherChangeTypes.Changed
@@ -46,11 +46,12 @@ module internal ChangeFilter =
                 .Split ([| Path.DirectorySeparatorChar; Path.AltDirectorySeparatorChar |], StringSplitOptions.RemoveEmptyEntries)
 
         counted
-        && (extension = ".fs" || extension = ".fsx")
+        && (String.Equals (extension, ".fs", StringComparison.OrdinalIgnoreCase)
+            || String.Equals (extension, ".fsx", StringComparison.OrdinalIgnoreCase))
         && not (temporary name)
         && not (folders |> Array.exists ignoredFolders.Contains)
 
-    /// No reload due or in flight.
+    /// The state between reloads.
     let idle: Debounce =
         { Due = None
           InFlight = false
