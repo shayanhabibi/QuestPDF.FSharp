@@ -7,6 +7,9 @@
         <AssemblyName>QuestPDF.FSharp</AssemblyName>
         <PackageId>QuestPDF.FSharp</PackageId>
         <Title>QuestPDF.FSharp</Title>
+        <Version>1.0.0</Version>
+        <Description>An idiomatic F# layer over QuestPDF: layouts are plain functions composed with &gt;&gt;, containers take lists, lengths are bare numbers or 5 * mm, and the output is byte-identical to the equivalent fluent QuestPDF code.</Description>
+        <PackageTags>fsharp;f#;pdf;questpdf;pdf-generation;document;report;layout</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
@@ -34,6 +37,8 @@
 
     <ItemGroup>
       <PackageReference Include="QuestPDF" Version="2026.9.0" />
+      <!-- Pinned so the package does not require the FSharp.Core of whichever SDK packed it. -->
+      <PackageReference Update="FSharp.Core" Version="10.0.100" />
     </ItemGroup>
 
 </Project>
