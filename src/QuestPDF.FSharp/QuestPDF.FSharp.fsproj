@@ -24,6 +24,7 @@
         <Compile Include="Semantic.fs" />
         <Compile Include="Flow.fs" />
         <Compile Include="Document.fs" />
+        <Compile Include="Operations.fs" />
         <Compile Include="Generate.fs" />
         <Compile Include="Setup.fs" />
         <None Include="../../README.md" Pack="true" PackagePath="\" />

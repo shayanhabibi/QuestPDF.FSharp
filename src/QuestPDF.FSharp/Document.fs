@@ -8,8 +8,12 @@ type internal DocumentPartKind =
     | PageDefinition of PagePart list
     | MetadataSetter of (DocumentMetadata -> unit)
     | SettingsSetter of (DocumentSettings -> unit)
+    | MergeSetter of (MergedDocument -> MergedDocument)
 
-/// <summary>An element of a <c>document [ ... ]</c> list: a page, a metadata item or a settings item.</summary>
+/// <summary>
+/// An element of a <c>document [ ... ]</c> list: a page, a metadata item or a settings item. The list of
+/// <c>Pdf.merge</c> takes metadata items, settings items and <c>Merge.*</c> items.
+/// </summary>
 [<Sealed>]
 type DocumentPart internal (kind: DocumentPartKind) =
     member internal _.Kind = kind
@@ -42,13 +46,15 @@ module DocumentElements =
                 match part.Kind with
                 | PageDefinition pageParts -> Some pageParts
                 | MetadataSetter _
-                | SettingsSetter _ -> None)
+                | SettingsSetter _ -> None
+                | MergeSetter _ -> invalidArg (nameof parts) "Merge.* items belong in the list of Pdf.merge.")
 
         for part in parts do
             match part.Kind with
             | MetadataSetter set -> set metadata
             | SettingsSetter set -> set settings
-            | PageDefinition _ -> ()
+            | PageDefinition _
+            | MergeSetter _ -> ()
 
         let rightToLeft = settings.ContentDirection = ContentDirection.RightToLeft
 

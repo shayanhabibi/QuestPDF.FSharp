@@ -72,6 +72,7 @@ let settings =
                   [ "images", (Pdf.images ImageFormat.Png 72 >> ignore)
                     "svgs", (Pdf.svgs >> ignore)
                     "companion", Pdf.companion
+                    "companionAsync", (Pdf.companionAsync >> Async.RunSynchronously)
                     "show", Pdf.show ]
 
               for name, generate in generators do
