@@ -180,11 +180,13 @@ module Stage =
 
     let publish = input {
         let! apiKey = Options.apiKey
+        // One separator style: on Windows a mixed "C:\...\bin/*.nupkg" matches no files.
+        let packages = System.IO.Path.Combine(Repo.VirtualFileSystem.bin.ToString(), "*.nupkg")
         return stage "publish" {
             quiet
             failIfIgnored
             when' apiKey.IsSome
-            run (cmd $"dotnet nuget push {Repo.VirtualFileSystem.bin.ToString()}/*.nupkg -k {apiKey.Value} -s https://api.nuget.org/v3/index.json --skip-duplicate")
+            run (cmd $"dotnet nuget push {packages} -k {apiKey.Value} -s https://api.nuget.org/v3/index.json --skip-duplicate")
         }
     }
 
