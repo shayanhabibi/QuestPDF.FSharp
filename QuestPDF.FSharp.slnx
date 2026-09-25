@@ -19,6 +19,9 @@
     <Project Path="tests/QuestPDF.FSharp.Tests/QuestPDF.FSharp.Tests.fsproj" />
     <Project Path="tests/QuestPDF.FSharp.Preview.Tests/QuestPDF.FSharp.Preview.Tests.fsproj" />
   </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/HotReloadPreview/HotReloadPreview.fsproj" />
+  </Folder>
   <Folder Name="/docs/">
     <File Path="docs/index.md" />
   </Folder>

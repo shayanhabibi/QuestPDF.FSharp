@@ -1,0 +1,87 @@
+event: state
+data: {"diagCount":0,"outputCount":73}
+
+event: eval_diff
+data: {"SessionId":"9b7f5d5e","Added":0,"Lines":[{"Kind":"modified","OldText":"Result: url=http://localhost:5101/ version=1 err=None\r","Text":"Result: val it: string =\r"},{"Kind":"modified","OldText":"val server: Preview.Server\r","Text":"  \u0022C:\\Users\\shaya\\AppData\\Local\\Temp\\claude\\c--Users-shaya-RiderProjects-shayanhabibi\\fd03d86c-62cd-472d-8f35-75b09a15755b\\scratchpad\\preview\\s
+
+event: state
+data: {"diagCount":0,"outputCount":12}
+
+event: eval_diff
+data: {"SessionId":"9b7f5d5e","Added":0,"Lines":[{"Kind":"unchanged","OldText":"","Text":"Result: val it: string =\r"},{"Kind":"unchanged","OldText":"","Text":"  \u0022C:\\Users\\shaya\\AppData\\Local\\Temp\\claude\\c--Users-shaya-RiderProjects-shayanhabibi\\fd03d86c-62cd-472d-8f35-75b09a15755b\\scratchpad\\preview\\sagefs-research\\repl\u0022\r"},{"Kind":"unchanged","OldText":"","Text":"\r"},{"Ki
+
+event: state
+data: {"diagCount":0,"outputCount":13}
+
+event: state
+data: {"hotReloadChanged":true,"sessionId":"9b7f5d5e"}
+
+event: session
+data: {"sessionId":"9b7f5d5e","type":"hotreload_snapshot","watchedFiles":[]}
+
+event: eval_diff
+data: {"SessionId":"9b7f5d5e","Added":3,"Lines":[{"Kind":"unchanged","OldText":"","Text":"Result: val it: string =\r"},{"Kind":"unchanged","OldText":"","Text":"  \u0022C:\\Users\\shaya\\AppData\\Local\\Temp\\claude\\c--Users-shaya-RiderProjects-shayanhabibi\\fd03d86c-62cd-472d-8f35-75b09a15755b\\scratchpad\\preview\\sagefs-research\\repl\u0022\r"},{"Kind":"unchanged","OldText":"","Text":"\r"},{"Ki
+
+event: cell_dependencies
+data: {"SessionId":"9b7f5d5e","Edges":[{"From":40,"To":0},{"From":135,"To":0},{"From":1,"To":0},{"From":0,"To":1},{"From":40,"To":1},{"From":135,"To":1},{"From":135,"To":2},{"From":6,"To":3},{"From":135,"To":3},{"From":135,"To":4},{"From":135,"To":5},{"From":0,"To":6},{"From":79,"To":6},{"From":79,"To":7},{"From":135,"To":7},{"From":79,"To":8},{"From":135,"To":9},{"From":135,"To":12},{"From":135,"
+
+event: binding_scope_map
+data: {"SessionId":"9b7f5d5e","ActiveCount":51,"Bindings":[{"CellIndex":0,"Name":"original","ReferencedIn":[1],"ShadowedBy":[],"TypeSig":"ImageOption"},{"CellIndex":0,"Name":"dpi","ReferencedIn":[1,6,31,32,40,53,54],"ShadowedBy":[],"TypeSig":"int -\u003E ImageOption"},{"CellIndex":0,"Name":"quality","ReferencedIn":[1],"ShadowedBy":[],"TypeSig":"ImageCompressionQuality -\u003E ImageOption"},{"CellI
+
+event: eval_timeline
+data: {"SessionId":"9b7f5d5e","Count":137,"MeanMs":1792.802919708029,"P50Ms":252,"P95Ms":6114,"P99Ms":14193,"Sparkline":"\u2585\u2585\u2585\u2585\u2585\u2586\u2581\u2587\u2587\u2581\u2581\u2581\u2588\u2581\u2581\u2581\u2581\u2581\u2581\u2581"}
+
+event: state
+data: {"diagCount":0,"outputCount":14}
+
+event: live_bindings
+data: {"SessionId":"9b7f5d5e","SessionId":"9b7f5d5e","Generation":1,"Bindings":[{"Name":"_SageFsCompExpr","TypeSignature":"Boolean","Root":{"Label":"_SageFsCompExpr","TypeName":"Boolean","Preview":"true","Kind":{"Case":"Leaf"},"Children":[],"BestEffort":false,"Depth":0}},{"Name":"_SageFsHotReload","TypeSignature":"Boolean","Root":{"Label":"_SageFsHotReload","TypeName":"Boolean","Preview":"true","K
+
+: keepalive
+
+event: state
+data: {"diagCount":0,"outputCount":14}
+
+: keepalive
+
+event: state
+data: {"fileReloaded":"C:\\Users\\shaya\\AppData\\Local\\Temp\\claude\\c--Users-shaya-RiderProjects-shayanhabibi\\fd03d86c-62cd-472d-8f35-75b09a15755b\\scratchpad\\preview\\browser\\sfs\\Demo\\Report.fs","sessionId":"fa10ba0d"}
+
+event: bindings_snapshot
+data: {"SessionId":"fa10ba0d","BindingValues":[{"Name":"it","TypeSig":"unit","DisplayValue":"()","IsTruncated":false,"IsFunctionValue":false,"CellIndex":0,"EvalDurationMs":0,"SourceLine":3},{"Name":"t","TypeSig":"Type","DisplayValue":"Demo.Report","IsTruncated":false,"IsFunctionValue":false,"CellIndex":0,"EvalDurationMs":0,"SourceLine":9},{"Name":"viaRepl","TypeSig":"bool","DisplayValue":"false","
+
+event: eval_diff
+data: {"SessionId":"fa10ba0d","Added":19,"Lines":[{"Kind":"modified","OldText":"Result: val it: string =\r","Text":"Result: url=http://localhost:5101/ version=1 err=None\r"},{"Kind":"modified","OldText":"  \u0022C:\\Users\\shaya\\AppData\\Local\\Temp\\claude\\c--Users-shaya-RiderProjects-shayanhabibi\\fd03d86c-62cd-472d-8f35-75b09a15755b\\scratchpad\\preview\\sagefs-research\\repl\u0022\r","Text":
+
+event: state
+data: {"diagCount":0,"outputCount":73}
+
+event: state
+data: {"hotReloadChanged":true,"sessionId":"fa10ba0d"}
+
+event: session
+data: {"sessionId":"fa10ba0d","type":"hotreload_snapshot","watchedFiles":["C:\\Users\\shaya\\AppData\\Local\\Temp\\claude\\c--Users-shaya-RiderProjects-shayanhabibi\\fd03d86c-62cd-472d-8f35-75b09a15755b\\scratchpad\\preview\\browser\\sfs\\Demo\\Program.fs","C:\\Users\\shaya\\AppData\\Local\\Temp\\claude\\c--Users-shaya-RiderProjects-shayanhabibi\\fd03d86c-62cd-472d-8f35-75b09a15755b\\scratchpad\\p
+
+event: state
+data: {"hotReloadChanged":true,"sessionId":"fa10ba0d"}
+
+event: session
+data: {"sessionId":"fa10ba0d","type":"hotreload_snapshot","watchedFiles":["C:\\Users\\shaya\\AppData\\Local\\Temp\\claude\\c--Users-shaya-RiderProjects-shayanhabibi\\fd03d86c-62cd-472d-8f35-75b09a15755b\\scratchpad\\preview\\browser\\sfs\\Demo\\Program.fs","C:\\Users\\shaya\\AppData\\Local\\Temp\\claude\\c--Users-shaya-RiderProjects-shayanhabibi\\fd03d86c-62cd-472d-8f35-75b09a15755b\\scratchpad\\p
+
+event: eval_diff
+data: {"SessionId":"fa10ba0d","Added":0,"Lines":[{"Kind":"unchanged","OldText":"","Text":"Result: url=http://localhost:5101/ version=1 err=None\r"},{"Kind":"unchanged","OldText":"","Text":"val server: Preview.Server\r"},{"Kind":"unchanged","OldText":"","Text":"val it: unit = ()\r"},{"Kind":"unchanged","OldText":"","Text":"\r"},{"Kind":"unchanged","OldText":"","Text":""},{"Kind":"unchanged","OldTex
+
+event: state
+data: {"diagCount":0,"outputCount":74}
+
+event: state
+data: {"diagCount":0,"outputCount":74}
+
+: keepalive
+
+event: state
+data: {"hotReloadChanged":true,"sessionId":"9b7f5d5e"}
+
+event: session
+data: {"sessionId":"9b7f5d5e","type":"hotreload_snapshot","watchedFiles":[]}
+

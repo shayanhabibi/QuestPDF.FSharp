@@ -32,6 +32,7 @@ module Spec =
     let projects = Repo.Project.AllProjects()
     let sourceProjects = projects |> List.filter _.RelativePath.StartsWith("src")
     let testProjects = projects |> List.filter _.RelativePath.StartsWith("tests")
+    let sampleProjects = projects |> List.filter _.RelativePath.StartsWith("samples")
     let sourceProjectsMap =
         sourceProjects
         |> List.map (
@@ -144,9 +145,16 @@ module Stage =
         let! config = Options.config
         return stage "build" {
             quiet
-            parallel'
-            for { Name = name; Path = project } in Spec.sourceProjects do
-            stage $"build {name}" { run (cmd $"dotnet build {project} -c {config} -v q") }
+            stage "build sources" {
+                parallel'
+                for { Name = name; Path = project } in Spec.sourceProjects do
+                stage $"build {name}" { run (cmd $"dotnet build {project} -c {config} -v q") }
+            }
+            stage "build samples" {
+                parallel'
+                for { Name = name; Path = project } in Spec.sampleProjects do
+                stage $"build {name}" { run (cmd $"dotnet build {project} -c {config} -v q") }
+            }
         }
     }
 
@@ -190,6 +198,15 @@ module Stage =
             stage $"run {name}" {
                 run (cmd $"dotnet test {path} -c {config} -v q")
             }
+        }
+    }
+
+    /// Runs the SageFs end-to-end checks of QuestPDF.FSharp.Preview, which need a SageFs daemon on port 37749.
+    let previewE2e = input {
+        let! config = Options.config
+        return stage "preview e2e" {
+            envVars [ ("QPDF_SAGEFS_E2E", "1") ]
+            run (cmd $"dotnet run --project tests/QuestPDF.FSharp.Preview.Tests -c {config} -- --filter-test-list SageFs")
         }
     }
 
@@ -278,6 +295,11 @@ exit <| rootCommandOfScript {
         Stage.clean
         Stage.format (InputSpec.ofInput Options.format) (InputSpec.ofInput Options.dryFormat)
         Stage.runTests
+    }
+    command "preview-e2e" {
+        description "Runs the SageFs end-to-end checks of QuestPDF.FSharp.Preview against a running daemon"
+        Stage.restore
+        Stage.previewE2e
     }
     command "format" {
         alias "apply-style"

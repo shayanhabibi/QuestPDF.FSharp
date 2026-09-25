@@ -41,6 +41,9 @@ let render (document: QuestPDF.Infrastructure.IDocument) =
 | `Pdf.svgs doc` | one SVG document per page |
 | `Pdf.companion doc` | a live preview in the QuestPDF Companion app (port 12500) |
 
+`Pdf.companion` blocks until the Companion app closes; [a live preview on save](recipes/hot-reload-preview.html)
+with `QuestPDF.FSharp.Preview` serves the pages to a browser without blocking.
+
 Every function takes any `IDocument`, including a fluent `Document.Create(...)`, and raises
 `InvalidOperationException` until a license is set with `License.community ()`, `License.professional ()` or
 `License.enterprise ()`.

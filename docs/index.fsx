@@ -102,7 +102,8 @@ render hello
 - [Output](output.html): generation targets, metadata, PDF/A and PDF/UA, reproducible output
 - [Interop](interop.html): mixing wrapper and fluent QuestPDF code, and the full mapping table
 - [Testing your documents](testing-your-documents.html): byte equivalence, text extraction and snapshots
-- Recipes: [invoice](recipes/invoice.html) and [resume](recipes/resume.html)
+- Recipes: [invoice](recipes/invoice.html), [resume](recipes/resume.html) and
+  [a live preview on save](recipes/hot-reload-preview.html) with `QuestPDF.FSharp.Preview` and SageFs
 - [Gotchas](gotchas.html)
 
 ## Building these docs

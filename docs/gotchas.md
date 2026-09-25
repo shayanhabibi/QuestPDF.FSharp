@@ -45,3 +45,22 @@ index: 1
   parameter flexible; write `let render: IDocument -> byte[] list = Pdf.images ImageFormat.Png 72`, or take the
   document as a parameter.
 - **`Output.rightToLeft` applies to every page.** `Page.leftToRight` restores left to right for one page.
+
+## Live previews
+
+- **Pass a function to the preview, not a document.** `let invoice = document [...]` is built once and never
+  changes; write `let invoice () = document [...]`. The preview shows a hint when the function returns the same
+  document on every call.
+- **A SageFs session reloads only the files it watches.** Project sessions start with watching off. `Preview.show`
+  turns it on for the session; after a hard reset, send `preview.fsx` again.
+- **`let title () = failwith "todo"` has type `unit -> 'a`.** Under SageFs Hot Reload, fixing it later is a signature
+  change that its callers do not see. Annotate the result: `let title () : string = failwith "todo"`.
+- **Scripts under `Preview.Live` run their top level on every save.** Keep it cheap and repeatable: the license, the
+  fonts and `Preview.Live`. `Font.register*` ignores a path or font data it has already registered.
+- **`Pdf.companion` blocks until the Companion app closes.** Do not call it from a REPL you want to keep using; the
+  [live preview](recipes/hot-reload-preview.html) does not block.
+- **A class library needs `<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>`** to load in a SageFs
+  session. Without it, QuestPDF's native library is missing, `QuestPDF.Settings` fails to initialise, and the session
+  needs a hard reset.
+- **Pin the SDK with `global.json`** in folders you open in SageFs. Without it, a session can pick a preview SDK and
+  fail at warm-up.

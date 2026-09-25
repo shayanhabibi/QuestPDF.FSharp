@@ -308,6 +308,20 @@ type internal Engine(port: int, env: ServeEnv, initialSettings: RenderSettings, 
     member _.Reloaded(outcome: ReloadOutcome) =
         publish (Snapshot.reloaded (ExecProtocol.issue outcome))
 
+    /// Requests a render at once and another 250 ms later, and returns without waiting for either; a no-op on a
+    /// stopped server.
+    member _.Nudge() =
+        let request () =
+            try
+                trigger () |> ignore
+            with _ ->
+                ()
+
+        request ()
+
+        Tasks.Task.Delay(250).ContinueWith (fun (_: Tasks.Task) -> request ())
+        |> ignore
+
     /// Renders at once and returns when the render is published.
     member _.Refresh() =
         refresh ()

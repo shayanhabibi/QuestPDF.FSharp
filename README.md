@@ -52,6 +52,7 @@ Font.registerDirectory "path/to/fonts"   // a folder of .ttf or .otf files; Font
 | Pages | `Page.size`/`sizeOf`/`minSize`/`maxSize`/`continuous`, margins, colour, header/content/footer, background/foreground, `rightToLeft`/`leftToRight` |
 | Document | `Meta.*` metadata (`Meta.dated` pins both dates for reproducible bytes), `Output.*` settings: `pdfA`, `pdfUA`, `compress`, `imageQuality`, `imageDpi`, `rightToLeft` |
 | Generation | `Pdf.bytes`/`save`/`write`/`show`, `Pdf.images` (PNG/JPEG/WebP per page), `Pdf.svgs`, `Pdf.companion` |
+| Live preview | Live preview on save (`QuestPDF.FSharp.Preview`, SageFs): `Preview.Live`, `Preview.show`, `Preview.serve`; see the [recipe](https://shayanhabibi.github.io/QuestPDF.FSharp/recipes/hot-reload-preview.html) |
 | Setup | `License.*`, `Font.registerFile`/`registerDirectory`/`registerBytes`/`useSystemFonts`/`strict`/`registered` |
 | Interop | `raw`, `fluent` and `modify` lift fluent code; `Content.run` mounts wrapper content in raw code; `Text.raw`; a descriptor lambda is a valid part of `page`, `row`, `table`, `Table.columns`, `layers` and `decoration` |
 
@@ -72,11 +73,12 @@ dotnet fsi build.fsx -- --help
 
 | Command | What it does |
 |---------|--------------|
-| `build` | Restores and builds the source projects |
+| `build` | Restores and builds the source projects and the samples |
 | `test` | Cleans, then runs the Expecto suite (`--skip-tests` to skip it) |
 | `format` | Formats every source file with Fantomas (`--dry-format` checks instead) |
 | `publish` | Builds, tests, packs and pushes to NuGet (`--api-key`, or the `NUGET_API_KEY` env var) |
 | `bump` | Bumps the version of a project |
+| `preview-e2e` | Runs the SageFs end-to-end checks of `QuestPDF.FSharp.Preview` against a SageFs daemon on port 37749 |
 | `docs` | Builds the fsdocs site from `docs/`, evaluating every page, and fails on a snippet that does not compile or run (`--watch` to serve it) |
 
 Global flags: `--quick` skips restores and cleaning,
@@ -89,7 +91,10 @@ Global flags: `--quick` skips restores and cleaning,
 build.fsx                      the build CLI
 build/                         build helpers loaded by build.fsx, such as the API reference link rewrite
 src/QuestPDF.FSharp/           the library
+src/QuestPDF.FSharp.Preview/   live browser previews reloaded on save under SageFs
 tests/QuestPDF.FSharp.Tests/   the Expecto suite
+tests/QuestPDF.FSharp.Preview.Tests/  the preview suite; its SageFs end-to-end checks run with preview-e2e
+samples/                       runnable samples, built by the build command: HotReloadPreview
 docs/                          fsdocs pages: literate .fsx scripts evaluated by the docs build
 fonts/                         Lato (SIL OFL 1.1), registered by the docs pages for their page images
 ```
@@ -98,7 +103,8 @@ fonts/                         Lato (SIL OFL 1.1), registered by the docs pages 
 
 The build CLI addresses the repository through `Partas.TypeProvider.BuildHelper`,
 so projects are discovered at compile time: anything under `src/` is a source
-project, anything under `tests/` is a test project. Add the project to the
+project, anything under `tests/` is a test project, and anything under `samples/` is a sample that `build` compiles
+and `pack` skips. Add the project to the
 solution and it is picked up by `build`, `test`
 and `pack`
 on the next run.

@@ -116,11 +116,18 @@ module Preview =
             false
         | _ -> false
 
-    /// Stops the watchers of the scripts shown on a port.
+    /// The readers of SageFs events by port, for servers in SageFs project sessions.
+    let private nudgers = ConcurrentDictionary<int, Lazy<ProjectNudger>> ()
+
+    /// Stops the watchers of the scripts shown on a port and the reader of SageFs events of the port.
     let private stopWatchers (port: int) =
         for KeyValue (path, entry) in scripts do
             if entry.IsValueCreated && entry.Value.Port = port then
                 unwatch path entry
+
+        match nudgers.TryRemove port with
+        | true, nudger when nudger.IsValueCreated -> (nudger.Value :> IDisposable).Dispose ()
+        | _ -> ()
 
     let private release (server: Server) =
         stopWatchers server.Port
@@ -177,19 +184,75 @@ module Preview =
             server.Refresh ()
             server, false
 
+    /// The SageFs daemon that reloads scripts under options: the daemon of Reload.SageFs, or with Reload.Auto the
+    /// daemon of the environment when the process is a SageFs session.
+    let private daemonOf (env: ServeEnv) (options: Options) : Uri option =
+        match options.Reload with
+        | Manual -> None
+        | SageFs daemon -> Some daemon
+        | Auto ->
+            env.Variable "SAGEFS_DAEMON_PID"
+            |> Option.map (fun _ -> env.Daemon)
+
+    /// The daemon and the projects of the SageFs project session of the process under options.
+    let private projectSession (env: ServeEnv) (options: Options) : (Uri * string) option =
+        match daemonOf env options, env.Variable "SAGEFS_SESSION_PROJECTS" with
+        | Some daemon, Some projects -> Some (daemon, projects)
+        | _ -> None
+
+    /// The server of a port, re-rendered on the SageFs events of the session in a SageFs project session. The first
+    /// start of a port prints the URL when announce is true, and in a project session turns on file watching for the
+    /// session.
+    let private serveIn (env: ServeEnv) (announce: bool) (options: Options) (document: unit -> IDocument) : Server =
+        let launch (reload: string) =
+            let server, started = start env options reload None document
+
+            if started && announce then
+                printfn "Preview: %O" server.Url
+
+            server, started
+
+        match projectSession env options with
+        | None -> launch "manual" |> fst
+        | Some (daemon, projects) ->
+            let server, started = launch "sagefs-project"
+            let port = options.Port
+
+            let identify () =
+                SageFsClient.session daemon projects (env.CurrentDirectory ())
+
+            let nudge () =
+                match servers.TryGetValue port with
+                | true, entry when entry.IsValueCreated -> entry.Value.Engine.Nudge ()
+                | _ -> ()
+
+            nudgers.GetOrAdd(port, lazy (new ProjectNudger (daemon, identify, nudge))).Force ()
+            |> ignore
+
+            match identify () with
+            | Error reason -> server.Engine.Reloaded (Routing reason)
+            | Ok session when started && options.WatchProjectFiles ->
+                match SageFsClient.watchAll daemon session.Id with
+                | Ok count -> printfn "Preview: SageFs session %s, watching %d files" session.Id count
+                | Error reason ->
+                    let route =
+                        Uri (SageFsProtocol.dashboard daemon, $"api/sessions/{session.Id}/hotreload/watch-all")
+
+                    printfn "Preview: SageFs session %s; file watching is off: %s" session.Id reason
+                    printfn "Preview: turn it on with: curl -X POST %O" route
+            | Ok _ -> ()
+
+            server
+
     let internal serveWith (env: ServeEnv) (options: Options) (document: unit -> #IDocument) : Server =
-        start env options "manual" None (fun () -> document () :> IDocument)
-        |> fst
+        serveIn env false options (fun () -> document () :> IDocument)
 
     let serve (options: Options) (document: unit -> #IDocument) : Server =
         serveWith ServeEnv.standard options document
 
     let showOn (port: int) (document: unit -> #IDocument) : unit =
-        let server, started =
-            start ServeEnv.standard { defaults with Port = port } "manual" None (fun () -> document () :> IDocument)
-
-        if started then
-            printfn "Preview: %O" server.Url
+        serveIn ServeEnv.standard true { defaults with Port = port } (fun () -> document () :> IDocument)
+        |> ignore
 
     let show (document: unit -> #IDocument) : unit =
         showOn defaults.Port document
@@ -230,16 +293,6 @@ module Preview =
     let private report (port: int) (outcome: ReloadOutcome) =
         tryServer port
         |> Option.iter (fun server -> server.Engine.Reloaded outcome)
-
-    /// The SageFs daemon that reloads scripts under options: the daemon of Reload.SageFs, or with Reload.Auto the
-    /// daemon of the environment when the process is a SageFs session.
-    let private daemonOf (env: ServeEnv) (options: Options) : Uri option =
-        match options.Reload with
-        | Manual -> None
-        | SageFs daemon -> Some daemon
-        | Auto ->
-            env.Variable "SAGEFS_DAEMON_PID"
-            |> Option.map (fun _ -> env.Daemon)
 
     let internal liveWith (env: ServeEnv) (options: Options) (script: string) (document: unit -> IDocument) : unit =
         let known =

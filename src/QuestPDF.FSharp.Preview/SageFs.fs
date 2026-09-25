@@ -79,6 +79,121 @@ module internal SageFsClient =
             with error ->
                 Routing (unreachable daemon error)
 
+    /// Turns on file watching for every project file of a session, through the dashboard of the daemon, and returns
+    /// the number of watched files.
+    let watchAll (daemon: Uri) (sessionId: string) : Result<int, string> =
+        let dashboard = SageFsProtocol.dashboard daemon
+
+        try
+            let request =
+                new HttpRequestMessage (HttpMethod.Post, Uri (dashboard, $"api/sessions/{sessionId}/hotreload/watch-all"))
+
+            request.Content <- new StringContent ("", Encoding.UTF8, "application/json")
+
+            match send request (TimeSpan.FromSeconds 5.0) with
+            | 200, body ->
+                match SageFsProtocol.watchedCount body with
+                | Some count -> Ok count
+                | None -> Error "The SageFs dashboard answered watch-all without a watchedCount."
+            | status, _ -> Error $"The SageFs dashboard answered HTTP {status} to watch-all."
+        with error ->
+            Error (unreachable dashboard error)
+
+/// Calls nudge for every event of the SageFs daemon that reports new code in the session of the process, from a
+/// background thread. The event stream is opened again after it ends or fails, after 0.5 s doubled per failed attempt
+/// up to 10 s, and the session is identified again on every attempt.
+type internal ProjectNudger(daemon: Uri, session: unit -> Result<SessionInfo, string>, nudge: unit -> unit) =
+    let client = new HttpClient (Timeout = Timeout.InfiniteTimeSpan)
+    let stopping = new CancellationTokenSource ()
+    let mutable disposed = false
+
+    /// Reads the event stream of the daemon until it ends, and returns whether the stream opened.
+    let read (sessionId: string) : bool =
+        let mutable opened = false
+        let request = new HttpRequestMessage (HttpMethod.Get, Uri (daemon, "events"))
+
+        try
+            try
+                let response =
+                    client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, stopping.Token).GetAwaiter().GetResult ()
+
+                try
+                    if response.IsSuccessStatusCode then
+                        opened <- true
+                        let reader = new StreamReader (response.Content.ReadAsStream stopping.Token)
+
+                        try
+                            let next () =
+                                reader.ReadLineAsync(stopping.Token).AsTask().GetAwaiter().GetResult ()
+
+                            let mutable pending = SageFsProtocol.sseStart
+                            let mutable line = next ()
+
+                            while not (isNull line) do
+                                let state, event = SageFsProtocol.sseLine pending line
+                                pending <- state
+
+                                match event with
+                                | Some event when SageFsProtocol.nudges sessionId event ->
+                                    try
+                                        nudge ()
+                                    with _ ->
+                                        ()
+                                | _ -> ()
+
+                                line <- next ()
+                        finally
+                            reader.Dispose ()
+                finally
+                    response.Dispose ()
+            with _ ->
+                ()
+        finally
+            request.Dispose ()
+
+        opened
+
+    let thread =
+        Thread (
+            (fun () ->
+                try
+                    let mutable attempt = 0
+
+                    while not disposed do
+                        let opened =
+                            try
+                                match session () with
+                                | Ok found when not disposed -> read found.Id
+                                | _ -> false
+                            with _ ->
+                                false
+
+                        attempt <- if opened then 0 else attempt + 1
+
+                        if not disposed then
+                            try
+                                stopping.Token.WaitHandle.WaitOne (SageFsProtocol.reconnectDelay attempt)
+                                |> ignore
+                            with _ ->
+                                ()
+                finally
+                    client.Dispose ()),
+            IsBackground = true,
+            Name = "QuestPDF preview SageFs events"
+        )
+
+    do thread.Start ()
+
+    interface IDisposable with
+        member _.Dispose() =
+            if not disposed then
+                disposed <- true
+
+                try
+                    stopping.Cancel ()
+                with _ ->
+                    ()
+
 /// Reloads a script on every save of an F# file in the script's directory tree, one reload at a time. Saves within
 /// 100 ms of each other make one reload, and saves during a reload make one follow-up reload. Saves of a path for
 /// which others is true, such as the script of another watcher, are ignored.
