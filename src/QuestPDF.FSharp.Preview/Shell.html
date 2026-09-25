@@ -38,7 +38,7 @@ function describe(status) {
 function apply(snap) {
   if (instance !== null && snap.instance !== instance) { location.reload(); return; }
   instance = snap.instance;
-  if (snap.version === shown) return;
+  if (snap.version <= shown) return;
   shown = snap.version;
 
   const pages = document.getElementById('pages');

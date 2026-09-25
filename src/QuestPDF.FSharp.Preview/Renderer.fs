@@ -100,20 +100,6 @@ type internal Engine(port: int, env: ServeEnv, initialSettings: RenderSettings, 
 
         Font.sources () @ extra
 
-    /// Inserts a style element of @font-face rules after the opening svg tag.
-    let withFonts (css: string) (svg: string) =
-        let start = svg.IndexOf "<svg"
-
-        if css = "" || start < 0 then
-            svg
-        else
-            let tagEnd = svg.IndexOf ('>', start)
-
-            if tagEnd < 0 then
-                svg
-            else
-                svg.Insert (tagEnd + 1, "<style>" + css + "</style>")
-
     let renderOnce () =
         let clock = Stopwatch.StartNew ()
 
@@ -126,7 +112,7 @@ type internal Engine(port: int, env: ServeEnv, initialSettings: RenderSettings, 
 
                 let svgs =
                     Pdf.svgs current
-                    |> List.map (withFonts (FontFace.css served))
+                    |> List.map (FontFace.embed (FontFace.css served))
 
                 lock sync (fun () -> fonts <- served)
                 Pages (svgs, clock.Elapsed)
@@ -192,7 +178,12 @@ type internal Engine(port: int, env: ServeEnv, initialSettings: RenderSettings, 
                         match Schedule.pollDelay settings.Poll hub.Count lastRender with
                         | Some delay ->
                             if not (wake.WaitOne delay) && not disposed then
-                                trigger () |> ignore
+                                // A closed page is found by a failed write; without this ping it would be
+                                // re-rendered until the next keep-alive.
+                                hub.Ping ()
+
+                                if hub.Count > 0 then
+                                    trigger () |> ignore
                         | None -> wake.WaitOne 250 |> ignore
                     with _ ->
                         ()),
@@ -217,24 +208,28 @@ type internal Engine(port: int, env: ServeEnv, initialSettings: RenderSettings, 
               Body = Text.Encoding.UTF8.GetBytes current.Pages[n - 1] }
         | _ -> Reply.notFound
 
-    let font (index: string) =
+    /// A served font; cached for good only under the hash of the bytes it returns, since an index names another
+    /// font when the registrations change.
+    let font (index: string) (query: string) =
         let served = lock sync (fun () -> fonts)
 
         match Int32.TryParse index with
         | true, i when i >= 0 && i < served.Length ->
-            let bytes =
-                match served[i].Content with
-                | FromFile path -> File.ReadAllBytes path
-                | FromData data -> data
+            match FontFace.bytes served[i].Content with
+            | Some bytes ->
+                let isOpenType =
+                    bytes.Length >= 4
+                    && Text.Encoding.ASCII.GetString (bytes, 0, 4) = "OTTO"
 
-            let isOpenType =
-                bytes.Length >= 4
-                && Text.Encoding.ASCII.GetString (bytes, 0, 4) = "OTTO"
-
-            { Status = 200
-              ContentType = if isOpenType then "font/otf" else "font/ttf"
-              CacheControl = "public, max-age=3600"
-              Body = bytes }
+                { Status = 200
+                  ContentType = if isOpenType then "font/otf" else "font/ttf"
+                  CacheControl =
+                    if query = $"?h={FontFace.hash bytes}" then
+                        "public, max-age=31536000, immutable"
+                    else
+                        "no-store"
+                  Body = bytes }
+            | None -> Reply.notFound
         | _ -> Reply.notFound
 
     let pdf () =
@@ -265,7 +260,7 @@ type internal Engine(port: int, env: ServeEnv, initialSettings: RenderSettings, 
             Http.reply context (Reply.text 200 "application/json; charset=utf-8" (Snapshot.json current))
         | "/document.pdf" -> Http.reply context (pdf ())
         | _ when path.StartsWith "/page/" && path.EndsWith ".svg" -> Http.reply context (page path query)
-        | _ when path.StartsWith "/font/" -> Http.reply context (font (path.Substring 6))
+        | _ when path.StartsWith "/font/" -> Http.reply context (font (path.Substring 6) query)
         | _ -> Http.reply context Reply.notFound
 
     do

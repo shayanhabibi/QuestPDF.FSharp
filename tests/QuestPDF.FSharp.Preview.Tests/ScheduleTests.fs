@@ -56,6 +56,12 @@ let tests =
               Expect.equal (Schedule.pollDelay (Some (ms 500.0)) 1 (ms 10.0)) (Some (ms 500.0)) "one client"
               Expect.equal (Schedule.pollDelay (Some (ms 500.0)) 2 (ms 300.0)) (Some (ms 1200.0)) "a slow render"
           }
+          test "a poll interval beyond the longest wait is clamped to it" {
+              let longest = ms (float Int32.MaxValue)
+              Expect.equal (Schedule.pollDelay (Some (TimeSpan.FromDays 30.0)) 1 TimeSpan.Zero) (Some longest) "30 days"
+              Expect.equal (Schedule.pollDelay (Some TimeSpan.MaxValue) 1 TimeSpan.Zero) (Some longest) "TimeSpan.MaxValue"
+              Expect.equal (Schedule.pollDelay (Some (ms -5.0)) 1 TimeSpan.Zero) (Some TimeSpan.Zero) "a negative interval"
+          }
           test "the same document twice gives the frozen hint" {
               let document = obj ()
               Expect.equal (Schedule.frozen document document) (Some Schedule.frozenHint) "same reference"

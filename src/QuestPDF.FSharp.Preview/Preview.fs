@@ -155,7 +155,17 @@ module Preview =
 
     let stop (port: int) : unit =
         match servers.TryRemove port with
-        | true, entry when entry.IsValueCreated -> (entry.Value :> IDisposable).Dispose ()
+        | true, entry ->
+            // A server still binding its port is disposed once it exists; the serve that creates it then raises
+            // ObjectDisposedException.
+            let server =
+                try
+                    Some entry.Value
+                with _ ->
+                    None
+
+            server
+            |> Option.iter (fun server -> (server :> IDisposable).Dispose ())
         | _ -> ()
 
     /// The banner of a script preview: why saving the script does not reload it.

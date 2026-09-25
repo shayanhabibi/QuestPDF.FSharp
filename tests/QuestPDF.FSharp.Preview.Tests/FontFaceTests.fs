@@ -2,6 +2,7 @@ module QuestPDF.FSharp.Preview.Tests.FontFaceTests
 
 open System.IO
 open System.Text.RegularExpressions
+open System.Xml
 open Expecto
 open QuestPDF.FSharp
 open QuestPDF.FSharp.PreviewServer
@@ -9,6 +10,19 @@ open QuestPDF.FSharp.Preview.Tests.Support
 
 let private faceRules (css: string) =
     Regex.Matches(css, "@font-face").Count
+
+/// The font URLs of the rules of a style sheet.
+let private urls (css: string) =
+    [ for m in Regex.Matches (css, @"url\(([^)]*)\)") -> m.Groups[1].Value ]
+
+/// A served font of a family whose contents are not read.
+let private named (family: string) : ServedFont =
+    { Face =
+        { Family = family
+          Weight = 400
+          Italic = false }
+      Content = FromData [||]
+      Hash = "0" }
 
 [<Tests>]
 let tests =
@@ -69,8 +83,8 @@ let tests =
 
                     Expect.equal fonts[1].Content (FromData data) "the data is the second font"
                     let css = FontFace.css fonts
-                    Expect.stringContains css "url(/font/0)" "the file"
-                    Expect.stringContains css "url(/font/1)" "the data"
+                    Expect.stringContains css "url(/font/0?h=" "the file"
+                    Expect.stringContains css "url(/font/1?h=" "the data"
                     Expect.stringContains css "font-weight:700" "the weight of the data"
                 }
                 test "a non-font file in a directory is skipped" {
@@ -89,5 +103,39 @@ let tests =
                     let css =
                         FontFace.css (FontFace.expand [ FontFile (repoFont "Lato-BoldItalic.ttf") ])
 
-                    Expect.equal css "@font-face{font-family:\"Lato\";font-weight:700;font-style:italic;src:url(/font/0);font-display:block}" "rule"
-                } ] ]
+                    Expect.isMatch
+                        css
+                        @"^@font-face\{font-family:""Lato"";font-weight:700;font-style:italic;src:url\(/font/0\?h=[0-9a-f]{16}\);font-display:block\}$"
+                        "rule"
+                }
+                test "a font URL changes with the contents at its index" {
+                    let directory = tempDirectory ()
+                    let file = Path.Combine (directory, "a.ttf")
+
+                    try
+                        File.Copy (repoFont "Lato-Regular.ttf", file)
+                        let regular = urls (FontFace.css (FontFace.expand [ FontDirectory directory ]))
+                        let again = urls (FontFace.css (FontFace.expand [ FontDirectory directory ]))
+                        File.Copy (repoFont "Lato-Bold.ttf", file, true)
+                        let bold = urls (FontFace.css (FontFace.expand [ FontDirectory directory ]))
+                        Expect.equal again regular "the same contents give the same URL"
+                        Expect.notEqual bold regular "other contents at index 0 give another URL"
+                    finally
+                        Directory.Delete (directory, true)
+                } ]
+          testList
+              "embed"
+              [ for family in [ "A&Bc"; "a<b"; "x]]>y" ] do
+                    test $"a family named {family} keeps the page well-formed" {
+                        let css = FontFace.css [ named family ]
+
+                        let svg =
+                            FontFace.embed css "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\"><text>t</text></svg>"
+
+                        let xml = XmlDocument ()
+                        xml.LoadXml svg
+                        let style = xml.DocumentElement.FirstChild
+                        Expect.equal style.LocalName "style" "the first child"
+                        Expect.equal style.InnerText css "the rules as text"
+                    }
+                test "no rules leave the page unchanged" { Expect.equal (FontFace.embed "" "<svg></svg>") "<svg></svg>" "unchanged" } ] ]

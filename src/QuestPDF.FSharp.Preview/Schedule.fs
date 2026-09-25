@@ -26,10 +26,19 @@ module internal Schedule =
     let nextPoll (poll: TimeSpan) (lastRender: TimeSpan) : TimeSpan =
         max poll (lastRender * 4.0)
 
-    /// The delay to the next poll tick; None while polling is off or no page is open.
+    /// The longest wait of WaitHandle.WaitOne: Int32.MaxValue milliseconds, about 24.8 days.
+    let private longestWait = TimeSpan.FromMilliseconds (float Int32.MaxValue)
+
+    /// The delay to the next poll tick, between zero and the longest wait; None while polling is off or no page is
+    /// open.
     let pollDelay (poll: TimeSpan option) (clients: int) (lastRender: TimeSpan) : TimeSpan option =
         match poll with
-        | Some poll when clients > 0 -> Some (nextPoll poll lastRender)
+        | Some poll when clients > 0 ->
+            Some (
+                nextPoll poll lastRender
+                |> max TimeSpan.Zero
+                |> min longestWait
+            )
         | _ -> None
 
     /// The hint shown for a document function that returns the same document on every call.

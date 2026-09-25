@@ -82,6 +82,11 @@ type internal SseHub(keepAlive: TimeSpan) =
         clients[id] <- client
         write id client (Encoding.UTF8.GetBytes first)
 
+    /// Writes a keep-alive comment to every open stream, which closes the streams whose pages are gone.
+    member _.Ping() =
+        for KeyValue (id, client) in clients do
+            write id client ping
+
     /// Writes a text to every open stream.
     member _.Broadcast(text: string) =
         let bytes = Encoding.UTF8.GetBytes text

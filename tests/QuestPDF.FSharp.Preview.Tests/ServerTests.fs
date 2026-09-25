@@ -4,6 +4,7 @@ open System
 open System.IO
 open System.Net
 open System.Net.Sockets
+open System.Text.RegularExpressions
 open System.Threading
 open Expecto
 open QuestPDF.Fluent
@@ -240,6 +241,84 @@ let private http =
                   Expect.equal server.Snapshot.Reload "manual" "the reload mode"
               finally
                   Preview.stop port
+          }
+          test "a font is cached only under the hash of its contents" {
+              configure ()
+
+              withServer (fun () -> onePage "font cache") (fun server ->
+                  let svg = (get server "/page/1.svg").Text
+                  let found = Regex.Match (svg, @"url\((/font/0\?h=[0-9a-f]+)\)")
+                  Expect.isTrue found.Success "the page names a hashed font URL"
+                  let hashed = get server found.Groups[1].Value
+                  Expect.equal hashed.Status 200 "the hashed URL"
+                  Expect.stringContains hashed.CacheControl "immutable" "the hashed URL is immutable"
+                  Expect.equal (get server "/font/0").CacheControl "no-store" "a URL without the hash"
+                  Expect.equal (get server "/font/0?h=0000000000000000").CacheControl "no-store" "a URL with another hash")
+          }
+          test "a closed page is pruned at the next poll, before the keep-alive" {
+              configure ()
+              let port = freePort ()
+
+              let server =
+                  Preview.serveWith
+                      { testEnv with
+                          KeepAlive = TimeSpan.FromHours 1.0 }
+                      { quiet port with
+                          Poll = Some (TimeSpan.FromMilliseconds 50.0) }
+                      (fun () -> onePage "closed")
+
+              try
+                  let events = new EventStream (server)
+                  Expect.equal (events.Next (TimeSpan.FromSeconds 2.0)) (Some "version") "connected"
+                  (events :> IDisposable).Dispose ()
+                  Expect.isTrue (eventually (TimeSpan.FromSeconds 5.0) (fun () -> server.Clients = 0)) "pruned within 5 s"
+              finally
+                  Preview.stop port
+          }
+          test "stop during a bind retry frees the port and leaves no server" {
+              configure ()
+              let port = freePort ()
+              let holder = new TcpListener (IPAddress.Loopback, port)
+              holder.Start ()
+              let release = new Timer ((fun _ -> holder.Stop ()), null, 800, Timeout.Infinite)
+              let mutable outcome: Result<Preview.Server, exn> option = None
+
+              let serving =
+                  Thread (fun () ->
+                      outcome <-
+                          try
+                              Some (Ok (Preview.serveWith testEnv (quiet port) (fun () -> onePage "raced")))
+                          with error ->
+                              Some (Error error))
+
+              try
+                  serving.Start ()
+                  Thread.Sleep 300
+                  Preview.stop port
+                  Expect.isTrue (serving.Join (TimeSpan.FromSeconds 5.0)) "serve returns"
+                  Expect.isNone (Preview.tryServer port) "no server"
+
+                  match outcome with
+                  | Some (Error (:? ObjectDisposedException)) -> ()
+                  | other -> failtest $"expected serve to raise ObjectDisposedException, got {other}"
+
+                  let listener = new HttpListener ()
+                  listener.Prefixes.Add $"http://localhost:{port}/"
+
+                  try
+                      listener.Start ()
+                  finally
+                      listener.Close ()
+              finally
+                  release.Dispose ()
+                  holder.Stop ()
+                  Preview.stop port
+          }
+          test "the shell ignores a version older than the one shown" {
+              configure ()
+
+              withServer (fun () -> onePage "shell") (fun server ->
+                  Expect.stringContains (get server "/").Text "snap.version <= shown" "apply skips older versions")
           }
           test "stop frees the port and forgets the server" {
               configure ()

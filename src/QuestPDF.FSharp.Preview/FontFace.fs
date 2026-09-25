@@ -16,9 +16,16 @@ type internal FontContent =
     | FromFile of path: string
     | FromData of data: byte[]
 
-/// A font served to the browser at /font/<index>.
+/// A font served to the browser at /font/<index>?h=<hash>.
 type internal ServedFont =
-    { Face: FontFace; Content: FontContent }
+    {
+        /// The CSS face of the font.
+        Face: FontFace
+        /// Where the bytes of the font come from.
+        Content: FontContent
+        /// The first 16 hex digits of the SHA-256 of the bytes, which make the font URL change with the contents.
+        Hash: string
+    }
 
 [<RequireQualifiedAccess>]
 module internal FontFace =
@@ -88,13 +95,24 @@ module internal FontFace =
         | :? ArgumentException
         | :? IndexOutOfRangeException -> None
 
+    /// The first 16 hex digits of the SHA-256 of font bytes, in lower case.
+    let hash (data: byte[]) : string =
+        Convert.ToHexString(Security.Cryptography.SHA256.HashData data).Substring(0, 16).ToLowerInvariant ()
+
+    /// The bytes of a served font; None when its file cannot be read.
+    let bytes (content: FontContent) : byte[] option =
+        match content with
+        | FromData data -> Some data
+        | FromFile path ->
+            try
+                Some (File.ReadAllBytes path)
+            with
+            | :? IOException
+            | :? UnauthorizedAccessException -> None
+
     /// The face of a font file; None for a file that is not a TrueType or OpenType font.
     let readFile (path: string) : FontFace option =
-        try
-            read (File.ReadAllBytes path)
-        with
-        | :? IOException
-        | :? UnauthorizedAccessException -> None
+        bytes (FromFile path) |> Option.bind read
 
     let private isFontFile (path: string) =
         let extension = Path.GetExtension(path).ToLowerInvariant ()
@@ -126,20 +144,36 @@ module internal FontFace =
         |> List.collect contents
         |> List.distinctBy key
         |> List.choose (fun content ->
-            let face =
-                match content with
-                | FromFile path -> readFile path
-                | FromData data -> read data
+            bytes content
+            |> Option.bind (fun data ->
+                read data
+                |> Option.map (fun face ->
+                    { Face = face
+                      Content = content
+                      Hash = hash data })))
 
-            face
-            |> Option.map (fun face -> { Face = face; Content = content }))
-
-    /// One @font-face rule per served font, whose source is /font/<index>.
+    /// One @font-face rule per served font, whose source is /font/<index>?h=<hash>.
     let css (fonts: ServedFont list) : string =
         fonts
         |> List.mapi (fun i font ->
             let family = font.Face.Family.Replace("\\", "\\\\").Replace ("\"", "\\\"")
             let style = if font.Face.Italic then "italic" else "normal"
 
-            $"@font-face{{font-family:\"{family}\";font-weight:{font.Face.Weight};font-style:{style};src:url(/font/{i});font-display:block}}")
+            $"@font-face{{font-family:\"{family}\";font-weight:{font.Face.Weight};font-style:{style};src:url(/font/{i}?h={font.Hash});font-display:block}}")
         |> String.concat ""
+
+    /// Inserts a style element of CSS rules after the opening svg tag, as character data so that no family name can
+    /// break the XML; empty rules leave the SVG unchanged.
+    let embed (css: string) (svg: string) : string =
+        let start = svg.IndexOf "<svg"
+
+        if css = "" || start < 0 then
+            svg
+        else
+            let tagEnd = svg.IndexOf ('>', start)
+
+            if tagEnd < 0 then
+                svg
+            else
+                let data = css.Replace ("]]>", "]]]]><![CDATA[>")
+                svg.Insert (tagEnd + 1, "<style><![CDATA[" + data + "]]></style>")

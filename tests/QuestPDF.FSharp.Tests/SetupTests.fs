@@ -68,6 +68,19 @@ let tests =
 
               Expect.equal entries [ FontData data; FontData other ] "one entry per distinct content"
           }
+          test "changing an array returned by sources leaves the registered bytes unchanged" {
+              let data = renamedLato "Sm01"
+              Font.registerBytes data
+
+              match
+                  Font.sources ()
+                  |> List.tryFind ((=) (FontData data))
+              with
+              | Some (FontData returned) -> returned[0] <- returned[0] + 1uy
+              | other -> failtest $"expected the FontData entry, got {other}"
+
+              Expect.equal (isSource (FontData data)) 1 "the entry still holds the registered bytes"
+          }
           test "sources keeps registration order" {
               let directory = tempDirectory ()
 

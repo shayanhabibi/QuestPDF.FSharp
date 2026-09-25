@@ -132,7 +132,8 @@ module Preview =
 
     /// <summary>
     /// Stops the server of a port and the watchers of its scripts. Open pages reconnect to a server started later on
-    /// the same port.
+    /// the same port. A server still waiting for its port is stopped once it has bound it, and the serve that started
+    /// it raises ObjectDisposedException.
     /// </summary>
     val stop: port: int -> unit
 

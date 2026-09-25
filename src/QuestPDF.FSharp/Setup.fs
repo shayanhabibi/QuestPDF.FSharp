@@ -110,7 +110,13 @@ module Font =
 
     /// <summary>
     /// The fonts registered through <c>Font.register*</c> in this process, in registration order, one entry per
-    /// distinct path or content.
+    /// distinct path or content. Each <c>FontData</c> entry holds a new copy of the registered bytes.
     /// </summary>
     let sources () : FontSource list =
-        lock registry (fun () -> List.ofSeq registry)
+        lock registry (fun () ->
+            registry
+            |> Seq.map (fun source ->
+                match source with
+                | FontData data -> FontData (Array.copy data)
+                | other -> other)
+            |> List.ofSeq)
