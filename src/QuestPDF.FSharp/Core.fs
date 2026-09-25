@@ -52,6 +52,9 @@ type InlinedPart = InlinedDescriptor -> unit
 /// <summary>The content, spacer or a setting of a multi-column layout, listed in <c>multiColumn [ ... ]</c>.</summary>
 type MultiColumnPart = MultiColumnDescriptor -> unit
 
+/// <summary>A setting of a box shadow, listed in <c>shadow [ ... ]</c>.</summary>
+type ShadowPart = BoxShadowStyle -> unit
+
 /// <summary>Content constructors and bridges from fluent QuestPDF code.</summary>
 [<AutoOpen>]
 module CoreOps =

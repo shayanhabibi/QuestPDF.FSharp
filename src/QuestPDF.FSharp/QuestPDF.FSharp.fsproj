@@ -18,6 +18,7 @@
         <Compile Include="Primitives.fs" />
         <Compile Include="Style.fs" />
         <Compile Include="Modifiers.fs" />
+        <Compile Include="StyledBox.fs" />
         <Compile Include="Text.fs" />
         <Compile Include="Dynamic.fs" />
         <Compile Include="Elements.fs" />
