@@ -252,7 +252,7 @@ let mappings: (string * Mapping) list =
       "ShrinkExtensions.ShrinkHorizontal", Wrapped [ "shrinkH" ]
       "ShrinkExtensions.ShrinkVertical", Wrapped [ "shrinkV" ]
       "StyledBoxExtensions.Background", Wrapped [ "background" ]
-      "StyledBoxExtensions.BackgroundLinearGradient", Raw "gradients are planned for a later version of QuestPDF.FSharp"
+      "StyledBoxExtensions.BackgroundLinearGradient", Wrapped [ "backgroundGradient" ]
       "StyledBoxExtensions.Border", Wrapped [ "border" ]
       "StyledBoxExtensions.BorderAlignmentInside", Wrapped [ "borderInside" ]
       "StyledBoxExtensions.BorderAlignmentMiddle", Wrapped [ "borderMiddle" ]
@@ -261,7 +261,7 @@ let mappings: (string * Mapping) list =
       "StyledBoxExtensions.BorderColor", Wrapped [ "borderColor" ]
       "StyledBoxExtensions.BorderHorizontal", Wrapped [ "borderH" ]
       "StyledBoxExtensions.BorderLeft", Wrapped [ "borderLeft" ]
-      "StyledBoxExtensions.BorderLinearGradient", Raw "gradients are planned for a later version of QuestPDF.FSharp"
+      "StyledBoxExtensions.BorderLinearGradient", Wrapped [ "borderGradient" ]
       "StyledBoxExtensions.BorderRight", Wrapped [ "borderRight" ]
       "StyledBoxExtensions.BorderTop", Wrapped [ "borderTop" ]
       "StyledBoxExtensions.BorderVertical", Wrapped [ "borderV" ]
@@ -270,7 +270,15 @@ let mappings: (string * Mapping) list =
       "StyledBoxExtensions.CornerRadiusBottomRight", Wrapped [ "cornerRadiusBottomRight" ]
       "StyledBoxExtensions.CornerRadiusTopLeft", Wrapped [ "cornerRadiusTopLeft" ]
       "StyledBoxExtensions.CornerRadiusTopRight", Wrapped [ "cornerRadiusTopRight" ]
-      "StyledBoxExtensions.Shadow", Raw "shadows are planned for a later version of QuestPDF.FSharp"
+      "StyledBoxExtensions.Shadow",
+      Wrapped
+          [ "shadow"
+            "Shadow.offset"
+            "Shadow.offsetX"
+            "Shadow.offsetY"
+            "Shadow.blur"
+            "Shadow.spread"
+            "Shadow.color" ]
       "SvgExtensions.Svg", Wrapped [ "Svg.textWith"; "Svg.text" ]
       "SvgImageDescriptor.FitArea", Wrapped [ "Svg.fitArea" ]
       "SvgImageDescriptor.FitHeight", Wrapped [ "Svg.fitHeight" ]

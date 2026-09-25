@@ -46,6 +46,9 @@ type LayerPart = LayersDescriptor -> unit
 /// <summary>A slot of a <c>decoration [ ... ]</c>: the content, or what repeats before or after it on every page.</summary>
 type DecorationPart = DecorationDescriptor -> unit
 
+/// <summary>A setting of a box shadow, listed in <c>shadow [ ... ]</c>.</summary>
+type ShadowPart = BoxShadowStyle -> unit
+
 /// <summary>Content constructors and bridges from fluent QuestPDF code.</summary>
 [<AutoOpen>]
 module CoreOps =

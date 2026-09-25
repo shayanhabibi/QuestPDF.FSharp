@@ -22,6 +22,7 @@
         <Compile Include="DocumentTests.fs" />
         <Compile Include="GenerateTests.fs" />
         <Compile Include="ModifierTests.fs" />
+        <Compile Include="StyledBoxTests.fs" />
         <Compile Include="LayoutColumnRowTests.fs" />
         <Compile Include="TextRichTests.fs" />
         <Compile Include="TableTests.fs" />

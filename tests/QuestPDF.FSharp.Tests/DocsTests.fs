@@ -161,7 +161,8 @@ let private phantomParameterTypes =
       typeof<TextDescriptor>
       typeof<ImageDescriptor>
       typeof<SvgImageDescriptor>
-      typeof<LineDescriptor> ]
+      typeof<LineDescriptor>
+      typeof<QuestPDF.Infrastructure.BoxShadowStyle> ]
 
 [<Tests>]
 let tests =
