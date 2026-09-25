@@ -141,6 +141,7 @@ module Preview =
     val internal start:
         env: QuestPDF.FSharp.PreviewServer.ServeEnv ->
         options: Options ->
+        reload: string ->
         reloadHint: string option ->
         document: (unit -> IDocument) ->
             Server * bool
@@ -151,6 +152,17 @@ module Preview =
 
     /// The banner of a script preview: why saving the script does not reload it.
     val internal liveHint: script: string -> string
+
+    /// Live with the seams of the tests.
+    val internal liveWith:
+        env: QuestPDF.FSharp.PreviewServer.ServeEnv ->
+        options: Options ->
+        script: string ->
+        document: (unit -> IDocument) ->
+            unit
+
+    /// The full paths of the scripts reloaded on save.
+    val internal watchedScripts: unit -> string list
 
 /// <summary>The script entry point of the preview.</summary>
 [<AbstractClass; Sealed>]

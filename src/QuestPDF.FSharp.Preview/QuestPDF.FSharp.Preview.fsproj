@@ -16,9 +16,13 @@
         <Compile Include="FontFace.fs" />
         <Compile Include="Snapshot.fs" />
         <Compile Include="Schedule.fs" />
+        <Compile Include="ExecProtocol.fs" />
+        <Compile Include="SageFsProtocol.fs" />
+        <Compile Include="ChangeFilter.fs" />
         <Compile Include="Http.fs" />
         <Compile Include="Shell.fs" />
         <Compile Include="Renderer.fs" />
+        <Compile Include="SageFs.fs" />
         <Compile Include="Preview.fsi" />
         <Compile Include="Preview.fs" />
         <EmbeddedResource Include="Shell.html" LogicalName="Shell.html" />

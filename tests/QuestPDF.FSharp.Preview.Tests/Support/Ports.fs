@@ -23,13 +23,15 @@ let freePort () =
     finally
         listener.Stop ()
 
-/// The seams of the tests: a 2 s bind timeout, a 100 ms keep-alive and no browser.
+/// The seams of the tests: a 2 s bind timeout, a 100 ms keep-alive, no browser and no environment variables.
 let internal testEnv: ServeEnv =
     { Daemon = Uri "http://localhost:1/"
       OpenBrowser = ignore
       Now = fun () -> DateTime.UtcNow
       BindTimeout = TimeSpan.FromSeconds 2.0
-      KeepAlive = TimeSpan.FromMilliseconds 100.0 }
+      KeepAlive = TimeSpan.FromMilliseconds 100.0
+      Variable = fun _ -> None
+      CurrentDirectory = fun () -> Environment.CurrentDirectory }
 
 /// Options on a port with no polling and manual reload.
 let quiet (port: int) =

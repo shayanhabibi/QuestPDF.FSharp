@@ -106,6 +106,49 @@ let tests =
 
               Expect.equal (failed.Version, again.Version) (1L, 1L) "versions"
           }
+          test "a reload issue outlasts renders until cleared" {
+              let diagnostic =
+                  { File = "invoice.fsx"
+                    Line = 17
+                    Column = 54
+                    Message = "The type 'int' does not match the type 'string'" }
+
+              let first =
+                  start ()
+                  |> Snapshot.render (rendered [ "a" ]) None
+
+              let failed =
+                  first
+                  |> Snapshot.reloaded (Some (CompileFailed [ diagnostic ]))
+
+              let again = failed |> Snapshot.render (rendered [ "a" ]) None
+              let cleared = again |> Snapshot.reloaded None
+
+              Expect.equal (failed.Version, failed.Status) (2L, CompileFailed [ diagnostic ]) "the issue is shown"
+              Expect.equal (again.Version, again.Status) (2L, CompileFailed [ diagnostic ]) "a render keeps it, unbumped"
+              Expect.equal (again.Pages, again.Hashes) (first.Pages, first.Hashes) "the pages"
+
+              match cleared.Status with
+              | Rendered (1, _) -> Expect.equal cleared.Version 3L "clearing bumps"
+              | status -> failtest $"expected Rendered, got {status}"
+          }
+          test "a new render under a reload issue updates the pages and keeps the issue" {
+              let failed =
+                  start ()
+                  |> Snapshot.render (rendered [ "a" ]) None
+                  |> Snapshot.reloaded (Some (ReloadFailed "down"))
+
+              let changed = failed |> Snapshot.render (rendered [ "b" ]) None
+              Expect.equal (changed.Version, changed.Status) (3L, ReloadFailed "down") "bumped, issue kept"
+              Expect.equal changed.Pages [ "b" ] "the new pages"
+          }
+          test "clearing an unset reload issue doesn't bump" {
+              let first =
+                  start ()
+                  |> Snapshot.render (rendered [ "a" ]) None
+
+              Expect.equal (Snapshot.reloaded None first).Version first.Version "unchanged"
+          }
           test "the hash is 16 hexadecimal digits" { Expect.isMatch (Snapshot.hash "page") "^[0-9a-f]{16}$" "hash" }
           test "the JSON has the fields Shell.html reads" {
               let shell = shell ()

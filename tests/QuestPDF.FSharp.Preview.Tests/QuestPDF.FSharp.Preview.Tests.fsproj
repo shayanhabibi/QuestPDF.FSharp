@@ -12,12 +12,18 @@
     <ItemGroup>
         <Compile Include="Support/Ports.fs" />
         <Compile Include="Support/Fonts.fs" />
+        <Compile Include="Support/FakeSageFs.fs" />
         <Compile Include="FontFaceTests.fs" />
         <Compile Include="SnapshotTests.fs" />
         <Compile Include="ScheduleTests.fs" />
+        <Compile Include="ExecProtocolTests.fs" />
+        <Compile Include="SageFsProtocolTests.fs" />
+        <Compile Include="ChangeFilterTests.fs" />
         <Compile Include="ServerTests.fs" />
+        <Compile Include="ScriptReloadTests.fs" />
         <Compile Include="DocsTests.fs" />
         <Compile Include="Main.fs" />
+        <EmbeddedResource Include="Fixtures/sagefs-0.6.828/*" LogicalName="sagefs-0.6.828/%(Filename)%(Extension)" />
     </ItemGroup>
 
     <ItemGroup>

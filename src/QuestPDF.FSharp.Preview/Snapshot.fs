@@ -28,13 +28,19 @@ type internal Outcome =
 
 /// The published state of a preview. Pages hold the served SVG documents.
 type internal Snapshot =
-    { Instance: string
-      Version: int64
-      Pages: string list
-      Hashes: string list
-      Status: RenderStatus
-      Hint: string option
-      Reload: string }
+    {
+        Instance: string
+        Version: int64
+        Pages: string list
+        Hashes: string list
+        Status: RenderStatus
+        /// The status of the last render, shown while no reload issue is set.
+        LastRender: RenderStatus
+        /// The status of the last failed reload, shown over the render status until a reload succeeds.
+        ReloadIssue: RenderStatus option
+        Hint: string option
+        Reload: string
+    }
 
 [<RequireQualifiedAccess>]
 module internal Snapshot =
@@ -49,6 +55,8 @@ module internal Snapshot =
           Pages = []
           Hashes = []
           Status = Starting
+          LastRender = Starting
+          ReloadIssue = None
           Hint = None
           Reload = reload }
 
@@ -71,7 +79,7 @@ module internal Snapshot =
                 Version = previous.Version + 1L }
 
     /// The state after a render. The version increases only when the hashes, the status or the hint change; the
-    /// render time alone is no change. A failure keeps the pages.
+    /// render time alone is no change. A failure keeps the pages, and a reload issue stays the shown status.
     let render (outcome: Outcome) (hint: string option) (snapshot: Snapshot) : Snapshot =
         let next =
             match outcome with
@@ -79,18 +87,34 @@ module internal Snapshot =
                 { snapshot with
                     Pages = svgs
                     Hashes = svgs |> List.map hash
-                    Status = Rendered (svgs.Length, elapsed)
+                    LastRender = Rendered (svgs.Length, elapsed)
                     Hint = hint }
             | Failure error ->
                 { snapshot with
-                    Status = RenderFailed error
+                    LastRender = RenderFailed error
                     Hint = hint }
 
-        publish next snapshot
+        publish
+            { next with
+                Status = defaultArg next.ReloadIssue next.LastRender }
+            snapshot
 
-    /// The state with a status, bumping the version when it changes.
+    /// The state with a reload issue set or cleared, bumping the version when the shown status changes. A cleared
+    /// issue shows the status of the last render.
+    let reloaded (issue: RenderStatus option) (snapshot: Snapshot) : Snapshot =
+        publish
+            { snapshot with
+                ReloadIssue = issue
+                Status = defaultArg issue snapshot.LastRender }
+            snapshot
+
+    /// The state with a render status, bumping the version when the shown status changes.
     let withStatus (status: RenderStatus) (snapshot: Snapshot) : Snapshot =
-        publish { snapshot with Status = status } snapshot
+        publish
+            { snapshot with
+                LastRender = status
+                Status = defaultArg snapshot.ReloadIssue status }
+            snapshot
 
     let private writeStatus (writer: Utf8JsonWriter) (status: RenderStatus) =
         writer.WriteStartObject ()

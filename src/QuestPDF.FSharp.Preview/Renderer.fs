@@ -21,11 +21,16 @@ type internal ServeEnv =
         BindTimeout: TimeSpan
         /// The interval of the SSE keep-alive comments.
         KeepAlive: TimeSpan
+        /// The value of an environment variable; None when unset or empty.
+        Variable: string -> string option
+        /// The working directory of the process.
+        CurrentDirectory: unit -> string
     }
 
 [<RequireQualifiedAccess>]
 module internal ServeEnv =
-    /// The daemon at http://localhost:37749/, the default browser, a 15 s bind timeout and a 15 s keep-alive.
+    /// The daemon at http://localhost:37749/, the default browser, a 15 s bind timeout, a 15 s keep-alive and the
+    /// process environment.
     let standard: ServeEnv =
         { Daemon = Uri "http://localhost:37749/"
           OpenBrowser =
@@ -37,7 +42,14 @@ module internal ServeEnv =
                     ()
           Now = fun () -> DateTime.UtcNow
           BindTimeout = TimeSpan.FromSeconds 15.0
-          KeepAlive = TimeSpan.FromSeconds 15.0 }
+          KeepAlive = TimeSpan.FromSeconds 15.0
+          Variable =
+            fun name ->
+                match Environment.GetEnvironmentVariable name with
+                | null
+                | "" -> None
+                | value -> Some value
+          CurrentDirectory = fun () -> Environment.CurrentDirectory }
 
 /// The settings of a running preview that a repeated serve replaces.
 type internal RenderSettings =
@@ -291,6 +303,10 @@ type internal Engine(port: int, env: ServeEnv, initialSettings: RenderSettings, 
                         Reload = nextSettings.Reload })
 
         wake.Set () |> ignore
+
+    /// Shows the outcome of a script reload: a failure stays the shown status until a reload succeeds.
+    member _.Reloaded(outcome: ReloadOutcome) =
+        publish (Snapshot.reloaded (ExecProtocol.issue outcome))
 
     /// Renders at once and returns when the render is published.
     member _.Refresh() =
