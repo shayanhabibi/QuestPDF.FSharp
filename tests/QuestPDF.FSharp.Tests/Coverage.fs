@@ -87,20 +87,20 @@ let mappings: (string * Mapping) list =
       Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
       "DocumentOperation.UnderlayFile",
       Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DynamicComponentExtensions.Dynamic", Raw "dynamic components are planned for a later version of QuestPDF.FSharp"
-      "DynamicComponentExtensions.Element", Raw "dynamic components are planned for a later version of QuestPDF.FSharp"
-      "DynamicImageDescriptor.UseOriginalImage", Raw "dynamic images are planned for a later version of QuestPDF.FSharp"
-      "DynamicImageDescriptor.WithCompressionQuality", Raw "dynamic images are planned for a later version of QuestPDF.FSharp"
-      "DynamicImageDescriptor.WithRasterDpi", Raw "dynamic images are planned for a later version of QuestPDF.FSharp"
+      "DynamicComponentExtensions.Dynamic", Wrapped [ "Dynamic.ofStateful"; "Dynamic.ofComponent" ]
+      "DynamicComponentExtensions.Element", Wrapped [ "Dynamic.element" ]
+      "DynamicImageDescriptor.UseOriginalImage", Wrapped [ "DynamicImage.original" ]
+      "DynamicImageDescriptor.WithCompressionQuality", Wrapped [ "DynamicImage.quality" ]
+      "DynamicImageDescriptor.WithRasterDpi", Wrapped [ "DynamicImage.dpi" ]
       "ElementExtensions.AspectRatio", Wrapped [ "aspectRatioWith"; "aspectRatio" ]
-      "ElementExtensions.CaptureContentPosition", Raw "content position capture is planned for a later version of QuestPDF.FSharp"
+      "ElementExtensions.CaptureContentPosition", Wrapped [ "capturePosition" ]
       "ElementExtensions.Container", Raw "a Content already receives its container; use raw"
       "ElementExtensions.DefaultTextStyle", Wrapped [ "textStyle" ]
       "ElementExtensions.Element", Wrapped [ "modify"; "raw" ]
       "ElementExtensions.EnsureSpace", Wrapped [ "ensureSpace" ]
       "ElementExtensions.Hyperlink", Wrapped [ "hyperlink" ]
-      "ElementExtensions.Lazy", Raw "lazy content is planned for a later version of QuestPDF.FSharp"
-      "ElementExtensions.LazyWithCache", Raw "lazy content is planned for a later version of QuestPDF.FSharp"
+      "ElementExtensions.Lazy", Wrapped [ "lazyContent" ]
+      "ElementExtensions.LazyWithCache", Wrapped [ "lazyContentCached" ]
       "ElementExtensions.PageBreak", Wrapped [ "pageBreak" ]
       "ElementExtensions.Placeholder", Wrapped [ "placeholder" ]
       "ElementExtensions.PreventPageBreak", Wrapped [ "preventPageBreak" ]
@@ -140,7 +140,9 @@ let mappings: (string * Mapping) list =
       "ImageDescriptor.WithRasterDpi", Wrapped [ "Image.dpi" ]
       "ImageExtensions.Image",
       Wrapped
-          [ "Image.sharedWith"
+          [ "Image.dynamicWith"
+            "Image.dynamic"
+            "Image.sharedWith"
             "Image.shared"
             "Image.bytesWith"
             "Image.bytes"
@@ -307,7 +309,7 @@ let mappings: (string * Mapping) list =
       "TextDescriptor.ClampLines", Wrapped [ "Text.clampLinesWith"; "Text.clampLines" ]
       "TextDescriptor.CurrentPageNumber", Wrapped [ "Text.pageNumber" ]
       "TextDescriptor.DefaultTextStyle", Wrapped [ "Text.style" ]
-      "TextDescriptor.Element", Raw "inline elements in text are planned for a later version of QuestPDF.FSharp"
+      "TextDescriptor.Element", Wrapped [ "Text.elementWith"; "Text.element" ]
       "TextDescriptor.EmptyLine", Wrapped [ "Text.emptyLine"; "Text.lineBreak" ]
       "TextDescriptor.EndPageNumberOfSection", Wrapped [ "Text.sectionEndPage" ]
       "TextDescriptor.Hyperlink", Wrapped [ "Text.link" ]

@@ -212,6 +212,19 @@ module Text =
     let raw (apply: TextDescriptor -> unit) : TextPart =
         block apply
 
+    /// <summary>
+    /// Content drawn inline within the text, with its bottom edge on the baseline. The content fits within one line;
+    /// <c>Text.withStyle</c> leaves it unchanged, so style its text with <c>textStyle</c>.
+    /// </summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.Element(System.Action{QuestPDF.Infrastructure.IContainer},QuestPDF.Infrastructure.TextInjectedElementAlignment)"/>.</remarks>
+    let element (content: Content) : TextPart =
+        block (fun descriptor -> descriptor.Element (fun container -> content (Slot container)))
+
+    /// <summary>Content drawn inline within the text, aligned to the line by its alignment.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.Element(System.Action{QuestPDF.Infrastructure.IContainer},QuestPDF.Infrastructure.TextInjectedElementAlignment)"/>.</remarks>
+    let elementWith (alignment: TextInjectedElementAlignment) (content: Content) : TextPart =
+        block (fun descriptor -> descriptor.Element ((fun container -> content (Slot container)), alignment))
+
     /// <summary>Sets the space between paragraphs of the block; accepts int, int64, float, float32 or decimal (points) or Length.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.ParagraphSpacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let inline paragraphSpacing value : TextPart =
