@@ -2,7 +2,7 @@
 // http://localhost:5800/ and edit this file or parts/header.fsx. Every save reloads the script and the page.
 //
 // Outside this repository, replace the three #r lines with:
-// #r "nuget: QuestPDF.FSharp.Preview, 1.0.0"
+// #r "nuget: QuestPDF.FSharp.Preview, 0.1.0"
 #r "nuget: QuestPDF, 2026.9.0"
 #r "../../src/QuestPDF.FSharp.Preview/bin/Release/net10.0/QuestPDF.FSharp.dll"
 #r "../../src/QuestPDF.FSharp.Preview/bin/Release/net10.0/QuestPDF.FSharp.Preview.dll"

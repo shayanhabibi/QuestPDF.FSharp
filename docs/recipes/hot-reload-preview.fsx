@@ -64,7 +64,7 @@ mkdir fonts          # copy the .ttf files you use, e.g. Lato-*.ttf (SIL OFL)
 `invoice.fsx`:
 
 ```fsharp
-#r "nuget: QuestPDF.FSharp.Preview, 1.0.0"
+#r "nuget: QuestPDF.FSharp.Preview, 0.1.0"
 
 open QuestPDF.FSharp
 
