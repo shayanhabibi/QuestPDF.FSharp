@@ -17,7 +17,9 @@ let private countOf (family: string) =
     |> List.length
 
 let private isSource (source: FontSource) =
-    Font.sources () |> List.filter ((=) source) |> List.length
+    Font.sources ()
+    |> List.filter ((=) source)
+    |> List.length
 
 [<Tests>]
 let tests =
@@ -68,7 +70,10 @@ let tests =
           }
           test "sources keeps registration order" {
               let directory = tempDirectory ()
-              let fontDirectory = Directory.CreateDirectory(Path.Combine (directory, "fonts")).FullName
+
+              let fontDirectory =
+                  Directory.CreateDirectory(Path.Combine (directory, "fonts")).FullName
+
               let file = Path.Combine (directory, "font.ttf")
 
               try

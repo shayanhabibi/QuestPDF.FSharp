@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuestPDF preview</title>
+<style>
+  :root { color-scheme: light dark; --bar: #2b2e31; --bar-text: #d8dadc; --canvas: #525659; --error: #5a1d1d; --error-text: #ffd7d7; --hint: #4a4220; --hint-text: #fff3c4; }
+  body { margin: 0; background: var(--canvas); font: 13px system-ui, sans-serif; }
+  #bar { position: sticky; top: 0; z-index: 2; display: flex; gap: 14px; align-items: center; padding: 5px 12px; background: var(--bar); color: var(--bar-text); }
+  #bar a { color: inherit; margin-left: auto; }
+  #banner { display: none; position: sticky; top: 27px; z-index: 3; margin: 0; padding: 10px 14px; white-space: pre-wrap; font: 12px ui-monospace, Consolas, monospace; max-height: 45vh; overflow: auto; }
+  #banner.error { display: block; background: var(--error); color: var(--error-text); }
+  #banner.hint { display: block; background: var(--hint); color: var(--hint-text); }
+  #pages { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 16px; }
+  #pages object { background: white; box-shadow: 0 2px 8px #0008; max-width: 100%; }
+  #pages.stale object { opacity: .45; }
+</style>
+</head>
+<body>
+<div id="bar"><span id="connection">connecting</span><span id="info"></span><a href="/document.pdf" target="_blank">PDF</a></div>
+<pre id="banner"></pre>
+<div id="pages"></div>
+<script>
+let instance = null;
+let shown = -1;
+
+function describe(status) {
+  switch (status.kind) {
+    case 'starting': return 'Rendering the first pages';
+    case 'renderFailed': return status.error;
+    case 'compileFailed': return status.diagnostics.map(d => `${d.file}(${d.line},${d.column}): ${d.message}`).join('\n');
+    case 'reloadFailed': return status.reason;
+    default: return null;
+  }
+}
+
+function apply(snap) {
+  if (instance !== null && snap.instance !== instance) { location.reload(); return; }
+  instance = snap.instance;
+  if (snap.version === shown) return;
+  shown = snap.version;
+
+  const pages = document.getElementById('pages');
+  snap.pages.forEach((hash, i) => {
+    const current = pages.children[i];
+    if (current && current.dataset.hash === hash) return;
+    const next = document.createElement('object');
+    next.type = 'image/svg+xml';
+    next.dataset.hash = hash;
+    next.setAttribute('aria-label', `Page ${i + 1}`);
+    next.data = `/page/${i + 1}.svg?h=${hash}`;
+    if (current) pages.replaceChild(next, current); else pages.appendChild(next);
+  });
+  while (pages.children.length > snap.pages.length) pages.lastChild.remove();
+
+  const status = snap.status;
+  const problem = describe(status);
+  const banner = document.getElementById('banner');
+  banner.className = problem ? 'error' : (snap.hint ? 'hint' : '');
+  banner.textContent = problem || snap.hint || '';
+  pages.classList.toggle('stale', status.kind !== 'rendered');
+
+  const time = status.kind === 'rendered' ? ` · render ${Math.round(status.renderMs)} ms` : '';
+  document.getElementById('info').textContent =
+    `v${snap.version} · ${snap.pages.length} page(s)${time} · reload: ${snap.reload}`;
+}
+
+async function refresh() {
+  const response = await fetch('/snapshot', { cache: 'no-store' });
+  apply(await response.json());
+}
+
+const events = new EventSource('/events');
+events.onopen = () => { document.getElementById('connection').textContent = 'live'; refresh(); };
+events.onerror = () => { document.getElementById('connection').textContent = 'reconnecting'; };
+events.addEventListener('version', e => apply(JSON.parse(e.data)));
+</script>
+</body>
+</html>

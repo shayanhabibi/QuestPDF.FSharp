@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>QuestPDF.FSharp</RootNamespace>
+        <AssemblyName>QuestPDF.FSharp.Preview</AssemblyName>
+        <PackageId>QuestPDF.FSharp.Preview</PackageId>
+        <Title>QuestPDF.FSharp.Preview</Title>
+        <Description>Live browser previews of QuestPDF.FSharp documents, reloaded on save under SageFs.</Description>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="FontFace.fs" />
+        <Compile Include="Snapshot.fs" />
+        <Compile Include="Schedule.fs" />
+        <Compile Include="Http.fs" />
+        <Compile Include="Shell.fs" />
+        <Compile Include="Renderer.fs" />
+        <Compile Include="Preview.fsi" />
+        <Compile Include="Preview.fs" />
+        <EmbeddedResource Include="Shell.html" LogicalName="Shell.html" />
+        <None Include="../../README.md" Pack="true" PackagePath="\" />
+        <InternalsVisibleTo Include="QuestPDF.FSharp.Preview.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\QuestPDF.FSharp\QuestPDF.FSharp.fsproj" />
+    </ItemGroup>
+
+</Project>

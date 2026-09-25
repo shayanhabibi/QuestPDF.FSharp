@@ -41,10 +41,12 @@ module Font =
     let private keys = Collections.Generic.HashSet<string> StringComparer.Ordinal
 
     let private pathKey (path: string) =
-        let full =
-            IO.Path.TrimEndingDirectorySeparator (IO.Path.GetFullPath path)
+        let full = IO.Path.TrimEndingDirectorySeparator (IO.Path.GetFullPath path)
 
-        if OperatingSystem.IsWindows () || OperatingSystem.IsMacOS () then
+        if
+            OperatingSystem.IsWindows ()
+            || OperatingSystem.IsMacOS ()
+        then
             full.ToUpperInvariant ()
         else
             full
@@ -71,13 +73,9 @@ module Font =
     /// </summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Drawing.FontManager.RegisterFontsFromDirectory(System.String)"/>.</remarks>
     let registerDirectory (path: string) : unit =
-        let full =
-            IO.Path.TrimEndingDirectorySeparator (IO.Path.GetFullPath path)
+        let full = IO.Path.TrimEndingDirectorySeparator (IO.Path.GetFullPath path)
 
-        registerOnce
-            ("directory:" + pathKey full)
-            (FontDirectory full)
-            (fun () -> FontManager.RegisterFontsFromDirectory full)
+        registerOnce ("directory:" + pathKey full) (FontDirectory full) (fun () -> FontManager.RegisterFontsFromDirectory full)
 
     /// <summary>
     /// Registers a font from the contents of a font file. Registering the same bytes again has no effect.
@@ -85,7 +83,8 @@ module Font =
     /// <remarks>Maps to <see cref="M:QuestPDF.Drawing.FontManager.RegisterFontFromBinaryData(System.Byte[])"/>.</remarks>
     let registerBytes (data: byte[]) : unit =
         let key =
-            "data:" + Convert.ToHexString (Security.Cryptography.SHA256.HashData data)
+            "data:"
+            + Convert.ToHexString (Security.Cryptography.SHA256.HashData data)
 
         let copy = Array.copy data
         registerOnce key (FontData copy) (fun () -> FontManager.RegisterFontFromBinaryData copy)

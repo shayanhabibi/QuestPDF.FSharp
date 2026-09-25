@@ -13,9 +13,11 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/QuestPDF.FSharp/QuestPDF.FSharp.fsproj" />
+    <Project Path="src/QuestPDF.FSharp.Preview/QuestPDF.FSharp.Preview.fsproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/QuestPDF.FSharp.Tests/QuestPDF.FSharp.Tests.fsproj" />
+    <Project Path="tests/QuestPDF.FSharp.Preview.Tests/QuestPDF.FSharp.Preview.Tests.fsproj" />
   </Folder>
   <Folder Name="/docs/">
     <File Path="docs/index.md" />
