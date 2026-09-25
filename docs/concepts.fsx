@@ -84,7 +84,8 @@ render orderDemo
 (**
 ## Parts lists
 
-Containers take lists: `column`, `row`, `table`, `layers`, `decoration`, `richText`, `page` and `document`.
+Containers take lists: `column`, `row`, `table`, `layers`, `decoration`, `inlined`, `multiColumn`, `richText`, `page`
+and `document`.
 List expressions work inside them, so data drives the layout without builder syntax. Loop with `for ... do`, never
 `for ... ->`, in a list with other items: `->` makes F# discard every item of the list other than the loop, with
 only a warning (FS0193).

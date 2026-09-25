@@ -39,6 +39,18 @@ type ImageCompressionQuality = QuestPDF.Infrastructure.ImageCompressionQuality
 /// <remarks>An alias of <see cref="T:QuestPDF.Infrastructure.ImageFormat"/>.</remarks>
 type ImageFormat = QuestPDF.Infrastructure.ImageFormat
 
+/// <summary>
+/// The alignment of inline content to its line: AboveBaseline, BelowBaseline, Top, Bottom or Middle.
+/// </summary>
+/// <remarks>An alias of <see cref="T:QuestPDF.Infrastructure.TextInjectedElementAlignment"/>.</remarks>
+type TextInjectedElementAlignment = QuestPDF.Infrastructure.TextInjectedElementAlignment
+
+/// <summary>
+/// The relationship of an attached file to the document: Data, Source, Alternative, Supplement or Unspecified.
+/// </summary>
+/// <remarks>An alias of <see cref="T:QuestPDF.Fluent.DocumentOperation.DocumentAttachmentRelationship"/>.</remarks>
+type DocumentAttachmentRelationship = QuestPDF.Fluent.DocumentOperation.DocumentAttachmentRelationship
+
 /// <summary>Colour constructors.</summary>
 [<RequireQualifiedAccess>]
 module Color =

@@ -82,7 +82,8 @@ render hello
    >> text "x"` is a `Content`, read outer to inner as in the fluent chain.
 2. **`Slot` is a one-field struct over `IContainer`**, so a top-level `let heading = text "hi"` needs no annotation.
 3. **Containers take lists of parts.** `for ... do`, `if` and `match` work inside the list. In `page`, `row`,
-   `table`, `Table.columns`, `layers` and `decoration`, a lambda over the QuestPDF descriptor is also a valid part.
+   `table`, `Table.columns`, `layers`, `decoration`, `inlined` and `multiColumn`, a lambda over the QuestPDF
+   descriptor is also a valid part.
 4. **Numbers are bare.** A length accepts `int`, `int64`, `float`, `float32` or `decimal` (points) or a `Length`
    such as `5 * mm`. The unit passes through to QuestPDF unconverted.
 5. **`inline` functions are one-line shims** over the non-inline `Measured.*` functions.
@@ -95,11 +96,12 @@ render hello
 - [Concepts](concepts.html): slots, content, modifiers and parts lists
 - [Lengths and colours](lengths-and-colors.html): bare numbers, units, `Colors` and `PageSizes`
 - [Text](text.html): plain, styled and rich text, links, page numbers and fonts
-- [Layout](layout.html): columns, rows, layers and decorations
+- [Layout](layout.html): columns, rows, layers, decorations, inlined items, multiple columns and box effects
 - [Tables](tables.html): columns, headers and footers, spans
-- [Paging](paging.html): page setup, headers and footers, content across pages
+- [Paging](paging.html): page setup, headers and footers, content across pages, deferred and dynamic content
 - [Images](images.html): raster images, SVG and lines
-- [Output](output.html): generation targets, metadata, PDF/A and PDF/UA, reproducible output
+- [Output](output.html): generation targets, metadata, PDF/A and PDF/UA, semantic tags, merging documents,
+  editing PDF files, reproducible output
 - [Interop](interop.html): mixing wrapper and fluent QuestPDF code, and the full mapping table
 - [Testing your documents](testing-your-documents.html): byte equivalence, text extraction and snapshots
 - Recipes: [invoice](recipes/invoice.html), [resume](recipes/resume.html) and

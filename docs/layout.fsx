@@ -122,11 +122,60 @@ render decorationDemo
 (*** include-it-raw ***)
 
 (**
+## Inlined items
+
+`inlined` places items in a line, each as wide as its content, and wraps to a new line when the width runs out,
+like words in a paragraph. `Inlined.spacing` sets both gaps (`spacingH` and `spacingV` set one each),
+`Inlined.align*` distributes the items along a line, and `Inlined.baseline*` aligns them across it.
+*)
+
+let tags =
+    inlined [
+        Inlined.spacing 4
+        Inlined.alignCenter
+        for tag in [ "F#"; "QuestPDF"; "PDF"; "layout"; "functional"; "documents"; "wrapping" ] do
+            Inlined.item (background Colors.Indigo.Lighten4 >> paddingH 6 >> paddingV 2 >> text tag)
+    ]
+
+let inlinedDemo = document [ page [ Page.sizeOf 200 90; Page.margin 10; Page.content tags ] ]
+
+(*** hide ***)
+render inlinedDemo
+(*** include-it-raw ***)
+
+(**
+## Multiple columns
+
+`multiColumn` flows its content through side-by-side columns, like a newspaper page: the content fills the first
+column, then continues in the next. `MultiColumn.columns` sets the count (2 by default), `MultiColumn.spacing` the
+gap, `MultiColumn.spacer` draws content in each gap, and `MultiColumn.balanceHeight` evens out the column heights.
+*)
+
+let article =
+    multiColumn [
+        MultiColumn.columns 2
+        MultiColumn.spacing 12
+        MultiColumn.balanceHeight
+        MultiColumn.spacer (lineV 0.5 Colors.Grey.Medium)
+        MultiColumn.content (
+            columnSpaced 4 [ for i in 1..4 do text $"Paragraph {i}. The text flows down one column and on into the next." ]
+        )
+    ]
+
+let multiColumnDemo = document [ page [ Page.sizeOf 300 120; Page.margin 10; Page.content article ] ]
+
+(*** hide ***)
+render multiColumnDemo
+(*** include-it-raw ***)
+
+(**
 ## Box modifiers
 
 Beside padding and background, modifiers constrain and decorate a box: `width`, `height`, `minWidth`, `maxHeight`
 and the rest; `alignLeft` ... `alignBottom`; `extend` and `shrink`; `aspectRatio`; `border` and its sides with
-`borderColor`; `cornerRadius`; and the transforms `rotate`, `scale`, `flipH`, `flipV`, `offsetX` and `offsetY`.
+`borderColor`; `cornerRadius`; `backgroundGradient` and `borderGradient` (an angle in degrees and a list of
+colours); `shadow` with `Shadow.offset`, `blur`, `spread` and `color`; and the transforms `rotate`, `scale`, `flipH`,
+`flipV`, `offsetX` and `offsetY`.
 *)
 
 let boxes =
@@ -135,9 +184,18 @@ let boxes =
         Row.auto (width 60 >> height 40 >> border 1 >> borderColor Colors.Teal.Medium >> alignCenter >> alignMiddle >> text "border")
         Row.auto (width 60 >> height 40 >> cornerRadius 8 >> background Colors.Teal.Lighten3 >> alignCenter >> alignMiddle >> text "radius")
         Row.auto (width 60 >> height 40 >> background Colors.Teal.Lighten4 >> alignBottom >> alignRight >> text "corner")
+        Row.auto (
+            width 60
+            >> height 40
+            >> shadow [ Shadow.offset 2 2; Shadow.blur 4 ]
+            >> backgroundGradient 90 [ Colors.Teal.Lighten4; Colors.Teal.Lighten1 ]
+            >> alignCenter
+            >> alignMiddle
+            >> text "gradient"
+        )
     ]
 
-let boxDemo = document [ page [ Page.sizeOf 230 60; Page.margin 10; Page.content boxes ] ]
+let boxDemo = document [ page [ Page.sizeOf 300 64; Page.margin 10; Page.content boxes ] ]
 
 (*** hide ***)
 render boxDemo

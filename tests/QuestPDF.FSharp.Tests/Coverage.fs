@@ -21,7 +21,7 @@ let mappings: (string * Mapping) list =
       "ColumnDescriptor.Spacing", Wrapped [ "columnSpaced" ]
       "ColumnExtensions.Column", Wrapped [ "columnSpaced"; "column" ]
       "CompanionExtensions.ShowInCompanion", Wrapped [ "Pdf.companion" ]
-      "CompanionExtensions.ShowInCompanionAsync", Raw "the asynchronous Companion call is planned for a later version of QuestPDF.FSharp"
+      "CompanionExtensions.ShowInCompanionAsync", Wrapped [ "Pdf.companionAsync" ]
       "ComponentExtensions.Component", Wrapped [ "Content.ofComponent" ]
       "ConstrainedExtensions.Height", Wrapped [ "height" ]
       "ConstrainedExtensions.MaxHeight", Wrapped [ "maxHeight" ]
@@ -41,8 +41,7 @@ let mappings: (string * Mapping) list =
       "Document.Create", Wrapped [ "document"; "page" ]
       "Document.GetMetadata", Raw "reads back the metadata of a built document; call it on the Document that document returns"
       "Document.GetSettings", Raw "reads back the settings of a built document; call it on the Document that document returns"
-      "Document.Merge",
-      Raw "merging documents is planned for a later version of QuestPDF.FSharp; Document.Merge accepts the documents that document returns"
+      "Document.Merge", Wrapped [ "Pdf.merge"; "Merge.originalPageNumbers"; "Merge.continuousPageNumbers" ]
       "Document.WithMetadata",
       Wrapped
           [ "Meta.title"
@@ -63,44 +62,32 @@ let mappings: (string * Mapping) list =
             "Output.imageQuality"
             "Output.imageDpi"
             "Output.rightToLeft" ]
-      "DocumentOperation.AddAttachment",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.Decrypt",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.Encrypt",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.ExtendMetadata",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.Linearize",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.LoadFile",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.MergeFile",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.OverlayFile",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.RemoveRestrictions",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.Save",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.TakePages",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.UnderlayFile",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DynamicComponentExtensions.Dynamic", Raw "dynamic components are planned for a later version of QuestPDF.FSharp"
-      "DynamicComponentExtensions.Element", Raw "dynamic components are planned for a later version of QuestPDF.FSharp"
-      "DynamicImageDescriptor.UseOriginalImage", Raw "dynamic images are planned for a later version of QuestPDF.FSharp"
-      "DynamicImageDescriptor.WithCompressionQuality", Raw "dynamic images are planned for a later version of QuestPDF.FSharp"
-      "DynamicImageDescriptor.WithRasterDpi", Raw "dynamic images are planned for a later version of QuestPDF.FSharp"
+      "DocumentOperation.AddAttachment", Wrapped [ "PdfFile.attach" ]
+      "DocumentOperation.Decrypt", Wrapped [ "PdfFile.decrypt" ]
+      "DocumentOperation.Encrypt", Wrapped [ "PdfFile.encrypt40"; "PdfFile.encrypt128"; "PdfFile.encrypt256" ]
+      "DocumentOperation.ExtendMetadata", Wrapped [ "PdfFile.extendMetadata" ]
+      "DocumentOperation.Linearize", Wrapped [ "PdfFile.linearize" ]
+      "DocumentOperation.LoadFile", Wrapped [ "PdfFile.load"; "PdfFile.loadProtected" ]
+      "DocumentOperation.MergeFile", Wrapped [ "PdfFile.merge"; "PdfFile.mergePages" ]
+      "DocumentOperation.OverlayFile", Wrapped [ "PdfFile.overlay" ]
+      "DocumentOperation.RemoveRestrictions", Wrapped [ "PdfFile.removeRestrictions" ]
+      "DocumentOperation.Save", Wrapped [ "PdfFile.save" ]
+      "DocumentOperation.TakePages", Wrapped [ "PdfFile.takePages" ]
+      "DocumentOperation.UnderlayFile", Wrapped [ "PdfFile.underlay" ]
+      "DynamicComponentExtensions.Dynamic", Wrapped [ "Dynamic.ofStateful"; "Dynamic.ofComponent" ]
+      "DynamicComponentExtensions.Element", Wrapped [ "Dynamic.element" ]
+      "DynamicImageDescriptor.UseOriginalImage", Wrapped [ "DynamicImage.original" ]
+      "DynamicImageDescriptor.WithCompressionQuality", Wrapped [ "DynamicImage.quality" ]
+      "DynamicImageDescriptor.WithRasterDpi", Wrapped [ "DynamicImage.dpi" ]
       "ElementExtensions.AspectRatio", Wrapped [ "aspectRatioWith"; "aspectRatio" ]
-      "ElementExtensions.CaptureContentPosition", Raw "content position capture is planned for a later version of QuestPDF.FSharp"
+      "ElementExtensions.CaptureContentPosition", Wrapped [ "capturePosition" ]
       "ElementExtensions.Container", Raw "a Content already receives its container; use raw"
       "ElementExtensions.DefaultTextStyle", Wrapped [ "textStyle" ]
       "ElementExtensions.Element", Wrapped [ "modify"; "raw" ]
       "ElementExtensions.EnsureSpace", Wrapped [ "ensureSpace" ]
       "ElementExtensions.Hyperlink", Wrapped [ "hyperlink" ]
-      "ElementExtensions.Lazy", Raw "lazy content is planned for a later version of QuestPDF.FSharp"
-      "ElementExtensions.LazyWithCache", Raw "lazy content is planned for a later version of QuestPDF.FSharp"
+      "ElementExtensions.Lazy", Wrapped [ "lazyContent" ]
+      "ElementExtensions.LazyWithCache", Wrapped [ "lazyContentCached" ]
       "ElementExtensions.PageBreak", Wrapped [ "pageBreak" ]
       "ElementExtensions.Placeholder", Wrapped [ "placeholder" ]
       "ElementExtensions.PreventPageBreak", Wrapped [ "preventPageBreak" ]
@@ -140,25 +127,27 @@ let mappings: (string * Mapping) list =
       "ImageDescriptor.WithRasterDpi", Wrapped [ "Image.dpi" ]
       "ImageExtensions.Image",
       Wrapped
-          [ "Image.sharedWith"
+          [ "Image.dynamicWith"
+            "Image.dynamic"
+            "Image.sharedWith"
             "Image.shared"
             "Image.bytesWith"
             "Image.bytes"
             "Image.fileWith"
             "Image.file" ]
-      "InlinedDescriptor.AlignCenter", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.AlignJustify", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.AlignLeft", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.AlignRight", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.AlignSpaceAround", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.BaselineBottom", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.BaselineMiddle", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.BaselineTop", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.HorizontalSpacing", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.Item", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.Spacing", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.VerticalSpacing", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedExtensions.Inlined", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
+      "InlinedDescriptor.AlignCenter", Wrapped [ "Inlined.alignCenter" ]
+      "InlinedDescriptor.AlignJustify", Wrapped [ "Inlined.alignJustify" ]
+      "InlinedDescriptor.AlignLeft", Wrapped [ "Inlined.alignLeft" ]
+      "InlinedDescriptor.AlignRight", Wrapped [ "Inlined.alignRight" ]
+      "InlinedDescriptor.AlignSpaceAround", Wrapped [ "Inlined.alignSpaceAround" ]
+      "InlinedDescriptor.BaselineBottom", Wrapped [ "Inlined.baselineBottom" ]
+      "InlinedDescriptor.BaselineMiddle", Wrapped [ "Inlined.baselineMiddle" ]
+      "InlinedDescriptor.BaselineTop", Wrapped [ "Inlined.baselineTop" ]
+      "InlinedDescriptor.HorizontalSpacing", Wrapped [ "Inlined.spacingH" ]
+      "InlinedDescriptor.Item", Wrapped [ "Inlined.item" ]
+      "InlinedDescriptor.Spacing", Wrapped [ "Inlined.spacing" ]
+      "InlinedDescriptor.VerticalSpacing", Wrapped [ "Inlined.spacingV" ]
+      "InlinedExtensions.Inlined", Wrapped [ "inlined" ]
       "LayerExtensions.Layers", Wrapped [ "layers" ]
       "LayersDescriptor.Layer", Wrapped [ "Layers.layer" ]
       "LayersDescriptor.PrimaryLayer", Wrapped [ "Layers.primary" ]
@@ -167,12 +156,12 @@ let mappings: (string * Mapping) list =
       "LineDescriptor.LineGradient", Wrapped [ "lineHWith"; "lineVWith" ]
       "LineExtensions.LineHorizontal", Wrapped [ "lineHWith"; "lineH" ]
       "LineExtensions.LineVertical", Wrapped [ "lineVWith"; "lineV" ]
-      "MultiColumnDescriptor.BalanceHeight", Raw "multi-column layout is planned for a later version of QuestPDF.FSharp"
-      "MultiColumnDescriptor.Columns", Raw "multi-column layout is planned for a later version of QuestPDF.FSharp"
-      "MultiColumnDescriptor.Content", Raw "multi-column layout is planned for a later version of QuestPDF.FSharp"
-      "MultiColumnDescriptor.Spacer", Raw "multi-column layout is planned for a later version of QuestPDF.FSharp"
-      "MultiColumnDescriptor.Spacing", Raw "multi-column layout is planned for a later version of QuestPDF.FSharp"
-      "MultiColumnExtensions.MultiColumn", Raw "multi-column layout is planned for a later version of QuestPDF.FSharp"
+      "MultiColumnDescriptor.BalanceHeight", Wrapped [ "MultiColumn.balanceHeight" ]
+      "MultiColumnDescriptor.Columns", Wrapped [ "MultiColumn.columns" ]
+      "MultiColumnDescriptor.Content", Wrapped [ "MultiColumn.content" ]
+      "MultiColumnDescriptor.Spacer", Wrapped [ "MultiColumn.spacer" ]
+      "MultiColumnDescriptor.Spacing", Wrapped [ "MultiColumn.spacing" ]
+      "MultiColumnExtensions.MultiColumn", Wrapped [ "multiColumn" ]
       "OffsetExtensions.OffsetX", Wrapped [ "offsetX" ]
       "OffsetExtensions.OffsetY", Wrapped [ "offsetY" ]
       "PaddingExtensions.Padding", Wrapped [ "padding" ]
@@ -219,40 +208,40 @@ let mappings: (string * Mapping) list =
       "ScaleExtensions.Scale", Wrapped [ "scale" ]
       "ScaleExtensions.ScaleHorizontal", Wrapped [ "scaleH" ]
       "ScaleExtensions.ScaleVertical", Wrapped [ "scaleV" ]
-      "SemanticExtensions.SemanticArticle", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticBlockQuotation", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticCaption", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticCode", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticDivision", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticFigure", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticFormula", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticHeading1", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticHeading2", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticHeading3", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticHeading4", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticHeading5", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticHeading6", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticIgnore", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticImage", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticIndex", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticLanguage", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticLink", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticList", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticListItem", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticListItemBody", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticListLabel", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticParagraph", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticQuote", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticSection", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticSpan", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticTable", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticTableOfContents", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
-      "SemanticExtensions.SemanticTableOfContentsItem", Raw "semantic tagging for PDF/UA is planned for a later version of QuestPDF.FSharp"
+      "SemanticExtensions.SemanticArticle", Wrapped [ "Semantic.article" ]
+      "SemanticExtensions.SemanticBlockQuotation", Wrapped [ "Semantic.blockQuotation" ]
+      "SemanticExtensions.SemanticCaption", Wrapped [ "Semantic.caption" ]
+      "SemanticExtensions.SemanticCode", Wrapped [ "Semantic.code" ]
+      "SemanticExtensions.SemanticDivision", Wrapped [ "Semantic.division" ]
+      "SemanticExtensions.SemanticFigure", Wrapped [ "Semantic.figure" ]
+      "SemanticExtensions.SemanticFormula", Wrapped [ "Semantic.formula" ]
+      "SemanticExtensions.SemanticHeading1", Wrapped [ "Semantic.heading1" ]
+      "SemanticExtensions.SemanticHeading2", Wrapped [ "Semantic.heading2" ]
+      "SemanticExtensions.SemanticHeading3", Wrapped [ "Semantic.heading3" ]
+      "SemanticExtensions.SemanticHeading4", Wrapped [ "Semantic.heading4" ]
+      "SemanticExtensions.SemanticHeading5", Wrapped [ "Semantic.heading5" ]
+      "SemanticExtensions.SemanticHeading6", Wrapped [ "Semantic.heading6" ]
+      "SemanticExtensions.SemanticIgnore", Wrapped [ "Semantic.ignore" ]
+      "SemanticExtensions.SemanticImage", Wrapped [ "Semantic.image" ]
+      "SemanticExtensions.SemanticIndex", Wrapped [ "Semantic.index" ]
+      "SemanticExtensions.SemanticLanguage", Wrapped [ "Semantic.language" ]
+      "SemanticExtensions.SemanticLink", Wrapped [ "Semantic.link" ]
+      "SemanticExtensions.SemanticList", Wrapped [ "Semantic.list" ]
+      "SemanticExtensions.SemanticListItem", Wrapped [ "Semantic.listItem" ]
+      "SemanticExtensions.SemanticListItemBody", Wrapped [ "Semantic.listItemBody" ]
+      "SemanticExtensions.SemanticListLabel", Wrapped [ "Semantic.listLabel" ]
+      "SemanticExtensions.SemanticParagraph", Wrapped [ "Semantic.paragraph" ]
+      "SemanticExtensions.SemanticQuote", Wrapped [ "Semantic.quote" ]
+      "SemanticExtensions.SemanticSection", Wrapped [ "Semantic.section" ]
+      "SemanticExtensions.SemanticSpan", Wrapped [ "Semantic.span"; "Semantic.spanWith" ]
+      "SemanticExtensions.SemanticTable", Wrapped [ "Semantic.table" ]
+      "SemanticExtensions.SemanticTableOfContents", Wrapped [ "Semantic.tableOfContents" ]
+      "SemanticExtensions.SemanticTableOfContentsItem", Wrapped [ "Semantic.tableOfContentsItem" ]
       "ShrinkExtensions.Shrink", Wrapped [ "shrink" ]
       "ShrinkExtensions.ShrinkHorizontal", Wrapped [ "shrinkH" ]
       "ShrinkExtensions.ShrinkVertical", Wrapped [ "shrinkV" ]
       "StyledBoxExtensions.Background", Wrapped [ "background" ]
-      "StyledBoxExtensions.BackgroundLinearGradient", Raw "gradients are planned for a later version of QuestPDF.FSharp"
+      "StyledBoxExtensions.BackgroundLinearGradient", Wrapped [ "backgroundGradient" ]
       "StyledBoxExtensions.Border", Wrapped [ "border" ]
       "StyledBoxExtensions.BorderAlignmentInside", Wrapped [ "borderInside" ]
       "StyledBoxExtensions.BorderAlignmentMiddle", Wrapped [ "borderMiddle" ]
@@ -261,7 +250,7 @@ let mappings: (string * Mapping) list =
       "StyledBoxExtensions.BorderColor", Wrapped [ "borderColor" ]
       "StyledBoxExtensions.BorderHorizontal", Wrapped [ "borderH" ]
       "StyledBoxExtensions.BorderLeft", Wrapped [ "borderLeft" ]
-      "StyledBoxExtensions.BorderLinearGradient", Raw "gradients are planned for a later version of QuestPDF.FSharp"
+      "StyledBoxExtensions.BorderLinearGradient", Wrapped [ "borderGradient" ]
       "StyledBoxExtensions.BorderRight", Wrapped [ "borderRight" ]
       "StyledBoxExtensions.BorderTop", Wrapped [ "borderTop" ]
       "StyledBoxExtensions.BorderVertical", Wrapped [ "borderV" ]
@@ -270,7 +259,15 @@ let mappings: (string * Mapping) list =
       "StyledBoxExtensions.CornerRadiusBottomRight", Wrapped [ "cornerRadiusBottomRight" ]
       "StyledBoxExtensions.CornerRadiusTopLeft", Wrapped [ "cornerRadiusTopLeft" ]
       "StyledBoxExtensions.CornerRadiusTopRight", Wrapped [ "cornerRadiusTopRight" ]
-      "StyledBoxExtensions.Shadow", Raw "shadows are planned for a later version of QuestPDF.FSharp"
+      "StyledBoxExtensions.Shadow",
+      Wrapped
+          [ "shadow"
+            "Shadow.offset"
+            "Shadow.offsetX"
+            "Shadow.offsetY"
+            "Shadow.blur"
+            "Shadow.spread"
+            "Shadow.color" ]
       "SvgExtensions.Svg", Wrapped [ "Svg.textWith"; "Svg.text" ]
       "SvgImageDescriptor.FitArea", Wrapped [ "Svg.fitArea" ]
       "SvgImageDescriptor.FitHeight", Wrapped [ "Svg.fitHeight" ]
@@ -280,7 +277,7 @@ let mappings: (string * Mapping) list =
       "TableCellExtensions.ColumnSpan", Wrapped [ "Cell.columnSpan" ]
       "TableCellExtensions.Row", Wrapped [ "Cell.at" ]
       "TableCellExtensions.RowSpan", Wrapped [ "Cell.rowSpan" ]
-      "TableCellExtensions.SemanticHorizontalHeader", Raw "semantic tagging is planned for a later version of QuestPDF.FSharp"
+      "TableCellExtensions.SemanticHorizontalHeader", Wrapped [ "Cell.horizontalHeader" ]
       "TableColumnsDefinitionDescriptor.ConstantColumn", Wrapped [ "Table.constant" ]
       "TableColumnsDefinitionDescriptor.RelativeColumn", Wrapped [ "Table.relative" ]
       "TableDescriptor.Cell", Wrapped [ "Table.cells" ]
@@ -307,7 +304,7 @@ let mappings: (string * Mapping) list =
       "TextDescriptor.ClampLines", Wrapped [ "Text.clampLinesWith"; "Text.clampLines" ]
       "TextDescriptor.CurrentPageNumber", Wrapped [ "Text.pageNumber" ]
       "TextDescriptor.DefaultTextStyle", Wrapped [ "Text.style" ]
-      "TextDescriptor.Element", Raw "inline elements in text are planned for a later version of QuestPDF.FSharp"
+      "TextDescriptor.Element", Wrapped [ "Text.elementWith"; "Text.element" ]
       "TextDescriptor.EmptyLine", Wrapped [ "Text.emptyLine"; "Text.lineBreak" ]
       "TextDescriptor.EndPageNumberOfSection", Wrapped [ "Text.sectionEndPage" ]
       "TextDescriptor.Hyperlink", Wrapped [ "Text.link" ]

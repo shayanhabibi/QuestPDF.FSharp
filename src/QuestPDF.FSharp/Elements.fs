@@ -121,6 +121,22 @@ module Image =
     let quality (value: ImageCompressionQuality) : ImageOption =
         closure (fun image -> image.WithCompressionQuality value)
 
+    /// <summary>
+    /// An image generated for the size it is drawn at: the function receives the resolution in pixels and returns the
+    /// bytes of a PNG, JPEG or WEBP image.
+    /// </summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ImageExtensions.Image(QuestPDF.Infrastructure.IContainer,System.Func{QuestPDF.Infrastructure.ImageSize,System.Byte[]})"/>.</remarks>
+    let dynamic (generate: ImageSize -> byte[]) : Content =
+        closure (fun (Slot container) -> container.Image (System.Func<ImageSize, byte[]> generate) |> ignore)
+
+    /// <summary>An image generated for the size it is drawn at, with settings.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.ImageExtensions.Image(QuestPDF.Infrastructure.IContainer,System.Func{QuestPDF.Infrastructure.ImageSize,System.Byte[]})"/>.</remarks>
+    let dynamicWith (option: DynamicImageOption) (generate: ImageSize -> byte[]) : Content =
+        closure (fun (Slot container) ->
+            container.Image (System.Func<ImageSize, byte[]> generate)
+            |> option
+            |> ignore)
+
 /// <summary>A setting of an SVG image, such as its fit; compose settings with <c>&gt;&gt;</c>.</summary>
 type SvgOption = SvgImageDescriptor -> SvgImageDescriptor
 

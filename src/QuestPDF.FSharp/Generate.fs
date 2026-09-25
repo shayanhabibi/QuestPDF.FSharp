@@ -71,3 +71,33 @@ module Pdf =
     /// <remarks>Maps to <see cref="M:QuestPDF.Companion.CompanionExtensions.ShowInCompanion(QuestPDF.Infrastructure.IDocument,System.Int32)"/>.</remarks>
     let companion (document: IDocument) : unit =
         (licensed document).ShowInCompanion ()
+
+    /// <summary>
+    /// Sends a document to the QuestPDF Companion app on its default port, 12500, for a live preview; the
+    /// asynchronous form of <c>Pdf.companion</c>. The computation completes when the Companion app closes and stops on
+    /// cancellation.
+    /// </summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Companion.CompanionExtensions.ShowInCompanionAsync(QuestPDF.Infrastructure.IDocument,System.Int32,System.Threading.CancellationToken)"/>.</remarks>
+    let companionAsync (document: IDocument) : Async<unit> =
+        async {
+            let document = licensed document
+            let! token = Async.CancellationToken
+
+            do!
+                document.ShowInCompanionAsync (12500, token)
+                |> Async.AwaitTask
+        }
+
+    /// <summary>
+    /// A document of the pages of several documents, in order, with the metadata, settings and <c>Merge.*</c>
+    /// numbering items of a list. Without <c>Meta.dated</c>, both dates are the time the document is built.
+    /// </summary>
+    /// <remarks>
+    /// Maps to <see cref="M:QuestPDF.Fluent.Document.Merge(System.Collections.Generic.IEnumerable{QuestPDF.Infrastructure.IDocument})"/>,
+    /// <see cref="M:QuestPDF.Infrastructure.MergedDocument.WithMetadata(QuestPDF.Infrastructure.DocumentMetadata)"/> and
+    /// <see cref="M:QuestPDF.Infrastructure.MergedDocument.WithSettings(QuestPDF.Infrastructure.DocumentSettings)"/>.
+    /// <c>Output.rightToLeft</c> sets the content direction setting only; each page keeps the direction of its
+    /// document. A <c>page</c> in the list raises <see cref="T:System.ArgumentException"/>.
+    /// </remarks>
+    let merge (parts: DocumentPart list) (documents: IDocument list) : MergedDocument =
+        Merging.merge parts documents

@@ -195,6 +195,26 @@ module Measured =
     let rowSpacing (spacing: Length) : RowPart =
         closure (fun row -> row.Spacing (spacing.Value, spacing.Unit))
 
+    /// <summary>Implements <c>Inlined.spacing</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.InlinedDescriptor.Spacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let inlinedSpacing (spacing: Length) : InlinedPart =
+        closure (fun inlined -> inlined.Spacing (spacing.Value, spacing.Unit))
+
+    /// <summary>Implements <c>Inlined.spacingH</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.InlinedDescriptor.HorizontalSpacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let inlinedSpacingH (spacing: Length) : InlinedPart =
+        closure (fun inlined -> inlined.HorizontalSpacing (spacing.Value, spacing.Unit))
+
+    /// <summary>Implements <c>Inlined.spacingV</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.InlinedDescriptor.VerticalSpacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let inlinedSpacingV (spacing: Length) : InlinedPart =
+        closure (fun inlined -> inlined.VerticalSpacing (spacing.Value, spacing.Unit))
+
+    /// <summary>Implements <c>MultiColumn.spacing</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.MultiColumnDescriptor.Spacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let multiColumnSpacing (spacing: Length) : MultiColumnPart =
+        closure (fun multiColumn -> multiColumn.Spacing (spacing.Value, spacing.Unit))
+
     /// <summary>Implements <c>Text.paragraphSpacing</c>.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.ParagraphSpacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let textParagraphSpacing (spacing: Length) : TextDescriptor -> unit =
@@ -334,3 +354,33 @@ module Measured =
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.OffsetExtensions.OffsetY(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let offsetY (length: Length) : Modifier =
         closure (fun (Slot container) -> Slot (container.OffsetY (length.Value, length.Unit)))
+
+    /// <summary>Implements <c>backgroundGradient</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.BackgroundLinearGradient(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Color[])"/>.</remarks>
+    let backgroundGradient (degrees: float) (colors: Color list) : Modifier =
+        closure (fun (Slot container) -> Slot (container.BackgroundLinearGradient (float32 degrees, Array.ofList colors)))
+
+    /// <summary>Implements <c>borderGradient</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.StyledBoxExtensions.BorderLinearGradient(QuestPDF.Infrastructure.IContainer,System.Single,QuestPDF.Infrastructure.Color[])"/>.</remarks>
+    let borderGradient (degrees: float) (colors: Color list) : Modifier =
+        closure (fun (Slot container) -> Slot (container.BorderLinearGradient (float32 degrees, Array.ofList colors)))
+
+    /// <summary>Implements <c>Shadow.offsetX</c>.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.BoxShadowStyle.OffsetX"/>.</remarks>
+    let shadowOffsetX (length: Length) : ShadowPart =
+        closure (fun style -> style.OffsetX <- Length.points length)
+
+    /// <summary>Implements <c>Shadow.offsetY</c>.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.BoxShadowStyle.OffsetY"/>.</remarks>
+    let shadowOffsetY (length: Length) : ShadowPart =
+        closure (fun style -> style.OffsetY <- Length.points length)
+
+    /// <summary>Implements <c>Shadow.blur</c>.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.BoxShadowStyle.Blur"/>.</remarks>
+    let shadowBlur (length: Length) : ShadowPart =
+        closure (fun style -> style.Blur <- Length.points length)
+
+    /// <summary>Implements <c>Shadow.spread</c>.</summary>
+    /// <remarks>Sets <see cref="P:QuestPDF.Infrastructure.BoxShadowStyle.Spread"/>.</remarks>
+    let shadowSpread (length: Length) : ShadowPart =
+        closure (fun style -> style.Spread <- Length.points length)

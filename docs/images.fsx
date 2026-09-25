@@ -69,6 +69,10 @@ render imageDemo
 `Image.shared` draws a `QuestPDF.Infrastructure.Image` loaded once, for an image repeated on many pages, and
 `Image.sharedWith` takes an option first, like `Image.fileWith`. The name `Image` is the wrapper module; the QuestPDF
 class keeps its full name. The caller disposes of a shared image after the last generation.
+
+`Image.dynamic` generates the image for the size it is drawn at: the function receives an `ImageSize` in pixels and
+returns PNG, JPEG or WebP bytes, such as a chart rendered at that resolution. `Image.dynamicWith` takes a setting
+first: `DynamicImage.dpi`, `DynamicImage.quality` or `DynamicImage.original`, composed with `>>`.
 *)
 
 let sharedLogo = QuestPDF.Infrastructure.Image.FromBinaryData logo

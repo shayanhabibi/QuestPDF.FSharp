@@ -18,10 +18,15 @@
         <Compile Include="Primitives.fs" />
         <Compile Include="Style.fs" />
         <Compile Include="Modifiers.fs" />
+        <Compile Include="StyledBox.fs" />
         <Compile Include="Text.fs" />
+        <Compile Include="Dynamic.fs" />
         <Compile Include="Elements.fs" />
         <Compile Include="Layout.fs" />
+        <Compile Include="Semantic.fs" />
+        <Compile Include="Flow.fs" />
         <Compile Include="Document.fs" />
+        <Compile Include="Operations.fs" />
         <Compile Include="Generate.fs" />
         <Compile Include="Setup.fs" />
         <None Include="../../README.md" Pack="true" PackagePath="\" />

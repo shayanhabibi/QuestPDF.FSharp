@@ -40,6 +40,7 @@ let render (document: QuestPDF.Infrastructure.IDocument) =
 | `Pdf.images format dpi doc` | one image per page (`ImageFormat.Png`, `Jpeg` or `Webp`) |
 | `Pdf.svgs doc` | one SVG document per page |
 | `Pdf.companion doc` | a live preview in the QuestPDF Companion app (port 12500) |
+| `Pdf.companionAsync doc` | the same preview as an `Async<unit>` that stops on cancellation |
 
 `Pdf.companion` blocks until the Companion app closes; [a live preview on save](recipes/hot-reload-preview.html)
 with `QuestPDF.FSharp.Preview` serves the pages to a browser without blocking.
@@ -110,6 +111,96 @@ let settings = invoice.GetSettings ()
 (*** hide ***)
 $"PDF/A: {settings.PDFA_Conformance}, image quality: {settings.ImageCompressionQuality}, image dpi: {settings.ImageRasterDpi}"
 (*** include-it ***)
+
+(**
+## Accessible PDF: semantic tags
+
+`Semantic.*` modifiers tag content with its role for assistive technology: `heading1` ... `heading6`,
+`paragraph`, `list`, `listItem`, `listLabel` and `listItemBody`, `table` (with `Cell.horizontalHeader` for a row
+header cell), `figure alt` and `image alt` with alternative text, `language`, `ignore` for decoration, and more. The
+tags go into a tagged PDF, such as a document with `Output.pdfUA`; the layout is unchanged.
+*)
+
+let accessible =
+    document [
+        Meta.title "Opening hours"
+        Meta.language "en-GB"
+        Output.pdfUA
+        page [
+            Page.sizeOf 220 110
+            Page.margin 10
+            Page.content (
+                Semantic.article
+                >> column [
+                    Semantic.heading1 >> styledText (Style.size 14 >> Style.bold) "Opening hours"
+                    Semantic.paragraph >> text "Monday to Friday, 9:00 to 17:00."
+                    Semantic.list
+                    >> column [
+                        for day in [ "Saturday: 10:00 to 14:00"; "Sunday: closed" ] do
+                            Semantic.listItem
+                            >> row [
+                                Row.auto (Semantic.listLabel >> paddingRight 4 >> text "-")
+                                Row.fill (Semantic.listItemBody >> text day)
+                            ]
+                    ]
+                ]
+            )
+        ]
+    ]
+
+(*** hide ***)
+render accessible
+(*** include-it-raw ***)
+
+(**
+## Merging documents
+
+`Pdf.merge` joins documents into one, taking the same `Meta.*` and `Output.*` items as `document`, plus
+`Merge.continuousPageNumbers` (one numbering across the documents) or `Merge.originalPageNumbers` (each document
+keeps its own). The result is an `IDocument`, so every `Pdf.*` function generates it:
+*)
+
+let bundle = Pdf.merge [ Meta.title "Bundle"; Merge.continuousPageNumbers ] [ note; invoice ]
+
+(*** hide ***)
+$"The bundle has {(Pdf.images ImageFormat.Png 24 bundle).Length} pages."
+(*** include-it ***)
+
+(**
+## Editing PDF files
+
+`PdfFile` edits existing PDF files through qpdf: `PdfFile.load path` starts a pipeline, `takePages`, `merge`,
+`mergePages`, `overlay`, `underlay`, `attach`, `extendMetadata`, `encrypt40`/`encrypt128`/`encrypt256`, `decrypt`,
+`removeRestrictions` and `linearize` add steps, and `PdfFile.save path` runs them. Page selectors use the qpdf
+syntax, such as `"1-3,r1"`.
+*)
+
+let folder = IO.Directory.CreateTempSubdirectory "questpdf-fsharp-docs"
+let source = IO.Path.Combine (folder.FullName, "bundle.pdf")
+let firstPage = IO.Path.Combine (folder.FullName, "first-page.pdf")
+
+bundle |> Pdf.save source
+
+PdfFile.load source
+|> PdfFile.takePages "1"
+|> PdfFile.encrypt256 [ Encryption.ownerPassword "owner"; Encryption.allowPrinting true ]
+|> PdfFile.save firstPage
+
+(*** hide ***)
+$"first-page.pdf exists: {IO.File.Exists firstPage}"
+(*** include-it ***)
+
+(**
+A list of `Encryption.*` parts bound apart from the call needs its part type, `Encryption40Part`, `Encryption128Part`
+or `Encryption256Part`, since the same setters serve every strength. The file also carries its source as an attachment:
+*)
+
+let common: Encryption256Part list = [ Encryption.ownerPassword "owner"; Encryption.allowPrinting false ]
+
+PdfFile.load source
+|> PdfFile.attach source [ Attachment.relationship DocumentAttachmentRelationship.Source ]
+|> PdfFile.encrypt256 (Encryption.userPassword "reader" :: common)
+|> PdfFile.save firstPage
 
 (**
 ## Reproducible output
