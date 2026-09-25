@@ -195,6 +195,26 @@ module Measured =
     let rowSpacing (spacing: Length) : RowPart =
         closure (fun row -> row.Spacing (spacing.Value, spacing.Unit))
 
+    /// <summary>Implements <c>Inlined.spacing</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.InlinedDescriptor.Spacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let inlinedSpacing (spacing: Length) : InlinedPart =
+        closure (fun inlined -> inlined.Spacing (spacing.Value, spacing.Unit))
+
+    /// <summary>Implements <c>Inlined.spacingH</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.InlinedDescriptor.HorizontalSpacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let inlinedSpacingH (spacing: Length) : InlinedPart =
+        closure (fun inlined -> inlined.HorizontalSpacing (spacing.Value, spacing.Unit))
+
+    /// <summary>Implements <c>Inlined.spacingV</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.InlinedDescriptor.VerticalSpacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let inlinedSpacingV (spacing: Length) : InlinedPart =
+        closure (fun inlined -> inlined.VerticalSpacing (spacing.Value, spacing.Unit))
+
+    /// <summary>Implements <c>MultiColumn.spacing</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.MultiColumnDescriptor.Spacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
+    let multiColumnSpacing (spacing: Length) : MultiColumnPart =
+        closure (fun multiColumn -> multiColumn.Spacing (spacing.Value, spacing.Unit))
+
     /// <summary>Implements <c>Text.paragraphSpacing</c>.</summary>
     /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TextDescriptor.ParagraphSpacing(System.Single,QuestPDF.Infrastructure.Unit)"/>.</remarks>
     let textParagraphSpacing (spacing: Length) : TextDescriptor -> unit =

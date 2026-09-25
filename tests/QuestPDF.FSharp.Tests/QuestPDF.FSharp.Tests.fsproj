@@ -26,6 +26,7 @@
         <Compile Include="TextRichTests.fs" />
         <Compile Include="TableTests.fs" />
         <Compile Include="LayersDecorationTests.fs" />
+        <Compile Include="FlowTests.fs" />
         <Compile Include="ElementsTests.fs" />
         <Compile Include="PagingTests.fs" />
         <Compile Include="TransformTests.fs" />

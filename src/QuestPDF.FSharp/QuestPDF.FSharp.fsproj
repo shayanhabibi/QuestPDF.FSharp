@@ -21,6 +21,7 @@
         <Compile Include="Text.fs" />
         <Compile Include="Elements.fs" />
         <Compile Include="Layout.fs" />
+        <Compile Include="Flow.fs" />
         <Compile Include="Document.fs" />
         <Compile Include="Generate.fs" />
         <Compile Include="Setup.fs" />

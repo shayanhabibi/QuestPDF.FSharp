@@ -146,19 +146,19 @@ let mappings: (string * Mapping) list =
             "Image.bytes"
             "Image.fileWith"
             "Image.file" ]
-      "InlinedDescriptor.AlignCenter", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.AlignJustify", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.AlignLeft", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.AlignRight", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.AlignSpaceAround", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.BaselineBottom", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.BaselineMiddle", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.BaselineTop", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.HorizontalSpacing", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.Item", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.Spacing", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedDescriptor.VerticalSpacing", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
-      "InlinedExtensions.Inlined", Raw "inlined layout is planned for a later version of QuestPDF.FSharp"
+      "InlinedDescriptor.AlignCenter", Wrapped [ "Inlined.alignCenter" ]
+      "InlinedDescriptor.AlignJustify", Wrapped [ "Inlined.alignJustify" ]
+      "InlinedDescriptor.AlignLeft", Wrapped [ "Inlined.alignLeft" ]
+      "InlinedDescriptor.AlignRight", Wrapped [ "Inlined.alignRight" ]
+      "InlinedDescriptor.AlignSpaceAround", Wrapped [ "Inlined.alignSpaceAround" ]
+      "InlinedDescriptor.BaselineBottom", Wrapped [ "Inlined.baselineBottom" ]
+      "InlinedDescriptor.BaselineMiddle", Wrapped [ "Inlined.baselineMiddle" ]
+      "InlinedDescriptor.BaselineTop", Wrapped [ "Inlined.baselineTop" ]
+      "InlinedDescriptor.HorizontalSpacing", Wrapped [ "Inlined.spacingH" ]
+      "InlinedDescriptor.Item", Wrapped [ "Inlined.item" ]
+      "InlinedDescriptor.Spacing", Wrapped [ "Inlined.spacing" ]
+      "InlinedDescriptor.VerticalSpacing", Wrapped [ "Inlined.spacingV" ]
+      "InlinedExtensions.Inlined", Wrapped [ "inlined" ]
       "LayerExtensions.Layers", Wrapped [ "layers" ]
       "LayersDescriptor.Layer", Wrapped [ "Layers.layer" ]
       "LayersDescriptor.PrimaryLayer", Wrapped [ "Layers.primary" ]
@@ -167,12 +167,12 @@ let mappings: (string * Mapping) list =
       "LineDescriptor.LineGradient", Wrapped [ "lineHWith"; "lineVWith" ]
       "LineExtensions.LineHorizontal", Wrapped [ "lineHWith"; "lineH" ]
       "LineExtensions.LineVertical", Wrapped [ "lineVWith"; "lineV" ]
-      "MultiColumnDescriptor.BalanceHeight", Raw "multi-column layout is planned for a later version of QuestPDF.FSharp"
-      "MultiColumnDescriptor.Columns", Raw "multi-column layout is planned for a later version of QuestPDF.FSharp"
-      "MultiColumnDescriptor.Content", Raw "multi-column layout is planned for a later version of QuestPDF.FSharp"
-      "MultiColumnDescriptor.Spacer", Raw "multi-column layout is planned for a later version of QuestPDF.FSharp"
-      "MultiColumnDescriptor.Spacing", Raw "multi-column layout is planned for a later version of QuestPDF.FSharp"
-      "MultiColumnExtensions.MultiColumn", Raw "multi-column layout is planned for a later version of QuestPDF.FSharp"
+      "MultiColumnDescriptor.BalanceHeight", Wrapped [ "MultiColumn.balanceHeight" ]
+      "MultiColumnDescriptor.Columns", Wrapped [ "MultiColumn.columns" ]
+      "MultiColumnDescriptor.Content", Wrapped [ "MultiColumn.content" ]
+      "MultiColumnDescriptor.Spacer", Wrapped [ "MultiColumn.spacer" ]
+      "MultiColumnDescriptor.Spacing", Wrapped [ "MultiColumn.spacing" ]
+      "MultiColumnExtensions.MultiColumn", Wrapped [ "multiColumn" ]
       "OffsetExtensions.OffsetX", Wrapped [ "offsetX" ]
       "OffsetExtensions.OffsetY", Wrapped [ "offsetY" ]
       "PaddingExtensions.Padding", Wrapped [ "padding" ]
