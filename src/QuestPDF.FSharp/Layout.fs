@@ -89,7 +89,7 @@ module Row =
         Measured.rowSpacing (len value)
 
 /// <summary>
-/// The span or position of a table cell, made by the <c>Cell</c> functions. Rows and columns are numbered from 1.
+/// The span, position or header role of a table cell, made by the <c>Cell</c> functions. Rows and columns are numbered from 1.
 /// </summary>
 [<RequireQualifiedAccess>]
 type CellOption =
@@ -99,6 +99,8 @@ type CellOption =
     | RowSpan of int
     /// <summary>The cell starts at a row and a column; other cells continue after it.</summary>
     | At of row: int * column: int
+    /// <summary>The cell is a header of its row, for assistive technology.</summary>
+    | HorizontalHeader
 
 /// <summary>A table cell: its content and its span or position. One value can appear in the header, body and footer.</summary>
 type TableCell =
@@ -115,7 +117,8 @@ module Table =
                 match option with
                 | CellOption.ColumnSpan count -> placed.ColumnSpan (uint32 count)
                 | CellOption.RowSpan count -> placed.RowSpan (uint32 count)
-                | CellOption.At (row, column) -> placed.Row(uint32 row).Column (uint32 column))
+                | CellOption.At (row, column) -> placed.Row(uint32 row).Column (uint32 column)
+                | CellOption.HorizontalHeader -> placed.SemanticHorizontalHeader ())
 
         cell.Content (Slot placed)
 
@@ -173,7 +176,7 @@ module Table =
     let extendLastCellsToBottom: TablePart =
         closure (fun table -> table.ExtendLastCellsToTableBottom ())
 
-/// <summary>The span and position options of a table cell.</summary>
+/// <summary>The span, position and header role options of a table cell.</summary>
 [<RequireQualifiedAccess>]
 module Cell =
     /// <summary>Spans a number of columns.</summary>
@@ -193,6 +196,10 @@ module Cell =
     /// </remarks>
     let at (row: int) (column: int) : CellOption =
         CellOption.At (row, column)
+
+    /// <summary>Tags the cell as the header of its row in a tagged PDF, such as a document with <c>Output.pdfUA</c>.</summary>
+    /// <remarks>Maps to <see cref="M:QuestPDF.Fluent.TableCellExtensions.SemanticHorizontalHeader(QuestPDF.Elements.Table.ITableCellContainer)"/>.</remarks>
+    let horizontalHeader: CellOption = CellOption.HorizontalHeader
 
 /// <summary>The layers of a <c>layers</c> stack.</summary>
 [<RequireQualifiedAccess>]
