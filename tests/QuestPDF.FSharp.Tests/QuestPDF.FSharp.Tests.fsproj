@@ -21,6 +21,7 @@
         <Compile Include="TextTests.fs" />
         <Compile Include="DocumentTests.fs" />
         <Compile Include="GenerateTests.fs" />
+        <Compile Include="OperationsTests.fs" />
         <Compile Include="ModifierTests.fs" />
         <Compile Include="LayoutColumnRowTests.fs" />
         <Compile Include="TextRichTests.fs" />

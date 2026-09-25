@@ -21,7 +21,7 @@ let mappings: (string * Mapping) list =
       "ColumnDescriptor.Spacing", Wrapped [ "columnSpaced" ]
       "ColumnExtensions.Column", Wrapped [ "columnSpaced"; "column" ]
       "CompanionExtensions.ShowInCompanion", Wrapped [ "Pdf.companion" ]
-      "CompanionExtensions.ShowInCompanionAsync", Raw "the asynchronous Companion call is planned for a later version of QuestPDF.FSharp"
+      "CompanionExtensions.ShowInCompanionAsync", Wrapped [ "Pdf.companionAsync" ]
       "ComponentExtensions.Component", Wrapped [ "Content.ofComponent" ]
       "ConstrainedExtensions.Height", Wrapped [ "height" ]
       "ConstrainedExtensions.MaxHeight", Wrapped [ "maxHeight" ]
@@ -41,8 +41,7 @@ let mappings: (string * Mapping) list =
       "Document.Create", Wrapped [ "document"; "page" ]
       "Document.GetMetadata", Raw "reads back the metadata of a built document; call it on the Document that document returns"
       "Document.GetSettings", Raw "reads back the settings of a built document; call it on the Document that document returns"
-      "Document.Merge",
-      Raw "merging documents is planned for a later version of QuestPDF.FSharp; Document.Merge accepts the documents that document returns"
+      "Document.Merge", Wrapped [ "Pdf.merge"; "Merge.originalPageNumbers"; "Merge.continuousPageNumbers" ]
       "Document.WithMetadata",
       Wrapped
           [ "Meta.title"
@@ -63,30 +62,18 @@ let mappings: (string * Mapping) list =
             "Output.imageQuality"
             "Output.imageDpi"
             "Output.rightToLeft" ]
-      "DocumentOperation.AddAttachment",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.Decrypt",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.Encrypt",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.ExtendMetadata",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.Linearize",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.LoadFile",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.MergeFile",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.OverlayFile",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.RemoveRestrictions",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.Save",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.TakePages",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
-      "DocumentOperation.UnderlayFile",
-      Raw "the PDF file operations of qpdf are planned for a later version of QuestPDF.FSharp; call DocumentOperation directly"
+      "DocumentOperation.AddAttachment", Wrapped [ "PdfFile.attach" ]
+      "DocumentOperation.Decrypt", Wrapped [ "PdfFile.decrypt" ]
+      "DocumentOperation.Encrypt", Wrapped [ "PdfFile.encrypt40"; "PdfFile.encrypt128"; "PdfFile.encrypt256" ]
+      "DocumentOperation.ExtendMetadata", Wrapped [ "PdfFile.extendMetadata" ]
+      "DocumentOperation.Linearize", Wrapped [ "PdfFile.linearize" ]
+      "DocumentOperation.LoadFile", Wrapped [ "PdfFile.load"; "PdfFile.loadProtected" ]
+      "DocumentOperation.MergeFile", Wrapped [ "PdfFile.merge"; "PdfFile.mergePages" ]
+      "DocumentOperation.OverlayFile", Wrapped [ "PdfFile.overlay" ]
+      "DocumentOperation.RemoveRestrictions", Wrapped [ "PdfFile.removeRestrictions" ]
+      "DocumentOperation.Save", Wrapped [ "PdfFile.save" ]
+      "DocumentOperation.TakePages", Wrapped [ "PdfFile.takePages" ]
+      "DocumentOperation.UnderlayFile", Wrapped [ "PdfFile.underlay" ]
       "DynamicComponentExtensions.Dynamic", Raw "dynamic components are planned for a later version of QuestPDF.FSharp"
       "DynamicComponentExtensions.Element", Raw "dynamic components are planned for a later version of QuestPDF.FSharp"
       "DynamicImageDescriptor.UseOriginalImage", Raw "dynamic images are planned for a later version of QuestPDF.FSharp"
