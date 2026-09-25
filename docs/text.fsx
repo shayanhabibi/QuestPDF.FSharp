@@ -86,6 +86,9 @@ render richDemo
 `Text.withStyle` styles any part after it is made, including links and page numbers. Applied twice, the outer style
 applies first and the inner one overrides it.
 
+`Text.element content` draws a `Content`, such as an icon or a small image, inside the line with its bottom edge on
+the baseline; `Text.elementWith` takes a `TextInjectedElementAlignment` to align it otherwise.
+
 ## Page numbers
 
 `Text.pageNumber` and `Text.totalPages` are parts, typically in a footer. `Text.formatPage` formats the numbers of a

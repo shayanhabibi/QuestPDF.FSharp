@@ -121,6 +121,14 @@ render flow
 (*** include-it-raw ***)
 
 (**
+## Deferred and dynamic content
+
+`lazyContent` builds its content when the layout reaches it and releases it after drawing, which lowers the memory
+use of documents with thousands of pages; `lazyContentCached` keeps the built layout, trading memory for speed.
+`capturePosition id` records where content lands on each page. `Dynamic.ofComponent` and `Dynamic.ofStateful` draw
+a QuestPDF `IDynamicComponent`, composed anew for each page, and `Dynamic.createElement` and `Dynamic.element` build
+and draw its elements from wrapper content.
+
 ## Several page definitions
 
 A document lists pages in order; each `page` starts on a new sheet with its own settings, for example a cover

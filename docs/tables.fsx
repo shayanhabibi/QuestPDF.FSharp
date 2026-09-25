@@ -67,8 +67,9 @@ The header and footer repeat on every page the table spans. A cell value is plai
 
 ## Spans and placement
 
-`Table.cellWith` takes cell options: `Cell.columnSpan`, `Cell.rowSpan`, and `Cell.at row column` to place a cell
-explicitly (both 1-based).
+`Table.cellWith` takes cell options: `Cell.columnSpan`, `Cell.rowSpan`, `Cell.at row column` to place a cell
+explicitly (both 1-based), and `Cell.horizontalHeader` to tag a row header cell in a table tagged with
+`Semantic.table` ([semantic tags](output.html#Accessible-PDF-semantic-tags)).
 *)
 
 let spans =

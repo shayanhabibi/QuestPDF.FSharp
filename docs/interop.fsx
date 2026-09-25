@@ -55,12 +55,14 @@ render mixedDemo
 (*** include-it-raw ***)
 
 (**
-The lists of `page`, `row`, `table`, `Table.columns`, `layers` and `decoration` accept a lambda over their QuestPDF
-descriptor: `PageDescriptor -> unit` in a page, `RowDescriptor -> unit` in a row, `TableDescriptor -> unit` in a
-table, `TableColumnsDefinitionDescriptor -> unit` in `Table.columns`, `LayersDescriptor -> unit` in layers and
-`DecorationDescriptor -> unit` in a decoration. The other lists take their own parts only: a `richText` list takes
-fluent code through `Text.raw`, a `column` takes it through `raw` or `fluent`, `Table.header`, `Table.footer` and
-`Table.cells` take `Table.cell` values, and a `document` takes `page`, `Meta.*` and `Output.*` items.
+The lists of `page`, `row`, `table`, `Table.columns`, `layers`, `decoration`, `inlined` and `multiColumn` accept a
+lambda over their QuestPDF descriptor: `PageDescriptor -> unit` in a page, `RowDescriptor -> unit` in a row,
+`TableDescriptor -> unit` in a table, `TableColumnsDefinitionDescriptor -> unit` in `Table.columns`,
+`LayersDescriptor -> unit` in layers, `DecorationDescriptor -> unit` in a decoration, `InlinedDescriptor -> unit` in
+an inlined layout and `MultiColumnDescriptor -> unit` in a multi-column layout. The other lists take their own parts
+only: a `richText` list takes fluent code through `Text.raw`, a `column` takes it through `raw` or `fluent`,
+`Table.header`, `Table.footer` and `Table.cells` take `Table.cell` values, and a `document` takes `page`, `Meta.*`
+and `Output.*` items.
 
 `Measured.*` holds the non-inline implementation behind every length or number shim, for callers that already have
 a `Length`: `Measured.padding (5 * mm)` is `padding (5 * mm)`.
